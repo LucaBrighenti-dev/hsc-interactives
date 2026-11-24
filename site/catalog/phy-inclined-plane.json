@@ -2,12 +2,12 @@
   "id": "phy-inclined-plane",
   "kind": "page",
   "title": "Inclined plane and friction",
-  "summary": "Free body diagram, components, static vs kinetic friction; angle 0 gives the horizontal plane.",
+  "summary": "Free body diagram on a slope: weight components, normal force, static and kinetic friction, and an applied force. 0° gives a level floor.",
   "subject": "phy",
   "engine": "statics",
   "setup": "incline",
   "priority": "P1",
-  "status": "planned",
+  "status": "review",
   "path": "/interactives/physics/inclined-plane.html",
   "syllabus": [
     {
@@ -34,5 +34,6 @@
       "url": "https://curriculum.nsw.edu.au/learning-areas/science/physics-11-12-2025/content/year-11/fa874ba975",
       "verified": true
     }
-  ]
+  ],
+  "thumbnail": "/assets/thumbs/phy-inclined-plane.png"
 }
