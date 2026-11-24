@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loci painter · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!-- Spec: specs/me2-loci-painter.md (argand / loci). -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    mountInteractive({
+      id: 'me2-loci-painter',
+      engine: () => import('/assets/engines/argand/index.js'),
+      setup: 'loci',
+      presets: {
+        // Every scenario starts from default; each one below sets both conditions (or turns condition 2 off).
+        default: {
+          locus1: 'modulus', rel1: 'le', a1Re: 1, a1Im: 1, r1: 2,
+          locus2: 'argument', rel2: 'ge', a2Re: 0, a2Im: 0, theta2: 0,
+          showProbe: true, zRe: 1, zIm: 2, angleUnit: 'rad', viewRange: 4,
+        },
+        'strict-boundary': { locus1: 'modulus', rel1: 'lt', a1Re: 2, a1Im: 1, r1: 1, locus2: 'none', zRe: 3, zIm: 1 },
+        ray: { locus1: 'argument', rel1: 'eq', a1Re: 1, a1Im: 0, theta1: 45, locus2: 'none', zRe: 2, zIm: 1 },
+        bisector: { locus1: 'bisector', rel1: 'eq', a1Re: 1, a1Im: 0, b1Re: 3, b1Im: 2, locus2: 'none', zRe: 2, zIm: 1 },
+        'half-plane': { locus1: 'bisector', rel1: 'le', a1Re: 0, a1Im: 0, b1Re: 0, b1Im: 2, locus2: 'none', zRe: 3, zIm: 0.5 },
+        sector: {
+          locus1: 'argument', rel1: 'ge', a1Re: 0, a1Im: 0, theta1: -45,
+          locus2: 'argument', rel2: 'lt', a2Re: 0, a2Im: 0, theta2: 60, zRe: 1, zIm: 1,
+        },
+        'ray-meets-circle': {
+          locus1: 'modulus', rel1: 'eq', a1Re: 2, a1Im: 0, r1: 2,
+          locus2: 'argument', rel2: 'eq', a2Re: 0, a2Im: 0, theta2: 45, zRe: 2, zIm: 2,
+        },
+      },
+      presetLabels: {
+        default: 'Disc and arg z ≥ 0',
+        'strict-boundary': 'Strict boundary',
+        ray: 'Ray',
+        bisector: 'Perpendicular bisector',
+        'half-plane': 'Half-plane',
+        sector: 'Sector',
+        'ray-meets-circle': 'Ray meets circle',
+      },
+      controls: [
+        'locus1', 'rel1', 'a1Re', 'a1Im', 'r1', 'theta1', 'b1Re', 'b1Im',
+        'locus2', 'rel2', 'a2Re', 'a2Im', 'r2', 'theta2', 'b2Re', 'b2Im',
+        'showProbe', 'zRe', 'zIm', 'angleUnit', 'viewRange',
+      ],
+      readouts: ['probeDistA1', 'probeArgA1', 'probeDistB1', 'probeDistA2', 'probeArgA2', 'probeDistB2', 'probeInside'],
+      assumptions: [
+        'arg is the principal argument, −π < arg z ≤ π',
+        'Solid boundary: included. Dashed boundary or hollow ring: not included',
+        'Shading is computed point by point on a fine grid; boundaries are exact curves',
+        'Two conditions are joined by “and”: both must hold',
+      ],
+      prompts: [
+        { kind: 'predict', text: 'In “Strict boundary”, is z = 3 + i in the region |z − (2 + i)| < 1? Check the verdict, then change the relation to ≤.' },
+        { kind: 'observe', text: 'In “Ray”, drag z around the vertex. Where does z satisfy arg(z − 1) = π/4, and what happens at z = 1 and at z = −i?' },
+        { kind: 'predict', text: 'What shape is |z| ≤ |z − 2i|? Sketch it before choosing “Half-plane”, then explain the boundary using distances.' },
+        { kind: 'observe', text: 'In “Ray meets circle”, where do the ray and the circle meet? Drag z to the origin: why does it fail the second condition even though it is on the circle?' },
+        { kind: 'explain', text: 'In the default scenario, why is the origin outside the shaded region even though |0 − (1 + i)| ≤ 2?' },
+      ],
+      notes: '/content/notes/me2-loci-painter.md',
+    });
+  </script>
+</body>
+</html>

@@ -2,12 +2,12 @@
   "id": "me2-loci-painter",
   "kind": "page",
   "title": "Loci painter",
-  "summary": "Circles, rays and perpendicular bisectors shaded for modulus and argument conditions.",
+  "summary": "Circles, discs, rays, sectors, perpendicular bisectors and half-planes shaded from modulus and argument conditions, with included and excluded boundaries and a test point.",
   "subject": "me2",
   "engine": "argand",
   "setup": "loci",
   "priority": "P1",
-  "status": "planned",
+  "status": "review",
   "path": "/interactives/maths-ext2/loci-painter.html",
   "syllabus": [
     {
@@ -23,5 +23,6 @@
       "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-2-11-12-2024/content/year-12/fa0be3067b",
       "verified": true
     }
-  ]
+  ],
+  "thumbnail": "/assets/thumbs/me2-loci-painter.png"
 }
