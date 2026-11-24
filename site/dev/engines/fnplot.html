@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>fnplot engine demo · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!--
+    Engine demo page (guide §9.1): mounts the fnplot engine through the shell for each setup.
+    Pick the setup with the #hash, e.g. #transform, #blackbody or #partial-fractions. Not linked from the hub.
+  -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+
+    const { meta } = await import('/assets/engines/fnplot/index.js');
+    const wanted = location.hash.slice(1);
+    const setup = meta.setups.includes(wanted) ? wanted : meta.setups[0];
+    addEventListener('hashchange', () => location.reload());
+
+    const SAMPLED = 'Curves are sampled; they break where the function is undefined';
+    const CONFIG = {
+      transform: {
+        presets: { default: {}, abs: { transform: 'abs', fx: 'x^2 - 4' }, absx: { transform: 'absx', fx: '(x-1)^3 - 1' } },
+        presetLabels: { default: 'y = 1/f(x)', abs: 'y = |f(x)|', absx: 'y = f(|x|)' },
+        controls: ['fx', 'transform', 'layout', 'showOriginal', 'probeX', 'piTicks'],
+        readouts: ['fValue', 'gValue'],
+        assumptions: [SAMPLED, 'Dashed vertical lines are asymptotes'],
+      },
+      inverse: {
+        presets: { default: {}, restricted: { domainMin: 1, domainMax: 4 }, cubic: { inverseFx: 'x^3 - 3x', domainMin: -3, domainMax: 3, probeX: 0.5 } },
+        presetLabels: { default: 'Whole parabola', restricted: 'Restricted to x ≥ 1', cubic: 'Cubic with turning points' },
+        controls: ['inverseFx', 'domainMin', 'domainMax', 'probeX', 'showMirror', 'piTicks'],
+        readouts: ['oneToOne', 'hits', 'rangeMin', 'rangeMax'],
+        assumptions: ['Equal scales on both axes', 'One-to-one is checked numerically on the restricted domain'],
+      },
+      parametric: {
+        presets: {
+          default: {},
+          line: { curve: 'line', pa: 2, pb: -1, h: 1, k: 3 },
+          circle: { curve: 'circle', pa: 2, h: 1, k: -1, tMin: 0, tMax: 6.3, t: 6.3 },
+          custom: { curve: 'custom', xt: '2cos t', yt: 'sin 2t' },
+        },
+        presetLabels: { default: 'Parabola x = 2at, y = at²', line: 'Line', circle: 'Circle', custom: 'Your own curve' },
+        controls: ['curve', 'pa', 'pb', 'h', 'k', 'xt', 'yt', 'tMin', 'tMax', 't', 'eliminate', 'timeScale', 'piTicks'],
+        readouts: ['traceT', 'traceX', 'traceY'],
+        assumptions: ['Equal scales on both axes', 'A run traces t from start to end in 10 s at 1×'],
+      },
+      polynomial: {
+        presets: { default: {}, double: { roots: [1, 1, -2] }, triple: { roots: [-1, 2, 2, 2], leading: 0.5 } },
+        presetLabels: { default: 'Three distinct roots', double: 'A double root', triple: 'A triple root' },
+        controls: ['roots', 'leading', 'piTicks'],
+        readouts: ['sumRoots', 'pairSum', 'productRoots', 'degree'],
+        assumptions: ['Real roots only', 'Drag a root onto another to make a repeated root'],
+      },
+      auxiliary: {
+        presets: { default: {}, negative: { a: -1, b: 1.5, form: 'cos-minus' }, radians: { a: 1, b: 1, angleUnit: 'rad' } },
+        presetLabels: { default: '3 sin x + 4 cos x', negative: 'A negative coefficient', radians: 'α in radians' },
+        controls: ['a', 'b', 'form', 'angleUnit', 'showComponents'],
+        readouts: ['R', 'alphaDeg', 'alpha'],
+        assumptions: ['x in radians', 'α chosen in (−180°, 180°]'],
+      },
+      blackbody: {
+        presets: { default: {}, stars: { temperature: 10000, temperature2: 5800, temperature3: 3500 }, single: { compare: false, showLocus: true } },
+        presetLabels: { default: 'Sun-like body and cooler ones', stars: 'Hot, Sun-like and cool stars', single: 'One curve with the peak locus' },
+        controls: ['temperature', 'compare', 'temperature2', 'temperature3', 'showVisible', 'showLocus'],
+        readouts: ['peakWavelength', 'lambdaT', 'exitance'],
+        assumptions: ['Ideal black body (emissivity 1)', "Planck's law with the exact SI constants h, c, k", 'b = 2.898 × 10⁻³ m K (CODATA 2018)'],
+      },
+      inequality: {
+        presets: { default: {}, rational: { ineqLeft: '(x+2)/(x-1)', relation: 'lt' }, rhs: { ineqLeft: '1/(x-1)', relation: 'ge', ineqRight: '1' } },
+        presetLabels: { default: 'Quadratic', rational: 'Rational', rhs: 'Rational with a right-hand side' },
+        controls: ['ineqLeft', 'relation', 'ineqRight', 'piTicks'],
+        readouts: ['zeroCount', 'poleCount'],
+        assumptions: ['Critical points found for −50 ≤ x ≤ 50', 'One test point in each region'],
+      },
+      'inverse-trig': {
+        presets: { default: {}, cos: { trigFn: 'cos', trigProbe: -0.5 }, tan: { trigFn: 'tan', trigProbe: 1 } },
+        presetLabels: { default: 'sin⁻¹ x', cos: 'cos⁻¹ x', tan: 'tan⁻¹ x' },
+        controls: ['trigFn', 'trigProbe', 'showDerivative', 'showFull'],
+        readouts: ['inverseValue', 'inverseSlope', 'fSlope'],
+        assumptions: ['Angles in radians', 'Principal-value restrictions'],
+      },
+      substitution: {
+        presets: { default: {}, cos: { subF: 'cos u', subG: 'x^2', subA: 0, subB: 1.25 }, exp: { subF: 'e^u', subG: 'sin x', subA: 0, subB: 1.5 } },
+        presetLabels: { default: '∫ 2x(x² + 1)³ dx', cos: '∫ 2x cos(x²) dx', exp: '∫ cos x e^(sin x) dx' },
+        controls: ['subF', 'subG', 'subA', 'subB', 'piTicks'],
+        readouts: ['areaX', 'areaU', 'uLower', 'uUpper'],
+        assumptions: ["Areas by Simpson's rule (4000 strips)", "g′(x) found symbolically"],
+      },
+      'by-parts': {
+        presets: { default: {}, xsin: { partsU: 'x', partsV: 'sin x', partsA: 0, partsB: 1.55 }, reduction: { partsView: 'reduction', reduction: 'sin', reductionN: 6 }, xex: { partsView: 'reduction', reduction: 'xex', reductionN: 3 } },
+        presetLabels: { default: '∫ x eˣ dx as areas', xsin: '∫ x cos x dx as areas', reduction: 'Reduction: sinⁿx', xex: 'Reduction: xⁿeˣ' },
+        controls: ['partsView', 'partsU', 'partsV', 'partsA', 'partsB', 'reduction', 'reductionN'],
+        readouts: ['intUdv', 'intVdu', 'boundaryTerm', 'reductionValue', 'reductionNumeric'],
+        assumptions: ["Integrals by Simpson's rule (4000 strips)", 'du and dv found symbolically'],
+      },
+      'partial-fractions': {
+        presets: { default: {}, repeated: { pfNumerator: [1], pfRoots: [1, -1, -1] }, improper: { pfNumerator: [1, 0, 1], pfRoots: [1, -1] } },
+        presetLabels: { default: 'Two linear factors', repeated: 'A repeated factor', improper: 'Improper: divide first' },
+        controls: ['pfNumerator', 'pfRoots', 'showTerms', 'piTicks'],
+        readouts: ['pfA', 'pfB', 'pfC'],
+        assumptions: ['The denominator has real linear factors', 'Coefficients solved exactly as a linear system'],
+      },
+      heating: {
+        presets: { default: {}, small: { mass: 0.2, power: 500 }, cooling: { heatingMode: 'cooling' } },
+        presetLabels: { default: '1 kg of ice at −20 °C, 2 kW', small: '0.2 kg, 500 W', cooling: "Newton's law of cooling" },
+        controls: ['heatingMode', 'mass', 'power', 'startTemp', 'endTemp', 'cIce', 'cWater', 'cSteam', 'latentFusion', 'latentVaporisation', 'coolStart', 'ambient', 'coolingK', 'timeScale'],
+        readouts: ['heatTime', 'heatTemp', 'heatSupplied', 'meltTime', 'boilTime', 'halfTime'],
+        assumptions: ['No heat lost to the surroundings', 'Uniform temperature at 101.3 kPa', 'Water data: Young & Freedman; steam: Serway & Jewett'],
+      },
+    };
+    const c = CONFIG[setup];
+
+    mountInteractive({
+      id: 'dev-fnplot',
+      title: `fnplot · ${setup}`,
+      engine: () => import('/assets/engines/fnplot/index.js'),
+      setup,
+      presets: c.presets,
+      presetLabels: c.presetLabels,
+      controls: c.controls,
+      readouts: c.readouts,
+      assumptions: c.assumptions,
+      prompts: [],
+    }).then(() => {
+      const nav = document.createElement('nav');
+      nav.setAttribute('aria-label', 'Setups');
+      nav.className = 'cluster';
+      nav.style.cssText = 'gap: 8px; padding: 0 16px 16px; font-family: var(--f-mono); font-size: 14px;';
+      for (const s of meta.setups) {
+        const a = document.createElement('a');
+        a.href = `#${s}`;
+        a.textContent = s;
+        if (s === setup) a.setAttribute('aria-current', 'page');
+        nav.append(a);
+      }
+      const side = document.querySelector('.hsc-side');
+      (side ?? document.body).prepend(nav);
+    });
+  </script>
+</body>
+</html>

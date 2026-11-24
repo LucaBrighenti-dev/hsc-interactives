@@ -357,7 +357,8 @@ class Parser {
         return { type: 'num', value: t.value, text: t.text, pos: t.pos, end: t.end };
       case 'name':
         if (t.kind === 'const') return { type: 'const', name: t.name, pos: t.pos, end: t.end };
-        if (t.kind === 'var') return { type: 'var', name: t.name, pos: t.pos, end: t.end };
+        // `text` keeps the case the teacher typed ("A" for the variable a) for labels; `name` evaluates.
+        if (t.kind === 'var') return { type: 'var', name: t.name, text: t.text, pos: t.pos, end: t.end };
         return this.call(t);
       case 'op': {
         if (t.value === '-' || t.value === '+') {
@@ -649,8 +650,11 @@ function tex(node, { trailing = false } = {}) {
       return numText(node);
     case 'const':
       return node.name === 'pi' ? '\\pi' : 'e';
-    case 'var':
-      return GREEK_TEX[node.name] ?? (node.name.length > 1 ? `\\mathit{${node.name}}` : node.name);
+    case 'var': {
+      if (GREEK_TEX[node.name]) return GREEK_TEX[node.name];
+      const shown = node.text && node.text.toLowerCase() === node.name.toLowerCase() ? node.text : node.name;
+      return shown.length > 1 ? `\\mathit{${shown}}` : shown;
+    }
     case 'neg': {
       const a = tex(node.arg, { trailing });
       return precOf(node.arg) <= PREC.add || a.startsWith('-') ? `-${paren(a)}` : `-${a}`;
