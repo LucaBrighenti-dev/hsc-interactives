@@ -6,3 +6,4 @@ PRs that passed independent review (`VERDICT: PASS`) with CI green. The orchestr
 
 | PR | Task | Summary | Review | Merged |
 | --- | --- | --- | --- | --- |
+| [#6](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/6) | W1-E-statsim | statsim engine: sampling, normal-approx, decay | PASS (0 required fixes) | 2026-11-25 |

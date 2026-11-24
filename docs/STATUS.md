@@ -51,7 +51,7 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 - [ ] W1-E-particle2d | building (batch 1)
 - [ ] W1-E-statics | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/18 | review: in progress
-- [ ] W1-E-statsim | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/6 | review: in progress
+- [x] W1-E-statsim | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/6 | review: PASS (all §9.1 numbers reproduced over 30 seeds) | merged
 - [ ] W1-E-argand | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/13 | review: in progress
 - [ ] W1-E-aero | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/10 | review: in progress
 - [ ] W1-E-wave | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/12 | review: in progress
@@ -64,7 +64,7 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 ### Platform
 
-- [ ] W1-AUTH Premium sign-in + accounts | queued (subagent cap of 20 reached)
+- [ ] W1-AUTH Premium sign-in + accounts | building
 - [ ] W1-HUB Dashboard | building
 
 ### Syllabus (`syllabus-tagger`)
@@ -75,7 +75,7 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 - [ ] W1-SPEC-me1 | P0+P1 PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/16 (review in progress) | P2: writing
 - [ ] W1-SPEC-me2 | P0+P1 PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/7 (review in progress) | P2: writing
-- [ ] W1-SPEC-phy | A: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/17 (P0 + first P1; review queued) | B: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/9 (P1 custom; review queued) | more writing
+- [ ] W1-SPEC-phy | A: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/17 (P0 + first P1; review in progress) | B: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/9 (P1 custom) + https://github.com/LucaBrighenti-dev/hsc-interactives/pull/20 (P2, stacked on #9); reviews queued | A part 2 writing
 - [ ] W1-SPEC-eng | writing
 
 ## Wave 2: interactives (`interactive-builder`; start when the subject's Gate B is approved and the engine has merged)
@@ -176,3 +176,4 @@ Tracked on each PR (reviewer comment `VERDICT: PASS/FAIL`) and in `docs/gates/ga
 - 2026-11-25: **Overnight authority from Luca:** work autonomously (about 4 h). The orchestrator approves specs (Gate B) and squash-merges PRs once an independent reviewer passes them and CI is green. Quality before breadth. Render (H2) waits until tomorrow; the site name stays "HSC Interactives Hub". Supabase (H3–H5) stays with Luca, so the site remains in local auth mode.
 - 2026-11-25: Plan for speed without lowering review: spec writers run in parallel with the engines (page builders reconcile param keys with the merged engine meta); Wave 2 agents build the 3–5 pages that share an engine (master plan: 3–5 interactives each); fnplot lands its shared parser first so field2d can start early. Lead PR #4 merged (contract test allows a parser-only engine folder; `.claude/worktrees/` is git-ignored).
 - 2026-11-25 (overnight): lead PRs #8 (integer outputs, axis placement), #11 (readout labels keep their case, so α stays α), #15 (engine 'params' event, SI-prefixed readouts, control help) merged; #19 (stage role=group) merging. Reviews running for engines statsim, aero, wave, argand and statics, the syllabus PR #14, and specs me2 #7 and me1 #16. Parser #5 FAILED review (invalid KaTeX labels, a misleading label for 2(−3x), nested |..| bars, prototype lookups); its builder is fixing it before part 2. Subagent cap of 20 reached; W1-AUTH and field2d queued.
+- 2026-11-25 (overnight): statsim engine merged (#6, reviewer PASS). Lead #19 (stage role=group) merged. Physics B specs done (#9 P1 custom, #20 P2). W1-AUTH started; Physics A specs under review.
