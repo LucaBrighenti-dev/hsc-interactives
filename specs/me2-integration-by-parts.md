@@ -15,7 +15,7 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 > Backlog summary: Integration by parts as an area picture; reduction formula stepper.
 
 ## Learning goal
-Students see integration by parts, ∫ u dv = [uv] − ∫ v du, as a statement about areas: when the curve (u(x), v(x)) is drawn for a ≤ x ≤ b, the two regions it cuts off (one against each axis) have areas ∫ u dv and ∫ v du, and together they make the difference of two rectangles, u(b)v(b) − u(a)v(a). They then use integration by parts to derive a reduction formula and apply it step by step to evaluate a definite integral for a particular n.
+Students see integration by parts, ∫ u dv = [uv] − ∫ v du, as a statement about areas: when the curve (u(x), v(x)) is drawn for a ≤ x ≤ b, the two regions it cuts off (one against each axis) have signed areas ∫ u dv and ∫ v du, and together they make the difference of two rectangles, u(b)v(b) − u(a)v(a). They then use integration by parts to derive a reduction formula and apply it step by step to evaluate a definite integral for a particular n.
 
 ## What the student sees
 **Area picture (default).** The stage at 1920×1080 has the plot on the left (about 64% of the width) and a working column on the right.
@@ -25,14 +25,14 @@ Students see integration by parts, ∫ u dv = [uv] − ∫ v du, as a statement 
 - **The rectangles:** the big rectangle from (0, 0) to (u(b), v(b)) has a dashed outline, and the small rectangle from (0, 0) to (u(a), v(a)) has a dotted outline (only when it has non-zero area).
 - **Working column:** u and v as typed, then du and dv (differentiated symbolically), then the three values ∫ₐᵇ u dv, ∫ₐᵇ v du and [uv]ₐᵇ, then the identity ∫ u dv = [uv] − ∫ v du.
 
-**Signed areas.** Each region's value is a signed area. ∫ u dv = ∫ u v′ dx counts positive where u > 0 while v increases, or u < 0 while v decreases, and negative otherwise; ∫ v du works the same way with v and u swapped. So the picture shows two plain regions that fill the L-shape between the rectangles only when u and v are both increasing and non-negative on [a, b]. That is true for every preset except "Past π/2". There v = sin x turns back after x = π/2, the curve doubles back, ∫ u dv is negative even though the whole curve lies in the first quadrant, and the identity still holds. The stage should say so (engine request below).
+**Signed areas.** Each region's value is a signed area, measured as x goes from a to b (the engine integrates from a to b in whatever order the two limits are set). ∫ u dv = ∫ₐᵇ u v′ dx counts positive where u > 0 while v increases as x goes from a to b, or u < 0 while v decreases, and negative otherwise; ∫ v du works the same way with v and u swapped. So swapping a and b changes the sign of all three values: u = x, v = x with a = 1, b = 0 gives ∫ u dv = ∫ v du = −0.5 and [uv] = −1. The picture shows two plain regions that fill the L-shape between the rectangles only when a < b and u and v are both increasing and non-negative on [a, b]. That is true for every preset except "Past π/2". There v = sin x turns back after x = π/2, so ∫ u dv is negative even though the whole curve lies in the first quadrant, and the identity still holds. The stage should say so (engine request below).
 
 **Reduction formula.** The plot shows the integrand for the chosen n over its fixed interval (0 to π/2 for sinⁿ x, 0 to 1 for xⁿeˣ) with the area under it shaded. The working column is the **stepper**: the integral, the reduction formula, then the chain of values from the base case up to I_n, one line per step (the last seven steps when the chain is longer), for example "I₄ = (3/4) I₂ = 0.589", and finally the direct numerical value for comparison.
 
 This setup is static: there is no play button.
 
 ## Parameters
-Keys are from the `fnplot` engine meta on `origin/w1/engine-fnplot` (commit 90a18ca).
+Keys are from the `fnplot` engine meta in PR #28 (the fnplot engine).
 
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -45,7 +45,7 @@ Keys are from the `fnplot` engine meta on `origin/w1/engine-fnplot` (commit 90a1
 | reductionN | n | | 0 | 12 | 1 | 4 | integer; reduction view |
 | piTicks | Label x in multiples of π | | | | | off | boolean |
 
-Presets that need π/2 set `partsB` to 1.5707963267948966 exactly. The slider's 0.05 grid cannot show that value, so the thumb sits between 1.55 and 1.60 while the working column shows π/2.
+Presets that need π/2 set `partsB` to 1.5707963267948966 exactly. The slider's 0.05 grid cannot show that value, so the thumb sits between 1.55 and 1.60, and the working column prints the limit as 1.57 (the values are computed with π/2 exactly). An engine request below asks for limits that are simple multiples of π to be printed as π/2 and so on.
 
 ## Presets
 | Name | Values | Why |
@@ -107,8 +107,9 @@ Definitions (from the engine):
 - Stage aria-label (from the engine's `describe()`), for example: "Integration by parts as areas: integral of u dv 1 plus integral of v du 1.718 equals uv from a to b, 2.718." In the reduction view: "Reduction formula for I sub 6: 0.4909."
 
 ## Engine change requests
-Keys and outputs above match the `fnplot` meta on `origin/w1/engine-fnplot` (90a18ca). Requests (not used by the acceptance block below):
-- **Signed-area note:** when u or v is not increasing on [a, b], or either is negative there, say on stage that the regions are signed areas and may overlap (the "Past π/2" preset needs it).
+Keys and outputs above match the `fnplot` meta in PR #28. Requests (not used by the acceptance block below):
+- **Signed-area note:** when a > b, or u or v is not increasing as x goes from a to b, or either is negative there, say on stage that the regions are signed areas and may overlap (the "Past π/2" preset needs it).
+- **π limits:** print a limit that is a simple multiple of π (within 1e-12) as π/2, π/4 and so on in the working column, instead of 1.57.
 - **Undefined pieces:** when u, v or their derivatives are undefined somewhere on [a, b] (for example ln x with a ≤ 0), say why and output NaN. At present ln with a = 0 gives intUdv = −∞.
 - **Stepper reveal:** a "Lines revealed" control, so the chain can be shown one line at a time in class.
 - **Hatching** on the two regions in different directions, as a cue beyond colour that survives projection.

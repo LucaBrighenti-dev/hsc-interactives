@@ -28,11 +28,11 @@ The stage at 1920×1080 shows one large graph, x from −6 to 6 and y from −6 
 This setup is static: there is no play button.
 
 ## Parameters
-Keys are from the `fnplot` engine meta on `origin/w1/engine-fnplot` (commit 90a18ca).
+Keys are from the `fnplot` engine meta in PR #28 (the fnplot engine).
 
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| pfNumerator | Numerator coefficients, highest power first | | −50 | 50 | | 3, 1 | list of 1 to 5 numbers: "5, 1" means 5x + 1. An improper fraction is divided first |
+| pfNumerator | Numerator coefficients, highest power first | | −50 | 50 | | 3, 1 (engine default; this page's default preset sets 5, 1) | list of 1 to 5 numbers: "5, 1" means 5x + 1. An improper fraction is divided first |
 | pfRoots | Denominator roots | | −6 | 6 | | 1, −2 | list of 1 to 4 numbers: "1, −2" means (x − 1)(x + 2); the denominator is monic. Repeating a root gives a repeated factor (extension) |
 | showTerms | Graph each partial fraction | | | | | on | boolean |
 | piTicks | Label x in multiples of π | | | | | off | boolean (not needed here; shared fnplot key) |
@@ -93,7 +93,7 @@ Definitions (from the engine):
 - Stage aria-label (from the engine's `describe()`), giving the decomposition in words, for example: "(5x + 1) over (x − 1)(x + 2) equals 3 over (x + 2) plus 2 over (x − 1)."
 
 ## Engine change requests
-Keys and outputs above match the `fnplot` meta on `origin/w1/engine-fnplot` (90a18ca). Requests (not used by the acceptance block below):
+Keys and outputs above match the `fnplot` meta in PR #28. Requests (not used by the acceptance block below):
 - **Removable points:** when a coefficient is zero to within 1e-9 × max(1, |N|) (exact cancellation can leave about 1e-17, for example numerator 3, −0.3 with roots 0.1, −2), drop that piece from the graph and legend. Draw a hollow ring on the curve at the cancelled root and no asymptote there.
 - **Integral readout** `pfIntegral` over a chosen interval [a, b], evaluated from the antiderivative of the pieces (A ln|x − r| and −A/((k − 1)(x − r)^(k−1)) for repeated factors). It is NaN when a pole with a non-zero coefficient lies in [a, b], and stays finite across a removable point. Test value: the default on [2, 4] gives 3 ln(6/4) + 2 ln 3 = 3.413619902.
 - **Probe readouts** `fAtProbe` and `piecesAtProbe` at a draggable x, showing the pieces adding up to f.
