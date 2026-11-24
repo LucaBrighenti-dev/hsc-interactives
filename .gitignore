@@ -1,0 +1,11 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+site/vendor/
+docs/syllabus-reference/
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db

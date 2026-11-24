@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "/catalog/_schema.json",
+  "title": "HSC Interactives Hub catalog fragment (guide §5.3)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "kind", "title", "summary", "subject", "engine", "setup", "priority", "status", "path", "syllabus"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^(me1|me2|phy|eng)-[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Equals the fragment's filename without .json."
+    },
+    "kind": { "enum": ["page", "listing"] },
+    "title": { "type": "string", "minLength": 2, "maxLength": 80 },
+    "summary": { "type": "string", "minLength": 10, "maxLength": 240 },
+    "subject": { "enum": ["me1", "me2", "phy", "eng"] },
+    "engine": {
+      "enum": ["particle2d", "statics", "statsim", "argand", "aero", "wave", "field2d", "fnplot", "space3d", "rays", "circuit", "materials", "custom"]
+    },
+    "setup": {
+      "type": ["string", "null"],
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Engine setup name; null for custom pages."
+    },
+    "priority": { "enum": ["P0", "P1", "P2"] },
+    "status": {
+      "enum": ["planned", "building", "review", "live"],
+      "description": "planned → building → review → live. Only live cards open from the dashboard."
+    },
+    "path": {
+      "type": "string",
+      "pattern": "^/interactives/(maths-ext1|maths-ext2|physics|engineering)/[a-z0-9]+(-[a-z0-9]+)*\\.html(\\?preset=[a-z0-9]+(-[a-z0-9]+)*)?$"
+    },
+    "listingOf": { "type": "string", "pattern": "^(me1|me2|phy|eng)-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "preset": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "syllabus": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/tag" }
+    },
+    "thumbnail": { "type": "string", "pattern": "^/assets/thumbs/[a-z0-9-]+\\.png$" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "listing" } } },
+      "then": {
+        "required": ["listingOf", "preset"],
+        "properties": { "path": { "pattern": "\\?preset=" } }
+      },
+      "else": {
+        "not": { "anyOf": [{ "required": ["listingOf"] }, { "required": ["preset"] }] },
+        "properties": { "path": { "pattern": "^[^?]*$" } }
+      }
+    },
+    {
+      "if": { "properties": { "engine": { "const": "custom" } } },
+      "then": { "properties": { "setup": { "type": "null" } } },
+      "else": { "properties": { "setup": { "type": "string" } } }
+    }
+  ],
+  "$defs": {
+    "tag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["course", "version", "outcomes", "verified"],
+      "properties": {
+        "course": { "enum": ["Mathematics Extension 1", "Mathematics Extension 2", "Physics", "Engineering Studies"] },
+        "version": { "enum": ["2011", "2017", "2024", "2025", "2026"] },
+        "area": { "type": "string", "minLength": 2, "description": "Old-syllabus module, or the new syllabus's area of study." },
+        "focusArea": { "type": "string", "minLength": 2 },
+        "subtopic": { "type": "string", "minLength": 2 },
+        "year": { "enum": [11, 12] },
+        "outcomes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[A-Z0-9][A-Za-z0-9.\\-]{1,19}$", "description": "Outcome codes only, never outcome text." }
+        },
+        "url": { "type": "string", "pattern": "^https://(curriculum\\.nsw\\.edu\\.au|www\\.nsw\\.gov\\.au|education\\.nsw\\.gov\\.au|educationstandards\\.nsw\\.edu\\.au)/" },
+        "verified": { "type": "boolean" }
+      }
+    }
+  }
+}
