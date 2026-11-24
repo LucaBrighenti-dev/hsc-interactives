@@ -9,24 +9,25 @@
   <link rel="stylesheet" href="/assets/hub/hub.css">
 </head>
 <body class="hub">
-  <a class="skip-link" href="#hub-grid">Skip to the interactives</a>
+  <a class="skip-link" href="#hub-catalog">Skip to the interactives</a>
   <header class="site-header hub-header">
     <a class="wordmark" href="/" data-site-name>HSC Interactives Hub</a>
     <div class="hsc-user" data-user></div>
   </header>
-  <main class="container hub-main">
-    <section class="hub-hero">
-      <h1 class="hub-greeting" data-greeting>Welcome</h1>
-      <p class="hub-sub muted" data-summary></p>
+  <main class="container hub-main" id="hub-main">
+    <section class="hub-hero" aria-labelledby="hub-greeting">
+      <p class="hub-hero__eyebrow" data-hero-eyebrow></p>
+      <h1 class="hub-greeting" id="hub-greeting" data-greeting>Welcome</h1>
+      <p class="hub-sub" data-summary></p>
     </section>
-    <section class="hub-filters" aria-label="Filter interactives">
-      <div class="hub-search">
-        <label class="sr-only" for="hub-search">Search interactives</label>
-        <input class="input" id="hub-search" type="search" placeholder="Search by topic, e.g. projectile, complex, truss" autocomplete="off">
-      </div>
-      <div class="cluster" data-subjects role="group" aria-label="Subjects"></div>
-    </section>
-    <div id="hub-grid" data-grid aria-live="polite"></div>
+    <div class="hub-layout">
+      <aside class="hub-side" aria-label="Your workspace" data-side></aside>
+      <section class="hub-catalog" id="hub-catalog" tabindex="-1" aria-label="Interactives">
+        <div class="hub-filters" role="search" aria-label="Filter interactives" data-filters></div>
+        <div class="hub-results" data-results></div>
+        <div id="hub-grid" class="hub-sections" data-grid></div>
+      </section>
+    </div>
   </main>
   <footer class="site-footer hub-footer">
     <span data-site-credit>Built by Luca Brighenti for UNSW Teach the Teachers 2026</span>
