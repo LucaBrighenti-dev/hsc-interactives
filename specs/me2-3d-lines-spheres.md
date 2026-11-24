@@ -72,7 +72,7 @@ This setup is static: there is no play button.
 | py | P y | | 3 |
 | pz | P z | | 3 |
 | discriminant | Discriminant Δ | | 3 |
-| hits | Points of intersection with the sphere | | 1 |
+| hits | Points of intersection with the sphere | | whole number (`integer: true`, guide §5.10) |
 | lambda1 | First λ on the sphere | | 3 |
 | lambda2 | Second λ on the sphere | | 3 |
 | chord | Chord length | | 3 |
