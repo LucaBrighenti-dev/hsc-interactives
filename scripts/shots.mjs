@@ -1,7 +1,9 @@
-// npm run shots [-- <id> ...] [-- --thumbs]
+// npm run shots [-- <id | page path> ...] [-- --thumbs]
 // Screenshots at desktop 1920×1080, tablet 1180×820 and phone 390×844 into test-results/shots/<id>/.
 // With no ids: every catalog page that isn't `planned`, the reference template, and the platform pages
-// (signin, dashboard, privacy, styleguide). With --thumbs: also write site/assets/thumbs/<id>.png
+// (signin, dashboard, privacy, styleguide). An argument containing ".html" is a page path, e.g.
+// dev/engines/particle2d.html#projectile (leading slash optional; Git Bash's path rewriting is undone).
+// With --thumbs: also write site/assets/thumbs/<id>.png
 // (the stage only, 640×360) for catalog pages. Runs against a built dist/ (`npm run build` first).
 // Exits 1 if any page logs a console error or warning.
 import fs from 'node:fs';
@@ -32,6 +34,12 @@ function targetsFor(ids, catalog) {
   const fromCatalog = (e) => ({ id: e.id, path: e.path, signedIn: true, interactive: true, catalog: true });
   if (ids.length) {
     return ids.map((id) => {
+      if (id.includes('.html')) {
+        // Git Bash turns "/dev/x.html" into "C:/Program Files/Git/dev/x.html"; keep only the site path.
+        const sitePath = `/${id.replace(/\\/g, '/').replace(/^.*?\/Git\//, '').replace(/^[A-Za-z]:\//, '').replace(/^\/+/, '')}`;
+        const folder = sitePath.replace(/\.html/, '').replace(/[^a-zA-Z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+        return { id: folder, path: sitePath, signedIn: true, interactive: /^\/(interactives|dev\/engines)\//.test(sitePath) };
+      }
       if (PLATFORM[id]) return { id, ...PLATFORM[id] };
       const entry = catalog.entries.find((e) => e.id === id);
       if (!entry) throw new Error(`shots: unknown id "${id}"`);
@@ -40,6 +48,12 @@ function targetsFor(ids, catalog) {
     });
   }
   return [...Object.entries(PLATFORM).map(([id, t]) => ({ id, ...t })), ...pages.filter((e) => e.status !== 'planned').map(fromCatalog)];
+}
+
+/** Add query flags to a path, keeping any #hash (e.g. an engine demo page's setup) at the end. */
+function withFlags(p, flags) {
+  const [pathAndQuery, hash] = p.split('#');
+  return `${pathAndQuery}${pathAndQuery.includes('?') ? '&' : '?'}${flags}${hash ? `#${hash}` : ''}`;
 }
 
 async function signIn(context) {
@@ -73,7 +87,7 @@ export async function shots({ ids = [], thumbs = false, outDir = path.join(ROOT,
           if (m.type() === 'error' || m.type() === 'warning') problems.push(`${target.id} [${vp.name}] ${m.type()}: ${m.text()}`);
         });
         page.on('pageerror', (e) => problems.push(`${target.id} [${vp.name}] pageerror: ${e.message}`));
-        const url = target.interactive ? `${target.path}${target.path.includes('?') ? '&' : '?'}test=1` : target.path;
+        const url = target.interactive ? withFlags(target.path, 'test=1') : target.path;
         await page.goto(base + url, { waitUntil: 'networkidle' });
         if (target.interactive) {
           await page.waitForFunction(() => window.__hsc);
@@ -91,7 +105,7 @@ export async function shots({ ids = [], thumbs = false, outDir = path.join(ROOT,
         const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 0.5 });
         await signIn(context);
         const page = await context.newPage();
-        await page.goto(`${base}${target.path}${target.path.includes('?') ? '&' : '?'}test=1&present=1`, { waitUntil: 'networkidle' });
+        await page.goto(`${base}${withFlags(target.path, 'test=1&present=1')}`, { waitUntil: 'networkidle' });
         await page.waitForFunction(() => window.__hsc);
         await page.evaluate(() => window.__hsc.ready);
         await page.waitForTimeout(250);
