@@ -102,7 +102,7 @@ No catalogue listing reuses this page.
 | outputPower | Output power | W | 3 |
 | inputPower | Input power | W | 3 |
 
-The engine returns `null` for the outputs of the scene that is not shown, so the shell displays "—" for them.
+The engine returns `null` for the outputs of the scene that is not shown, so the shell displays "—" for them. `flux`, `fluxLinkage`, `emf` and `peakEmf` set `siPrefix: true` (guide §5.10), so they read as, for example, "20.9 µWb" and "71.9 mV"; the values returned stay in Wb and V.
 
 ## Assumptions shown on stage
 - Magnet modelled as a point dipole on the coil's axis

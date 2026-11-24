@@ -83,6 +83,8 @@ No catalogue listing reuses this page.
 | movingClockTicks | Moving-clock ticks | | 3 |
 | pathPerTick | Light path per moving tick | m | 3 |
 
+`restClockTicks` and `movingClockTicks` are counts and set `integer: true` (guide §5.10), so they read "6", never "6.00".
+
 ## Assumptions shown on stage
 - Light travels at c = 2.998 × 10⁸ m/s in every inertial frame
 - Constant velocity (inertial frames); no acceleration
