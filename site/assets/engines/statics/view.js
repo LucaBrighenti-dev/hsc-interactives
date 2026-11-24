@@ -35,7 +35,7 @@ export function createView(stage, setup) {
       last = re.lastIndex;
     }
     if (last < text.length) parts.push({ t: text.slice(last), sub: false });
-    const subPx = Math.round(px * 0.72);
+    const subPx = Math.round(px * 0.8);
     ctx.save();
     ctx.textBaseline = baseline;
     ctx.textAlign = 'left';
@@ -256,6 +256,10 @@ export function createView(stage, setup) {
       footAlert = true;
     } else if (!show && solved && !ui.note) {
       foot = compact ? 'Forces hidden: predict T or C.' : `Forces hidden: predict T or C for each member, then turn on Show forces. ${ui.hint}`;
+    } else if (!solved && compact && !ui.note) {
+      // Small stages: one line instead of the message box, so the structure stays in view.
+      foot = { mechanism: 'Can move: add a member or support.', indeterminate: 'Too many members or reactions to solve.', unstable: 'Unstable geometry: no single solution.' }[r.status];
+      footAlert = true;
     }
     const footerH = foot ? px * 2.4 : px * 0.6;
     const rel = d.index === 0 ? '=' : d.index < 0 ? '<' : '>';
@@ -352,16 +356,30 @@ export function createView(stage, setup) {
       if (out[0] < -0.3 && relX(p.x) < 0.4) grow('left', e * -out[0] + px * 2);
       if (out[0] > 0.3 && relX(p.x) > 0.6) grow('right', e * out[0] + px * 2);
     }
-    const reactStack = show ? px * 0.9 + reactLen + px * 0.3 + labelRows * px * 1.35 : px * 0.3;
+    const reactStack = show ? px * 0.9 + reactLen + px * 0.3 + labelRows * px * 1.45 : px * 0.3;
     for (const s of truss.supports) {
       const n = orient(s.joint);
       const glyph = px * (s.type === 'pin' ? 2 : 2.6);
-      if (n[1] > 0) grow('bottom', glyph + reactStack);
-      else grow(n[0] < 0 ? 'left' : 'right', glyph + (show ? px * 0.9 + reactLen + px * 9 : px));
+      if (n[1] > 0) {
+        grow('bottom', glyph + reactStack);
+        continue;
+      }
+      // A support on a wall: its labels go sideways, but a vertical reaction is drawn along the wall,
+      // below the joint when it pushes up and above when it pulls down, and the labels stack upwards.
+      grow(n[0] < 0 ? 'left' : 'right', glyph + (show ? px * 0.9 + reactLen + px * 9 : px));
+      if (!show) continue;
+      const p = truss.joints[s.joint];
+      const ry = r.reactions.find((rec) => rec.joint === s.joint)?.ry ?? 0;
+      const along = px * 1.9 + reactLen;
+      if (ry > 0 && relY(p.y) < 0.4) grow('bottom', along);
+      if (ry < 0 && relY(p.y) > 0.6) grow('top', along);
+      if (relY(p.y) > 0.6) grow('top', px * 3.6);
     }
+    // Wide stages explain an unsolvable truss in a box below the structure; small ones use the footer.
     const msgW = Math.min(W - 2 * pad, 980);
-    const msgH = solved ? 0 : messageHeight(r.message.replace(/^[^:]*:\s*/, ''), msgW, px);
-    if (!solved) need.bottom += msgH + px * 0.8;
+    const boxed = !solved && !compact;
+    const msgH = boxed ? messageHeight(r.message.replace(/^[^:]*:\s*/, ''), msgW, px) : 0;
+    if (boxed) need.bottom += msgH + px * 0.8;
     const rect = { x: plot.x0 + need.left, y: plot.y0 + need.top, w: plot.x1 - plot.x0 - need.left - need.right, h: plot.y1 - plot.y0 - need.top - need.bottom };
     rect.w = Math.max(rect.w, 40);
     rect.h = Math.max(rect.h, 40);
@@ -459,14 +477,17 @@ export function createView(stage, setup) {
       const shown = compact ? (nonZero.length ? nonZero.slice(0, 1) : lines.slice(-1)) : lines;
       const base = [g.gx + n[0] * (nearD + La + px * 0.2), g.gy + n[1] * (nearD + La + px * 0.2)];
       const selected = isJoint(params.probeJoint, s.joint);
-      shown.forEach((l, i) => {
+      // Last line first, so the first line's frame (the support being read out) is drawn on top.
+      for (let i = shown.length - 1; i >= 0; i--) {
+        const l = shown[i];
+        const frame = selected && i === 0 ? pal.ink : null;
         if (n[1] > 0) {
-          rich(l.text, base[0], base[1] + px * 0.3 + i * px * 1.35, { colour: pal.ink, px, kind: 'mono', align: 'center', baseline: 'top', box: pal.bg, frame: selected && i === 0 ? pal.ink : null });
+          rich(l.text, base[0], base[1] + px * 0.3 + i * px * 1.45, { colour: pal.ink, px, kind: 'mono', align: 'center', baseline: 'top', box: pal.bg, frame });
         } else {
           const align = n[0] < 0 ? 'right' : 'left';
-          rich(l.text, base[0] - n[0] * px * 0.2, Y - px * 2.2 + i * px * 1.35, { colour: pal.ink, px, kind: 'mono', align, baseline: 'top', box: pal.bg, frame: selected && i === 0 ? pal.ink : null });
+          rich(l.text, base[0] - n[0] * px * 0.2, Y - px * 2.3 + i * px * 1.45, { colour: pal.ink, px, kind: 'mono', align, baseline: 'top', box: pal.bg, frame });
         }
-      });
+      }
     }
 
     // Member labels (after supports so they sit on top).
@@ -587,8 +608,8 @@ export function createView(stage, setup) {
       label(ctx, jointName(i), X + Math.cos(best) * dist, Y + Math.sin(best) * dist, { colour: pal.ink, px: px + 2, kind: 'strong', align: 'center', baseline: 'middle' });
     });
 
-    // Unsolved: a calm message where the reactions would be.
-    if (!solved) {
+    // Unsolved, on wide stages: a calm message where the reactions would be (small stages use the footer).
+    if (boxed) {
       const titles = { mechanism: 'Mechanism', indeterminate: 'Statically indeterminate', unstable: 'Unstable' };
       messageBox(titles[r.status], r.message.replace(/^[^:]*:\s*/, ''), (W - msgW) / 2, plot.y1 - 4, msgW, px, { anchor: 'bottom' });
     }
@@ -648,7 +669,7 @@ export function createView(stage, setup) {
     const top = pad + px * 2.6;
     const avail = H - top - pad * 0.5;
     // Beam panel: room below the beam for supports, reaction arrows and their labels (7.2 px rows).
-    const hb = compact ? avail * 0.34 : Math.min(Math.max(avail * 0.38, px * 13.5), avail * 0.46);
+    const hb = compact ? avail * 0.3 : Math.min(Math.max(avail * 0.38, px * 13.5), avail * 0.46);
     const hd = (avail - hb) / 2;
     const bt = Math.max(10, px * 0.75);
     const beamY = compact ? top + hb * 0.55 : Math.max(top + hb * 0.45, top + hb - px * 7.2);
@@ -760,7 +781,9 @@ export function createView(stage, setup) {
       };
       if (vals[iMax] > 0) glyph(iMax, '+');
       if (vals[iMin] < 0) glyph(iMin, MINUS);
-      drawAxes(ctx, vp, pal, { px, layer: 'over', yCount, xCount, xTitle: compact ? undefined : 'x (m)', yTitle });
+      drawAxes(ctx, vp, pal, { px, layer: 'over', yCount, xCount, xTitle: compact ? undefined : 'x (m)', yTitle: compact ? undefined : yTitle });
+      // Small stages: the y title sits at the top right, clear of the section probe near the left.
+      if (compact) label(ctx, yTitle, rect.x + rect.w - 4, rect.y + 4, { colour: pal.ink, px, align: 'right', baseline: 'top', box: pal.bg });
       return vp;
     };
     const sfd = diagram(top + hb, hd, 'V', pal.series[1], 'V (kN)');
@@ -953,9 +976,9 @@ export function createView(stage, setup) {
       const { ticks } = niceTicks(0, L, Math.max(3, Math.round((X1 - X0) / 120)));
       for (const t of ticks) {
         line(X(t), rulerY - 5, X(t), rulerY + 5, { colour: pal.axis, width: 1.5 });
-        label(ctx, `${formatPlain(t)}`, X(t), rulerY - 8, { colour: pal.muted, px: Math.max(14, px - 2), kind: 'mono', align: 'center' });
+        label(ctx, `${formatPlain(t)}`, X(t), rulerY - 8, { colour: pal.muted, px, kind: 'mono', align: 'center' });
       }
-      label(ctx, 'x (m)', X1 + px * 0.6, rulerY + px * 0.35, { colour: pal.muted, px: Math.max(14, px - 2), kind: 'mono' });
+      label(ctx, 'x (m)', X1 + px * 0.6, rulerY + px * 0.35, { colour: pal.muted, px, kind: 'mono' });
     }
 
     drawBeamBody(X0, X1, beamY, bt);
@@ -1304,7 +1327,7 @@ export function createView(stage, setup) {
       ctx.arc(x0, yb, px * 3, -th, 0);
       ctx.stroke();
       ctx.restore();
-      label(ctx, `θ = ${formatPlain(params.angle)}°`, x0 + px * 3.4, yb - px * 0.4, { colour: pal.ink, px, kind: 'mono' });
+      if (!compact) label(ctx, `θ = ${formatPlain(params.angle)}°`, x0 + px * 3.4, yb - px * 0.4, { colour: pal.ink, px, kind: 'mono' });
     }
     // Block on the middle of the slope.
     const u = [Math.cos(th), -Math.sin(th)]; // up the slope (screen)

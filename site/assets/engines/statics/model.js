@@ -196,14 +196,26 @@ function shorten(s, n = 24) {
 }
 
 /**
+ * Text pasted from documents often carries typographic characters: no-break and other Unicode spaces,
+ * tabs, and minus signs or dashes (U+2212, en dash …). Turn them into a plain space and hyphen-minus.
+ */
+export function normaliseTrussText(text) {
+  return String(text)
+    .replace(/[\s  -​  　﻿]+/g, ' ')
+    .replace(/[‐-―−﹣－]/g, '-');
+}
+
+/**
  * Parse the text encoding. Never throws.
  * @returns {{ ok: true, truss: object } | { ok: false, error: string }}
  */
 export function parseTruss(text) {
   const fail = (error) => ({ ok: false, error });
-  const src = typeof text === 'string' ? text.trim() : '';
+  const src = typeof text === 'string' ? normaliseTrussText(text).trim() : '';
   if (!src) return fail('The structure text is empty. Start with j: and the joint coordinates.');
   if (src.length > TRUSS_MAX_LENGTH) return fail(`The structure text is longer than ${TRUSS_MAX_LENGTH} characters.`);
+  const stray = /[^A-Za-z0-9:;,. +-]/.exec(src);
+  if (stray) return fail(`The character "${stray[0]}" isn't used in structure text. Use letters, numbers, spaces and : ; , . -`);
   const sections = {};
   for (const raw of src.split(';')) {
     const part = raw.trim();

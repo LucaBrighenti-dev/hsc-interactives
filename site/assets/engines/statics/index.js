@@ -68,7 +68,9 @@ export const meta = {
       label: 'Structure text',
       default: DEFAULT_TRUSS,
       maxLength: M.TRUSS_MAX_LENGTH,
-      pattern: '^[ -~]*$',
+      // Only control characters are refused here. Anything else reaches parseTruss, which turns
+      // typographic spaces and minus signs into plain ones and explains any other problem on stage.
+      pattern: '^[^\\u0000-\\u0008\\u000E-\\u001F\\u007F]*$',
       setups: T,
       visibleWhen: { structure: 'custom' },
       help: 'j: joints x,y (m) · m: members AB · s: supports Ap (pin), Br (roller), Ch (side roller) · l: extra loads Cfx,fy (kN)',
@@ -168,11 +170,11 @@ export const meta = {
     reactionY: { label: 'Support reaction, vertical', unit: 'kN', sigfigs: 3, setups: T },
     maxTension: { label: 'Largest tension', unit: 'kN', sigfigs: 3, setups: T },
     maxCompression: { label: 'Largest compression', unit: 'kN', sigfigs: 3, setups: T },
-    determinacy: { label: 'm + r − 2j', unit: '', sigfigs: 2, setups: T },
+    determinacy: { label: 'm + r − 2j', unit: '', integer: true, setups: T },
     // beam and moments
-    reactionA: { label: 'Reaction R_A', unit: 'kN', sigfigs: 3, setups: ['beam', 'moments'] },
-    reactionB: { label: 'Reaction R_B', unit: 'kN', sigfigs: 3, setups: ['beam', 'moments'] },
-    fixingMoment: { label: 'Wall moment M_A', unit: 'kN·m', sigfigs: 3, setups: B },
+    reactionA: { label: 'Reaction at A', unit: 'kN', sigfigs: 3, setups: ['beam', 'moments'] },
+    reactionB: { label: 'Reaction at B', unit: 'kN', sigfigs: 3, setups: ['beam', 'moments'] },
+    fixingMoment: { label: 'Wall moment at A', unit: 'kN·m', sigfigs: 3, setups: B },
     maxShear: { label: 'Largest shear |V|', unit: 'kN', sigfigs: 3, setups: B },
     maxMoment: { label: 'Largest moment M (sagging +)', unit: 'kN·m', sigfigs: 3, setups: B },
     maxMomentAt: { label: 'Largest moment at x', unit: 'm', sigfigs: 3, setups: B },
@@ -193,8 +195,8 @@ export const meta = {
     equilibrant: { label: 'Equilibrant E', unit: 'N', sigfigs: 3, setups: C },
     equilibrantAngle: { label: 'Direction of E', unit: '°', sigfigs: 3, setups: C },
     cableTension: { label: 'Cable tension T', unit: 'kN', sigfigs: 3, setups: C },
-    pinReaction: { label: 'Pin reaction R_A', unit: 'kN', sigfigs: 3, setups: C },
-    pinAngle: { label: 'Direction of R_A', unit: '°', sigfigs: 3, setups: C },
+    pinReaction: { label: 'Pin reaction at A', unit: 'kN', sigfigs: 3, setups: C },
+    pinAngle: { label: 'Direction of the pin reaction', unit: '°', sigfigs: 3, setups: C },
     // incline
     weight: { label: 'Weight W', unit: 'N', sigfigs: 3, setups: I },
     weightParallel: { label: 'W along the slope', unit: 'N', sigfigs: 3, setups: I },
@@ -203,7 +205,7 @@ export const meta = {
     friction: { label: 'Friction f', unit: 'N', sigfigs: 3, setups: I },
     frictionMax: { label: 'Maximum static friction μsN', unit: 'N', sigfigs: 3, setups: I },
     acceleration: { label: 'Acceleration a', unit: 'm/s²', sigfigs: 3, setups: I },
-    slipping: { label: 'Slipping (1 yes, 0 no)', unit: '', sigfigs: 1, setups: I },
+    slipping: { label: 'Slipping (1 yes, 0 no)', unit: '', integer: true, setups: I },
     reposeAngle: { label: 'Angle of repose tan⁻¹ μs', unit: '°', sigfigs: 3, setups: I },
   },
 };
@@ -390,15 +392,16 @@ function outputsFor(model, params) {
 function dataFor(model, params) {
   switch (model.setup) {
     case 'truss': {
-      const columns = ['Item', 'Type', 'Length (m)', 'Fx (kN)', 'Fy (kN)', 'Force (kN, +T −C)', 'State'];
+      // Members carry an axial force (+T, −C); reactions and loads are vectors (components and size).
+      const columns = ['Item', 'Type', 'Length (m)', 'Member force (kN, +T −C)', 'State', 'Fx (kN)', 'Fy (kN)', 'Magnitude (kN)'];
       if (model.error) return { columns, rows: [] };
       const { truss, result: r } = model;
       const show = r.status === 'solved' && params.showForces;
-      const rows = truss.members.map((m, k) => [M.memberName(m), 'member', M.memberLength(truss, k), '', '', show ? r.forces[k] : '', show ? M.forceState(r.forces[k]) : r.status]);
+      const rows = truss.members.map((m, k) => [M.memberName(m), 'member', M.memberLength(truss, k), show ? r.forces[k] : '', show ? M.forceState(r.forces[k]) : r.status, '', '', '']);
       if (show) {
-        for (const rec of r.reactions) rows.push([M.jointName(rec.joint), `${rec.type === 'side' ? 'side roller' : rec.type} reaction`, '', rec.rx, rec.ry, Math.hypot(rec.rx, rec.ry), '']);
+        for (const rec of r.reactions) rows.push([M.jointName(rec.joint), `${rec.type === 'side' ? 'side roller' : rec.type} reaction`, '', '', '', rec.rx, rec.ry, Math.hypot(rec.rx, rec.ry)]);
       }
-      for (const l of truss.loads) rows.push([M.jointName(l.joint), l.main ? 'load P' : 'load', '', l.fx, l.fy, Math.hypot(l.fx, l.fy), '']);
+      for (const l of truss.loads) rows.push([M.jointName(l.joint), l.main ? 'load P' : 'load', '', '', '', l.fx, l.fy, Math.hypot(l.fx, l.fy)]);
       return { columns, rows };
     }
     case 'beam': {
@@ -454,9 +457,17 @@ function describeFor(model, params) {
       const r = model.result;
       const d = r.determinacy;
       const head = `${model.title}. ${d.j} joints, ${d.m} members, ${d.r} reactions.`;
-      if (r.status !== 'solved') return `${head} ${r.message}`;
+      const loadText = model.added
+        ? `Load ${formatPlain(params.load)} kilonewtons at joint ${params.loadAt}.`
+        : model.missingJoint && params.load > 0
+          ? `Load P is not applied: there is no joint ${params.loadAt}.`
+          : 'Load P is zero.';
+      const extra = model.truss.loads.length - (model.added ? 1 : 0);
+      const extraText = extra > 0 ? ` ${extra} extra joint load${extra === 1 ? '' : 's'}.` : '';
+      if (r.status !== 'solved') return `${head} ${loadText}${extraText} ${r.message}`;
+      if (!params.showForces) return `${head} ${loadText}${extraText} Member forces are hidden: predict tension or compression for each member.`;
       const out = outputsFor(model, params);
-      return `${head} Load ${formatPlain(params.load)} kilonewtons at joint ${params.loadAt}. Largest tension ${fmt(out.maxTension ?? 0)} kN, largest compression ${fmt(out.maxCompression ?? 0)} kN.`;
+      return `${head} ${loadText}${extraText} Largest tension ${fmt(out.maxTension)} kilonewtons, largest compression ${fmt(out.maxCompression)} kilonewtons.`;
     }
     case 'beam': {
       const { res, beam } = model;
@@ -674,11 +685,19 @@ export function create(stage, opts = {}) {
               ui.note = 'A truss needs at least two joints.';
               return render();
             }
+            // Later joints move up one letter; letters that name them (load, probes) follow.
             const shift = (letter) => {
               const k = M.jointIndex(letter);
-              return k > t.index ? M.jointName(k - 1) : letter;
+              return k > t.index ? M.jointName(k - 1) : letter.toUpperCase();
             };
-            toCustom(M.removeJoint(model.base, t.index), { loadAt: shift(params.loadAt) });
+            // A probe on the deleted joint moves to the first member or support left (it is framed on stage).
+            const next = M.removeJoint(model.base, t.index);
+            const gone = M.jointName(t.index);
+            const pm = params.probeMember.toUpperCase();
+            const probeMember = pm.includes(gone) ? (next.members[0] ? M.memberName(next.members[0]) : pm) : shift(pm[0]) + shift(pm[1]);
+            const pj = params.probeJoint.toUpperCase();
+            const probeJoint = pj === gone ? (next.supports[0] ? M.jointName(next.supports[0].joint) : 'A') : shift(pj);
+            toCustom(next, { loadAt: shift(params.loadAt), probeJoint, probeMember });
             ui.note = `Deleted joint ${M.jointName(t.index)}; later joints moved up one letter.`;
             return finishEdit();
           }

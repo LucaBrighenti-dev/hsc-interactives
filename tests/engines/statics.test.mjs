@@ -325,6 +325,21 @@ test('the parser is forgiving about spacing and case, and calm about mistakes', 
   }
 });
 
+test('pasted typographic spaces and minus signs are read as plain ones; anything else gets a calm message', () => {
+  // No-break space, narrow no-break space, a tab, U+2212 minus and an en dash.
+  const fancy = 'j:0,0 4,0 2,3;m:AB\tAC BC;s:Ap Br;l:C0,−10 A–1,0';
+  const plain = 'j:0,0 4,0 2,3;m:AB AC BC;s:Ap Br;l:C0,-10 A-1,0';
+  const a = parseTruss(fancy);
+  assert.ok(a.ok, a.error);
+  assert.deepEqual(a.truss, parseTruss(plain).truss);
+  assert.equal(a.truss.loads[0].fy, -10);
+  // The shell accepts it unchanged (no silent reset to the default structure).
+  assert.deepEqual(coerceParam(meta.params.truss, fancy), { value: fancy, ok: true });
+  const bad = parseTruss('j:0,0 4,0 2,3;m:AB→AC');
+  assert.equal(bad.ok, false);
+  assert.match(bad.error, /character "→"/);
+});
+
 test('editing helpers: add, move, connect, support and delete keep the lettering consistent', () => {
   let t = parseTruss('j:0,0 4,0;m:AB;s:Ap Br').truss;
   t = addJoint(t, 2, 3);
@@ -648,4 +663,8 @@ test('meta: every setup is static, every param is valid, and the default truss t
   assert.equal(meta.params.g.default, 10);
   assert.ok(meta.params.truss.maxLength >= 1500);
   assert.ok(coerceParam(meta.params.truss, 'j:0,0 4,0 2,3;m:AB AC BC;s:Ap Br;l:C0,-10').ok);
+  // Counts read as whole numbers ("0", "−1"), never "0.0".
+  assert.equal(meta.outputs.determinacy.integer, true);
+  assert.equal(meta.outputs.slipping.integer, true);
+  for (const out of Object.values(meta.outputs)) assert.ok(!out.label.includes('_'), `no raw underscores in "${out.label}"`);
 });
