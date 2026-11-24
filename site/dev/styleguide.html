@@ -27,6 +27,12 @@
     .sg-icon svg { color: var(--c-text); flex: none; }
     .sg-rules { columns: 2 320px; column-gap: 48px; color: var(--c-muted); }
     .sg-rules li { break-inside: avoid; margin-bottom: 8px; }
+    @media (max-width: 699px) {
+      .sg-type__row { grid-template-columns: 1fr; gap: 4px; }
+      .sg-type__row .wordmark { font-size: 44px !important; }
+      .sg-type__row .display { font-size: 30px !important; }
+      .sg-grid2 { grid-template-columns: minmax(0, 1fr); }
+    }
   </style>
 </head>
 <body>

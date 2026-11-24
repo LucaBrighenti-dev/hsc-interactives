@@ -178,3 +178,17 @@ test('toCSV: RFC 4180 quoting, CRLF, BOM and clean numbers', () => {
 test('csvFilename', () => {
   assert.equal(csvFilename('phy-projectile-lab', new Date(2026, 10, 25, 9, 5)), 'phy-projectile-lab-20261125-0905.csv');
 });
+
+test('safeNext keeps sign-in redirects on this site', async () => {
+  const { safeNext } = await import('../../site/assets/auth.js');
+  assert.equal(safeNext('/interactives/physics/projectile-lab.html?speed=20'), '/interactives/physics/projectile-lab.html?speed=20');
+  assert.equal(safeNext('/'), '/');
+  assert.equal(safeNext('https://example.com/'), '/');
+  assert.equal(safeNext('//example.com/'), '/');
+  assert.equal(safeNext(String.raw`/\example.com`), '/');
+  assert.equal(safeNext('/a/b?c=1#d'), '/a/b?c=1#d');
+  assert.equal(safeNext('javascript:alert(1)'), '/');
+  assert.equal(safeNext('/signin.html?next=/'), '/');
+  assert.equal(safeNext(null), '/');
+  assert.equal(safeNext('/a\nb'), '/');
+});

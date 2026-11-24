@@ -98,7 +98,7 @@ async function qrSvg(text) {
   const qr = qrLib(0, 'M');
   qr.addData(text);
   qr.make();
-  return qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true, title: 'QR code for this link' });
+  return qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true, title: { text: 'QR code for this link', id: nextId('qr-title') } });
 }
 
 function copyRow(label, value) {

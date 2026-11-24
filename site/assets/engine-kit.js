@@ -369,17 +369,28 @@ export function drawAxes(ctx, vp, pal, opts = {}) {
     ctx.lineTo(axisX, rect.y + rect.h);
     ctx.stroke();
 
-    ctx.fillStyle = pal.muted;
-    ctx.font = font('mono', px);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    for (const t of xt.ticks) ctx.fillText(formatX(t), vp.toX(t), rect.y + rect.h + 6);
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    for (const t of yt.ticks) ctx.fillText(formatY(t), rect.x - 10, vp.toY(t));
   }
 
   if (layer !== 'under') {
+    // Tick labels sit on flat background boxes, so lines crossing the margin pass behind them.
+    const xt = niceTicks(vp.x[0], vp.x[1], xCount);
+    const yt = niceTicks(vp.y[0], vp.y[1], yCount);
+    ctx.font = font('mono', px);
+    const tick = (text, x, y, align) => {
+      const w = ctx.measureText(text).width;
+      const left = align === 'center' ? x - w / 2 : x - w;
+      const top = align === 'center' ? y : y - px / 2;
+      ctx.fillStyle = pal.bg;
+      ctx.fillRect(left - 3, top - 1, w + 6, px + 2);
+      ctx.fillStyle = pal.muted;
+      ctx.fillText(text, x, y);
+    };
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (const t of xt.ticks) tick(formatX(t), vp.toX(t), rect.y + rect.h + 6, 'center');
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (const t of yt.ticks) tick(formatY(t), rect.x - 10, vp.toY(t), 'right');
     if (xTitle) label(ctx, xTitle, rect.x + rect.w - 4, axisY - 10, { colour: pal.ink, px, align: 'right', baseline: 'bottom', box: pal.bg });
     if (yTitle) label(ctx, yTitle, axisX + 12, rect.y + 4, { colour: pal.ink, px, align: 'left', baseline: 'top', box: pal.bg });
   }

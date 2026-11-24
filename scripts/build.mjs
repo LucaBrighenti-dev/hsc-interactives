@@ -20,12 +20,30 @@ export function writeCatalog() {
   return catalog;
 }
 
-/** Copy (or remove) one site-relative file in dist/. Used by the dev watcher. */
+function changed(src, dest) {
+  if (!fs.existsSync(dest)) return true;
+  const a = fs.statSync(src);
+  const b = fs.statSync(dest);
+  return a.size !== b.size || a.mtimeMs > b.mtimeMs;
+}
+
+/**
+ * Bring one site-relative path in dist/ up to date. Used by the dev watcher.
+ * A file is copied; a directory (some platforms report the parent folder when a child changes) has its
+ * changed files copied; only a path that no longer exists in site/ is removed from dist/.
+ */
 export function syncFile(rel) {
   const src = path.join(SITE, rel);
   const dest = path.join(DIST, rel);
-  if (fs.existsSync(src) && fs.statSync(src).isFile()) copyFile(src, dest);
-  else rmrf(dest);
+  if (!fs.existsSync(src)) {
+    rmrf(dest);
+    return;
+  }
+  if (fs.statSync(src).isDirectory()) {
+    copyDir(src, dest, (child) => isDeployed(`${rel}/${child}`) && changed(path.join(src, child), path.join(dest, child)));
+    return;
+  }
+  copyFile(src, dest);
 }
 
 export async function build({ quiet = false } = {}) {

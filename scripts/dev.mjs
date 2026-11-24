@@ -73,7 +73,7 @@ async function watch() {
       setTimeout(() => {
         pending.delete(rel);
         try {
-          if (rel.startsWith('catalog/')) {
+          if (rel === 'catalog' || rel.startsWith('catalog/')) {
             const catalog = writeCatalog();
             console.log(`dev: catalog re-merged (${catalog.count} entries)`);
           } else if (isDeployed(rel)) {

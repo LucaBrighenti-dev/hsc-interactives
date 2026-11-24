@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: build, test, e2e, screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build (vendor libraries, merge and validate the catalog)
+        run: npm run build
+
+      - name: Engine and repo tests
+        run: npm test
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke and acceptance tests
+        run: npm run test:e2e
+
+      - name: Screenshots (desktop, tablet, phone)
+        if: success() || failure()
+        run: npm run shots
+
+      - name: Upload screenshots
+        if: success() || failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshots
+          path: test-results/shots
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            test-results/playwright-report
+            test-results/e2e
+          if-no-files-found: ignore
+          retention-days: 7
