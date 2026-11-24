@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   DEG, add, sub, scale, dot, cross, length, angleBetween, scalarProjection, projection,
-  integrate, discSlices, revolution, revolutionOutputs,
+  integrate, discSlices, revolution, revolutionScene, revolutionOutputs,
   bearingOf, pointOnBearing, bearingDifference, towerScene, cuboidScene, rampScene, pyramidScene, trig3dScene, trig3dOutputs,
   vectorScene, vectorOutputs,
   relateLines, lineSphere, clipLine, linesScene, linesOutputs, RELATION,
@@ -262,6 +262,44 @@ test('revolution: e^x on [0, ln 3] is 4π; bounds the wrong way round are swappe
   assert.ok(Number.isNaN(bad.volume) && Number.isNaN(bad.discSum));
   assert.equal(bad.undefinedAt, -1);
   assert.ok(Object.values(revolutionOutputs({ error: 'x' })).every((v) => v === null), 'outputs are null when the curve fails');
+});
+
+test('revolution from typed curves (shared parser): cone, paraboloid, spheres, bowl about the y-axis', () => {
+  const out = (p) => revolutionOutputs(revolutionScene({ discRule: 'midpoint', ...p }));
+  // π∫₀¹ x² dx = π/3; 200 midpoint discs: π(4N² − 1)/(12N²)
+  let o = out({ f: 'x', axis: 'x', lower: 0, upper: 1, discs: 200 });
+  rel(o.volume, PI / 3, 1e-10);
+  rel(o.volumeOverPi, 1 / 3, 1e-10);
+  rel(o.discSum, (PI * (4 * 200 ** 2 - 1)) / (12 * 200 ** 2), 1e-12);
+  close(o.discWidth, 0.005, 1e-15);
+  // y = √x on [0, 4]: 8π; midpoint discs exact (f² = x is linear), so the error is exactly 0
+  o = out({ f: 'sqrt(x)', axis: 'x', lower: 0, upper: 4, discs: 10 });
+  rel(o.volume, 8 * PI, 1e-10);
+  assert.equal(o.discError, 0);
+  // sphere of radius 3: 36π; 10 midpoint discs 36.18π
+  o = out({ f: 'sqrt(9 - x^2)', axis: 'x', lower: -3, upper: 3, discs: 10 });
+  rel(o.volume, 36 * PI, 1e-9);
+  rel(o.discSum, 36.18 * PI, 1e-12);
+  rel(o.discError, 0.18 * PI, 1e-6);
+  // x = √y on [0, 4] about the y-axis: π∫₀⁴ y dy = 8π
+  rel(out({ f: 'sqrt(y)', axis: 'y', lower: 0, upper: 4, discs: 10 }).volume, 8 * PI, 1e-10);
+  // sphere of radius 2 about the y-axis, 20 discs: 32π/3 and 10.68π
+  o = out({ f: 'sqrt(4 - y^2)', axis: 'y', lower: -2, upper: 2, discs: 20 });
+  rel(o.volume, (32 * PI) / 3, 1e-9);
+  rel(o.discSum, 10.68 * PI, 1e-12);
+  // y = x² on [0, 2], 4 left discs: 3.0625π
+  rel(out({ f: 'x^2', axis: 'x', lower: 0, upper: 2, discs: 4, discRule: 'left' }).discSum, 3.0625 * PI, 1e-12);
+});
+
+test('revolution: a typing error or a curve in the wrong variable gives a message and null outputs', () => {
+  const bad = revolutionScene({ f: 'sqrt(x', axis: 'x', lower: 0, upper: 4, discs: 10 });
+  assert.ok(typeof bad.error === 'string' && bad.error.length > 0);
+  assert.ok(Object.values(revolutionOutputs(bad)).every((v) => v === null));
+  const wrong = revolutionScene({ f: 'sqrt(x)', axis: 'y', lower: 0, upper: 4, discs: 10 });
+  assert.match(wrong.error, /x in terms of y/);
+  const undef = revolutionScene({ f: 'sqrt(x)', axis: 'x', lower: -1, upper: 4, discs: 10 });
+  assert.match(undef.error, /undefined at x = −1/);
+  assert.equal(revolutionOutputs(undef).volume, null);
 });
 
 test('integrate: adaptive Simpson on smooth and periodic integrands', () => {

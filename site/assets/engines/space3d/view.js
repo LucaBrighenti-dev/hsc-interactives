@@ -61,8 +61,8 @@ function viewDirection(setup, viewFrom) {
     return { iso: [0.5, 0.55, 1.15], top: [0, 1, 0.002], front: [0, 0, 1], side: [1, 0, 0] }[viewFrom] ?? [0.5, 0.55, 1.15];
   }
   // Maths setups: the textbook view (x towards the viewer, y to the right, z up), kept well away from
-  // small whole-number directions such as (2, 1, 1) so common vectors don't point at the camera.
-  const iso = setup === 'vectors' || setup === 'lines-spheres' ? [1, 0.55, 0.9] : setup === 'trig3d' ? [0.9, -1.25, 0.85] : [1, -1.3, 0.9];
+  // the most common textbook directions, so (1, 1, 1) is 26° and (2, 1, 1) 13° off the line of sight.
+  const iso = setup === 'vectors' || setup === 'lines-spheres' ? [1.2, 0.3, 0.75] : setup === 'trig3d' ? [0.9, -1.25, 0.85] : [1, -1.3, 0.9];
   return { iso, top: [0, -0.002, 1], front: [0, -1, 0], side: [1, 0, 0] }[viewFrom] ?? iso;
 }
 
@@ -183,7 +183,7 @@ export function createView(stage, { setup, onError, onCamera }) {
   let sheetHits = [];
   let sheetPx = 18;
 
-  // ── sizes ──────────────────────────────────────────────────────────────────────────────────────
+  // ── sizes
   function measure() {
     const r = stage.getBoundingClientRect();
     const W = Math.max(1, Math.round(r.width));
@@ -197,7 +197,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     syncButtons();
   }
 
-  // ── three.js start-up ──────────────────────────────────────────────────────────────────────────
+  // ── three.js start-up
   async function init() {
     try {
       const [three, orbit, css2d, k] = await Promise.all([
@@ -294,7 +294,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     labelRenderer.render(scene, camera);
   }
 
-  // ── camera ─────────────────────────────────────────────────────────────────────────────────────
+  // ── camera
   const toThree = (p) => (zUp ? new T.Vector3(p[0], p[2], -p[1]) : new T.Vector3(p[0], p[1], p[2]));
 
   function fitDistance(radius) {
@@ -383,7 +383,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     render();
   }
 
-  // ── scene building ─────────────────────────────────────────────────────────────────────────────
+  // ── scene building
   function disposeContent() {
     if (!content) return;
     content.traverse((o) => {
@@ -534,7 +534,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     return Math.max(3, Math.ceil(Math.max(0, ...pts.map((q) => Math.max(...q.map(Math.abs))))) + 1);
   }
 
-  // ── drawing kit (three.js) ─────────────────────────────────────────────────────────────────────
+  // ── drawing kit (three.js)
   function kit(group, u, params) {
     const V = toThree;
     const Y = new T.Vector3(0, 1, 0);
@@ -710,7 +710,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     return [1, 2, 5, 10].map((m) => m * mag).find((x) => x >= raw) ?? 10 * mag;
   }
 
-  // ── revolution ─────────────────────────────────────────────────────────────────────────────────
+  // ── revolution
   function buildRevolution(k, r, p, card) {
     const { orange, ink, axis } = k.colours;
     const v = r.axis === 'y' ? 'y' : 'x';
@@ -860,7 +860,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     card.push({ note: `Disc sum − volume = ${ln(r.discError)}` });
   }
 
-  // ── trig3d ─────────────────────────────────────────────────────────────────────────────────────
+  // ── trig3d
   function buildTrig(k, s, p, card) {
     const { orange, blue, ink, axis, muted } = k.colours;
     const L = k.showLabels;
@@ -1017,7 +1017,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     card.push({ tex: `\\text{edge: } \\tan\\beta = \\dfrac{h}{s/\\sqrt{2}} \\;\\Rightarrow\\; \\beta = ${tn(s.edgeAngle)}^{\\circ}` });
   }
 
-  // ── vectors ────────────────────────────────────────────────────────────────────────────────────
+  // ── vectors
   function buildVectors(k, s, p, card) {
     const { orange, blue, ink, axis, muted, green } = k.colours;
     const L = vectorAxisLength(s);
@@ -1096,7 +1096,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     if (!(s.magA > 0) || !(s.magB > 0)) card.push({ error: 'A zero vector has no direction, so the angle and the projection are undefined.' });
   }
 
-  // ── lines and spheres ──────────────────────────────────────────────────────────────────────────
+  // ── lines and spheres
   function buildLines(k, s, p, card) {
     const { orange, ink, axis, muted, blue } = k.colours;
     const bound = Math.max(8, Math.ceil(Math.max(...[s.a1, s.P, s.mode === 'sphere' ? s.c : s.a2].filter((q) => q && q.every(Number.isFinite)).map((q) => Math.max(...q.map(Math.abs))))));
@@ -1200,7 +1200,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     return ring;
   }
 
-  // ── orthographic ───────────────────────────────────────────────────────────────────────────────
+  // ── orthographic
   function partMesh(k, part, colour, opacity = 1) {
     let geo;
     if (part.holes.length) {
@@ -1252,7 +1252,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     k.axes({ L: [W + a, D + a, H + a], neg: 0, ticks: false, names: ['x', 'y', 'z'], colour: axis });
   }
 
-  // ── descriptive ────────────────────────────────────────────────────────────────────────────────
+  // ── descriptive
   function buildDescriptive(k, s) {
     const { orange, ink, axis, blue, muted } = k.colours;
     if (s.feature === 'face') {
@@ -1292,7 +1292,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     }
   }
 
-  // ── card (KaTeX) ───────────────────────────────────────────────────────────────────────────────
+  // ── card (KaTeX)
   function setCard(lines) {
     card.replaceChildren();
     for (const l of lines) {
@@ -1315,7 +1315,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     }
   }
 
-  // ── drawing sheets (Canvas 2D) ─────────────────────────────────────────────────────────────────
+  // ── drawing sheets (Canvas 2D)
   function drawSheet() {
     if (!sheetCanvas || !current) return;
     const ctx = sheetCanvas.getContext('2d');
@@ -1742,7 +1742,7 @@ export function createView(stage, { setup, onError, onCamera }) {
   }
   sheetCanvas?.addEventListener('click', onSheetClick);
 
-  // ── API ────────────────────────────────────────────────────────────────────────────────────────
+  // ── API
   measure();
   init();
 

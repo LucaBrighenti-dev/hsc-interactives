@@ -7,9 +7,13 @@
 //   to back), z up.
 //   revolution: the region lies in the xy-plane with y up; z comes out of the page.
 
+// The revolution curve is a typed expression, parsed by the shared safe parser (no eval).
+import { tryCompile, toTex } from '../fnplot/parser.js';
+import { formatNumber } from '../../format.js';
+
 export const DEG = Math.PI / 180;
 
-// ── vec3 ─────────────────────────────────────────────────────────────────────────────────────────
+// ── vec3
 
 export const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 export const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
@@ -57,7 +61,7 @@ function clean(outputs) {
   return out;
 }
 
-// ── revolution ───────────────────────────────────────────────────────────────────────────────────
+// ── revolution
 
 /**
  * ∫ g(s) ds from a to b by adaptive Simpson's rule (16 starting panels, so a symmetric integrand
@@ -173,6 +177,34 @@ export function revolution({ fn, axis = 'x', lower, upper, discs, discRule = 'mi
   };
 }
 
+/**
+ * The revolution setup from its params: the curve `f` is y = f(x) about the x-axis or x = g(y) about
+ * the y-axis, written in that variable. A typing error or an undefined curve gives `error` (a sentence
+ * to show on stage) and null outputs.
+ */
+export function revolutionScene({ f, axis = 'x', lower, upper, discs, discRule }) {
+  const v = axis === 'y' ? 'y' : 'x';
+  const c = tryCompile(String(f ?? ''), { variables: [v] });
+  if (!c.ok) {
+    const other = v === 'y' ? 'x' : 'y';
+    const hint = new RegExp(`"${other}"`).test(c.error.message)
+      ? v === 'y'
+        ? ' About the y-axis, write the curve as x in terms of y, for example sqrt(y).'
+        : ' About the x-axis, write the curve as y in terms of x, for example sqrt(x).'
+      : '';
+    return { error: `${c.error.message}${hint}`, axis: v, lower, upper };
+  }
+  const r = revolution({ fn: (s) => c.fn({ [v]: s }), axis: v, lower, upper, discs, discRule });
+  if (r.undefinedAt !== null) r.error = `The curve is undefined at ${v} = ${formatNumber(r.undefinedAt)}, so the solid has no volume there.`;
+  try {
+    r.tex = toTex(c.ast);
+  } catch {
+    r.tex = null; // the card then shows y² dx without the curve written out
+  }
+  r.source = f;
+  return r;
+}
+
 export function revolutionOutputs(r) {
   const ok = r && !r.error;
   return clean({
@@ -184,7 +216,7 @@ export function revolutionOutputs(r) {
   });
 }
 
-// ── trig3d ───────────────────────────────────────────────────────────────────────────────────────
+// ── trig3d
 
 /** True bearing (0° ≤ θ < 360°, clockwise from north) of a direction given as (east, north). */
 export function bearingOf(east, north) {
@@ -306,7 +338,7 @@ export function trig3dOutputs(s) {
   return clean(out);
 }
 
-// ── vectors ──────────────────────────────────────────────────────────────────────────────────────
+// ── vectors
 
 /**
  * Vector playground. In 2D the z components are ignored (taken as 0).
@@ -352,7 +384,7 @@ export function vectorOutputs(v) {
   });
 }
 
-// ── lines and spheres ────────────────────────────────────────────────────────────────────────────
+// ── lines and spheres
 
 export const RELATION = Object.freeze({ intersecting: 0, parallel: 1, coincident: 2, skew: 3 });
 
@@ -514,7 +546,7 @@ export function linesOutputs(s) {
   });
 }
 
-// ── 2D helpers (drawing sheets) ──────────────────────────────────────────────────────────────────
+// ── 2D helpers (drawing sheets)
 
 /** Signed area of a polygon [[x, y], …] (positive when anticlockwise). */
 export function polygonArea(poly) {
@@ -549,7 +581,7 @@ function strictlyInside(x, y, poly, eps) {
 
 const cross2 = (a, b) => a[0] * b[1] - a[1] * b[0];
 
-// ── orthographic projection ──────────────────────────────────────────────────────────────────────
+// ── orthographic projection
 
 /**
  * Parts for the orthographic trainer, in millimetres: a profile in the xz-plane (anticlockwise)
@@ -794,7 +826,7 @@ export function orthographicOutputs(s) {
   });
 }
 
-// ── descriptive geometry ─────────────────────────────────────────────────────────────────────────
+// ── descriptive geometry
 
 /**
  * Auxiliary view on a drawing sheet (2D, v up). The new fold line is parallel to the line base[0]→base[1]

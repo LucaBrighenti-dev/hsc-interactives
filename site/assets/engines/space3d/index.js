@@ -8,16 +8,8 @@ import { createView } from './view.js';
 import { createEmitter } from '../../engine-kit.js';
 import { defaultsFor, clampParams } from '../../state.js';
 import { formatNumber, formatPlain } from '../../format.js';
-
-// The curve in the revolution setup is parsed by the shared safe expression parser owned by fnplot
-// (no eval). A top-level await keeps create() synchronous and lets this module load (with the
-// revolution setup showing a calm message) if the parser file is ever missing.
-let parser = null;
-try {
-  parser = await import('../fnplot/parser.js');
-} catch {
-  parser = null;
-}
+// The revolution setup's curve goes through the shared safe expression parser (owned by fnplot; no eval).
+import { EXPRESSION_PATTERN } from '../fnplot/parser.js';
 
 const SETUPS = ['revolution', 'trig3d', 'vectors', 'lines-spheres', 'orthographic', 'descriptive'];
 const only = (...s) => ({ setups: s });
@@ -36,7 +28,7 @@ export const meta = {
       label: 'Curve',
       default: 'sqrt(x)',
       maxLength: 80,
-      ...(parser?.EXPRESSION_PATTERN ? { pattern: parser.EXPRESSION_PATTERN } : {}),
+      pattern: EXPRESSION_PATTERN,
       help: 'y = f(x) for the x-axis; x = g(y) for the y-axis.',
       ...only('revolution'),
     },
@@ -197,40 +189,14 @@ export const meta = {
   },
 };
 
-// ── model snapshots ──────────────────────────────────────────────────────────────────────────────
-
-function revolutionSnapshot(p) {
-  const v = p.axis === 'y' ? 'y' : 'x';
-  const fail = (error) => ({ scene: { error, axis: v, lower: p.lower, upper: p.upper }, outputs: M.revolutionOutputs({ error }) });
-  if (!parser) return fail('The curve parser did not load, so the curve cannot be drawn. Reload the page to try again.');
-  const c = parser.tryCompile(p.f, { variables: [v] });
-  if (!c.ok) {
-    const other = v === 'y' ? 'x' : 'y';
-    const hint = new RegExp(`"${other}"`).test(c.error.message)
-      ? v === 'y'
-        ? ' About the y-axis, write the curve as x in terms of y, for example sqrt(y).'
-        : ' About the x-axis, write the curve as y in terms of x, for example sqrt(x).'
-      : '';
-    return fail(`${c.error.message}${hint}`);
-  }
-  const fn = (s) => c.fn({ [v]: s });
-  const r = M.revolution({ fn, axis: v, lower: p.lower, upper: p.upper, discs: p.discs, discRule: p.discRule });
-  if (r.undefinedAt !== null) r.error = `The curve is undefined at ${v} = ${formatNumber(r.undefinedAt)}, so the solid has no volume there.`;
-  let tex = null;
-  try {
-    tex = parser.toTex(c.ast);
-  } catch {
-    tex = null;
-  }
-  r.tex = tex;
-  r.source = p.f;
-  return { scene: r, outputs: M.revolutionOutputs(r) };
-}
+// ── model snapshots
 
 function compute(setup, p) {
   switch (setup) {
-    case 'revolution':
-      return revolutionSnapshot(p);
+    case 'revolution': {
+      const s = M.revolutionScene(p);
+      return { scene: s, outputs: M.revolutionOutputs(s) };
+    }
     case 'trig3d': {
       const s = M.trig3dScene(p);
       return { scene: s, outputs: M.trig3dOutputs(s) };
@@ -254,7 +220,7 @@ function compute(setup, p) {
   }
 }
 
-// ── CSV ──────────────────────────────────────────────────────────────────────────────────────────
+// ── CSV
 
 const round = (x) => (Number.isFinite(x) ? Number(x.toPrecision(12)) : '');
 
@@ -296,7 +262,7 @@ function dataFor(setup, scene, outputs) {
   return { columns: ['quantity', 'value', 'unit'], rows };
 }
 
-// ── descriptions for the stage's aria-label ──────────────────────────────────────────────────────
+// ── descriptions for the stage's aria-label
 
 const f3 = (x) => formatNumber(x, { sigfigs: 3 });
 const vecText = (p) => `(${p.map(formatPlain).join(', ')})`;
@@ -350,7 +316,7 @@ function describe(setup, p, scene) {
 
 const PARTS_D = () => formatPlain(M.PARTS.chamferBlock.D);
 
-// ── engine ───────────────────────────────────────────────────────────────────────────────────────
+// ── engine
 
 /**
  * @param {HTMLElement} stage
