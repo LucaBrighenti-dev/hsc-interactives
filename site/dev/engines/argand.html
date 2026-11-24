@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>argand engine · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+  <style>
+    .dev-setups { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4); padding: var(--sp-2) var(--sp-6); background: var(--c-surface); border-bottom: var(--border); }
+    .dev-setups span { font-family: var(--f-mono); font-size: var(--t-12); text-transform: uppercase; letter-spacing: 0.04em; color: var(--c-muted); }
+    .dev-setups a { font-family: var(--f-mono); font-size: var(--t-14); color: var(--c-text); text-decoration: none; border-bottom: 2px solid transparent; padding: var(--sp-1) 0; }
+    .dev-setups a:hover { border-bottom-color: var(--c-line-strong); }
+    .dev-setups a[aria-current='page'] { color: var(--c-accent); border-bottom-color: var(--c-accent); }
+    @media (max-width: 899px) { .dev-setups { padding-inline: var(--sp-4); } }
+  </style>
+</head>
+<body>
+  <!--
+    Engine demo page (guide §9.1): every setup of the argand engine, mounted through the shell.
+    Pick a setup with #operations, #loci or #polynomial-roots. Deployed but not linked from the hub.
+  -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    const { meta } = await import('/assets/engines/argand/index.js');
+    const fromHash = location.hash.slice(1);
+    const setup = meta.setups.includes(fromHash) ? fromHash : meta.setups[0];
+    addEventListener('hashchange', () => location.reload());
+
+    const forSetup = (spec) => !spec.setups || spec.setups.includes(setup);
+    const controls = Object.entries(meta.params).filter(([, s]) => forSetup(s)).map(([k]) => k);
+    const readouts = Object.entries(meta.outputs).filter(([, s]) => forSetup(s)).map(([k]) => k);
+
+    const PRINCIPAL = 'Principal argument: −π < arg z ≤ π';
+    const pages = {
+      operations: {
+        presets: {
+          default: { operation: 'mul', z1Re: 2, z1Im: 1, z2Re: 1, z2Im: 1 },
+          wrap: { operation: 'mul', z1Re: -1, z1Im: 2, z2Re: -2, z2Im: 1, viewRange: 5 },
+          add: { operation: 'add', z1Re: 3, z1Im: 1, z2Re: 1, z2Im: 2 },
+          sub: { operation: 'sub', z1Re: 3, z1Im: 1, z2Re: 1, z2Im: 2 },
+          div: { operation: 'div', z1Form: 'polar', z1Mod: 3, z1Arg: 120, z2Form: 'polar', z2Mod: 1.5, z2Arg: 45 },
+          conj: { operation: 'conj', z1Re: 2, z1Im: 1.5, viewRange: 3 },
+          circle: { operation: 'power', z1Form: 'polar', z1Mod: 1, z1Arg: 30, powerN: 12, viewRange: 1.5 },
+          spiral: { operation: 'power', z1Form: 'polar', z1Mod: 1.2, z1Arg: 40, powerN: 9, viewRange: 4 },
+          unity: { operation: 'roots', rootsOf: 'unity', rootN: 7, viewRange: 1.5 },
+          cube: { operation: 'roots', rootsOf: 'w', rootN: 3, z1Re: -4, z1Im: 4, viewRange: 6 },
+        },
+        presetLabels: {
+          default: 'Multiply (2 + i)(1 + i)', wrap: 'Multiply past π', add: 'Add', sub: 'Subtract', div: 'Divide in polar form',
+          conj: 'Conjugate', circle: 'Powers on the unit circle', spiral: 'Power spiral', unity: '7th roots of unity', cube: 'Cube roots of −4 + 4i',
+        },
+        assumptions: [PRINCIPAL, 'Dragged points snap to 0.1, or to whole numbers when close'],
+      },
+      loci: {
+        presets: {
+          default: {},
+          arc: { locus1: 'modulus', rel1: 'eq', a1Re: 0, a1Im: 0, r1: 2, locus2: 'argument', rel2: 'ge', a2Re: 0, a2Im: 0, theta2: 0, zRe: 1.5, zIm: 1 },
+          sector: { locus1: 'argument', rel1: 'ge', a1Re: 1, a1Im: -1, theta1: -45, locus2: 'argument', rel2: 'lt', a2Re: 1, a2Im: -1, theta2: 60, zRe: 3, zIm: 0 },
+          bisector: { locus1: 'bisector', rel1: 'lt', a1Re: 1, a1Im: 0, b1Re: -1, b1Im: 2, zRe: 2, zIm: 2 },
+          ring: { locus1: 'modulus', rel1: 'ge', a1Re: 0, a1Im: 0, r1: 1, locus2: 'modulus', rel2: 'lt', a2Re: 0, a2Im: 0, r2: 2.5, zRe: 0, zIm: 2 },
+          meet: { locus1: 'modulus', rel1: 'eq', a1Re: 0, a1Im: 0, r1: 2, locus2: 'argument', rel2: 'eq', a2Re: 0, a2Im: -1, theta2: 60, showProbe: false },
+        },
+        presetLabels: {
+          default: 'Disc |z − (1 + i)| ≤ 2', arc: 'Arc: |z| = 2 and arg z ≥ 0', sector: 'Sector between two rays', bisector: 'Nearer one point',
+          ring: 'Annulus 1 ≤ |z| < 2.5', meet: 'Circle meets ray',
+        },
+        assumptions: [PRINCIPAL, 'Regions shaded by testing each pixel; boundaries drawn exactly', 'With two conditions, both must hold'],
+      },
+      'polynomial-roots': {
+        presets: {
+          default: {},
+          quartic: { degree: 4, c4: 1, c3: 0, c2: 0, c1: 0, c0: 1, viewRange: 2 },
+          repeated: { degree: 4, c4: 1, c3: -4, c2: 6, c1: -4, c0: 1, viewRange: 2 },
+          broken: { c0Im: 1 },
+        },
+        presetLabels: { default: 'z³ − 3z² + 4z − 2', quartic: 'z⁴ + 1', repeated: '(z − 1)⁴', broken: 'A non-real constant' },
+        assumptions: ['Roots found numerically (Durand–Kerner), shown to 3 significant figures', 'Repeated roots are detected and shown once with their multiplicity'],
+      },
+    };
+    const page = pages[setup];
+
+    await mountInteractive({
+      id: 'dev-argand',
+      title: `argand · ${setup}`,
+      engine: () => import('/assets/engines/argand/index.js'),
+      setup,
+      presets: page.presets,
+      presetLabels: page.presetLabels,
+      controls,
+      readouts,
+      assumptions: page.assumptions,
+      prompts: [],
+    });
+
+    // Setup switcher above the stage.
+    const nav = document.createElement('nav');
+    nav.className = 'dev-setups';
+    nav.setAttribute('aria-label', 'Engine setups');
+    const tag = document.createElement('span');
+    tag.textContent = 'argand setups';
+    nav.append(tag);
+    for (const s of meta.setups) {
+      const a = document.createElement('a');
+      a.href = `${location.pathname}#${s}`; // drop the other setup's query
+
+      a.textContent = s;
+      if (s === setup) a.setAttribute('aria-current', 'page');
+      nav.append(a);
+    }
+    document.querySelector('#hsc-main')?.before(nav);
+  </script>
+</body>
+</html>
