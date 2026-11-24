@@ -15,6 +15,10 @@ const T_MIN = 1e-7; // ignore hits closer than this (the surface the ray has jus
 const FAR = 200; // a ray that meets nothing is drawn this far (scene units), well past any view
 const BIG = 1000; // half-size of "infinite" media for drawing
 const PARTIAL_MIN_ANGLE = 1; // degrees: below this a partial reflection would retrace the incoming ray
+const SAME_INDEX = 1e-12; // indices closer than this are the same medium
+const R_ZERO = 1e-12; // reflectances below this are rounding, reported as 0
+/** Partial reflections weaker than this (0.5%) are not traced or drawn: too faint to see. */
+export const PARTIAL_MIN_R = 0.005;
 
 // ---- Optics formulas ------------------------------------------------------------------------------
 
@@ -42,9 +46,12 @@ export function fresnelReflectance(n1, n2, thetaDeg) {
 }
 
 function fresnelFromCosines(n1, n2, ci, ct) {
+  // Equal indices: no boundary at all, so nothing reflects (rounding would otherwise leave R ≈ 1e-32).
+  if (Math.abs(n1 - n2) < SAME_INDEX) return 0;
   const rs = (n1 * ci - n2 * ct) / (n1 * ci + n2 * ct);
   const rp = (n1 * ct - n2 * ci) / (n1 * ct + n2 * ci);
-  return (rs * rs + rp * rp) / 2;
+  const r = (rs * rs + rp * rp) / 2;
+  return r < R_ZERO ? 0 : r;
 }
 
 /** Numerical aperture NA = √(n_core² − n_clad²), or null when the core is not denser than the cladding. */
@@ -324,7 +331,7 @@ export function angleFromPoint(scene, x, y) {
 
 /**
  * Trace the ray box's ray through the scene, with faint partial reflections (one branch per refraction
- * of the main ray, each traced without further branching).
+ * of the main ray that reflects at least PARTIAL_MIN_R, each traced without further branching).
  */
 export function solve(params) {
   const scene = buildScene(params);
@@ -333,7 +340,7 @@ export function solve(params) {
   const partials = [];
   if (params.showPartial !== false) {
     main.events.forEach((e, i) => {
-      if (e.type !== 'refract' || e.incidence < PARTIAL_MIN_ANGLE || !(e.reflectance > 0)) return;
+      if (e.type !== 'refract' || e.incidence < PARTIAL_MIN_ANGLE || !(e.reflectance >= PARTIAL_MIN_R)) return;
       partials.push({ ...trace(scene.boundaries, e.point, e.dRef), intensity: e.reflectance, from: i });
     });
   }

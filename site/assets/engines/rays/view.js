@@ -40,7 +40,7 @@ export function createView(stage) {
     ctx.clip();
 
     drawMedia(ctx, scene, rect, S);
-    if (params.showProtractor) drawProtractor(ctx, scene, S, k, px);
+    if (params.showProtractor) drawProtractor(ctx, scene, S, k, px, lay);
     drawBoundaries(ctx, scene, S, k, lay);
 
     // Normals: long and dashed at the surface of interest, short at the fibre's first bounce and at every
@@ -58,10 +58,11 @@ export function createView(stage) {
     const critical = params.showCritical ? drawCritical(ctx, sol, S, k, lay) : null;
     const cone = params.showCritical && scene.kind === 'fibre' ? drawAcceptance(ctx, sol, S, k, lay) : null;
 
-    // Faint partial reflections (brighter when more light reflects), under the main ray.
+    // Faint partial reflections, under the main ray. Opacity grows from 0 with the reflected fraction
+    // (about 0.25 for glass's 4%, fully opaque from 64%); the model drops branches below 0.5%.
     for (const b of sol.partials) {
       ctx.save();
-      ctx.globalAlpha = 0.25 + 0.75 * b.intensity;
+      ctx.globalAlpha = Math.min(1, 1.25 * Math.sqrt(b.intensity));
       polyline(ctx, b.points.map(S), accent, 2);
       ctx.restore();
       lay.addPolyline(b.points.map(S));
@@ -222,7 +223,7 @@ export function createView(stage) {
     }
   }
 
-  function drawProtractor(ctx, scene, S, k, px) {
+  function drawProtractor(ctx, scene, S, k, px, lay) {
     const [cx, cy] = S(scene.pivot);
     const R = scene.protractorRadius * k;
     if (R < 40) return;
@@ -245,9 +246,11 @@ export function createView(stage) {
     ctx.stroke();
     const rl = R - 12 - px * 0.8;
     const step = [10, 15, 30].find((s) => rl * s * DEG >= 2.3 * px);
-    if (!step) {
+    // Ticks only when the numbers would be crowded, and in the fibre (where the entry face is busy and
+    // the launch angle is labelled anyway).
+    if (!step || scene.kind === 'fibre') {
       ctx.restore();
-      return; // too small for numbers: ticks only
+      return;
     }
     ctx.font = font('mono', px);
     ctx.fillStyle = pal.muted;
@@ -256,7 +259,11 @@ export function createView(stage) {
     for (let d = 0; d < 360; d += step) {
       const v = d % 180 <= 90 ? d % 180 : 180 - (d % 180); // measured from the nearer normal
       const a = a0 + d * DEG;
-      ctx.fillText(String(v), cx + rl * Math.cos(a), cy + rl * Math.sin(a));
+      const x = cx + rl * Math.cos(a);
+      const y = cy + rl * Math.sin(a);
+      ctx.fillText(String(v), x, y);
+      const w = ctx.measureText(String(v)).width;
+      lay.addBox({ x: x - w / 2, y: y - px / 2, w, h: px }); // labels keep clear of the numerals
     }
     ctx.restore();
   }
@@ -472,8 +479,9 @@ export function createView(stage) {
     const d = sourceDirection(scene, angle);
     const ux = d[0];
     const uy = -d[1];
-    const len = Math.max(30, Math.min(px * 3.2, 1.8 * k));
-    const half = Math.max(11, Math.min(px * 0.75, 0.6 * k));
+    // Sized to the scene so it stays on stage on phones (the hit area adds 14 px of slack for touch).
+    const len = Math.max(16, Math.min(px * 3.2, 1.8 * k));
+    const half = Math.max(7, Math.min(px * 0.75, 0.6 * k));
     const bx = sx - ux * len;
     const by = sy - uy * len;
     const nx = -uy;
@@ -599,17 +607,25 @@ function createLayout(ctx, rect, px, compact = false) {
   };
   const score = (b) => {
     const over = Math.max(0, rect.x - b.x) + Math.max(0, b.x + b.w - rect.x - rect.w) + Math.max(0, rect.y - b.y) + Math.max(0, b.y + b.h - rect.y - rect.h);
+    // Clearance (capped), less a penalty per obstacle the label would cover, so when every spot is
+    // crowded the least crowded one wins.
     let clear = 40;
+    let hits = 0;
     for (const [a, z] of obstacles) {
-      clear = Math.min(clear, segRectDistance(a, z, b));
-      if (clear <= 0) break;
+      const d = segRectDistance(a, z, b);
+      if (d === 0) hits += 1;
+      clear = Math.min(clear, d);
     }
-    return clear - over * 3;
+    return clear - 8 * hits - over * 3;
+  };
+  const addBox = ({ x, y, w, h }) => {
+    for (const [a, z] of [[[x, y], [x + w, y]], [[x + w, y], [x + w, y + h]], [[x + w, y + h], [x, y + h]], [[x, y + h], [x, y]]]) obstacles.push([a, z]);
   };
   return {
     px,
     width,
     addSeg,
+    addBox,
     addPolyline(pts) {
       for (let i = 0; i < pts.length - 1; i++) addSeg(pts[i], pts[i + 1]);
     },
@@ -627,8 +643,7 @@ function createLayout(ctx, rect, px, compact = false) {
       }
       if (!best || (optional && !required && best.s < 1)) return;
       label(ctx, best.c.text ?? text, best.c.x, best.c.y, { colour, px, kind, align: best.c.align, baseline: best.c.baseline, box, padding: 3 });
-      const { x, y, w, h } = best.b;
-      for (const [a, z] of [[[x, y], [x + w, y]], [[x + w, y], [x + w, y + h]], [[x + w, y + h], [x, y + h]], [[x, y + h], [x, y]]]) obstacles.push([a, z]);
+      addBox(best.b);
     },
   };
 }
@@ -657,19 +672,47 @@ function pointSegDistance([x, y], a, b) {
 
 // ---- text (pure) ----
 
-/** Header lines, longest first so the view can pick one that fits. */
-function headerText(sol) {
+/** Angles closer than this (degrees) count as equal: "i = θc" rather than "<" or ">". */
+export const SAME_ANGLE = 5e-5;
+
+/**
+ * Two numbers printed so that their order is visible: `min` decimals, or more (up to `max`) when they
+ * would otherwise print the same. numberPair(41.8, 41.8103) → ['41.80', '41.81'].
+ */
+export function numberPair(a, b, min = 1, max = 4) {
+  for (let d = min; d <= max; d++) {
+    const sa = a.toFixed(d);
+    const sb = b.toFixed(d);
+    if (sa !== sb) return [sa, sb];
+  }
+  return [a.toFixed(max), b.toFixed(max)];
+}
+const anglePair = (a, b) => numberPair(a, b).map((s) => `${s}°`);
+
+/** An angle as the teacher entered it: 1 decimal place, more if they typed more (up to 3). */
+function degIn(x) {
+  for (let d = 1; d < 3; d++) if (Math.abs(Number(x.toFixed(d)) - x) < 1e-9) return `${x.toFixed(d)}°`;
+  return `${x.toFixed(3)}°`;
+}
+
+/**
+ * Header lines, longest first so the view can pick one that fits. Comparisons with θc are made on the
+ * unrounded angles and printed with enough decimals to show the order (never "41.8° < 41.8°").
+ */
+export function headerText(sol) {
   const { scene, key, wall, outputs: o } = sol;
   const lines = { line1: [''], line2: [''], alert: false };
   if (!key) return lines;
   const n1 = nText(key.n1);
-  const n2 = nText(key.n2);
-  const i = deg(key.incidence);
-  const lhs = (key.n1 * Math.sin(key.incidence * DEG)).toFixed(3);
+  const i = degIn(key.incidence);
+  const product = key.n1 * Math.sin(key.incidence * DEG);
   if (key.type === 'refract') {
     const r = deg(key.refraction);
+    const n2 = nText(key.n2);
+    const lhs = product.toFixed(3);
     lines.line1 = [`Snell: n₁ sin i = n₂ sin r   ${n1} × sin ${i} = ${n2} × sin ${r} = ${lhs}`, `${n1} sin ${i} = ${n2} sin ${r}`];
   } else {
+    const [lhs, n2] = numberPair(product, key.n2, 2, 6);
     lines.line1 = [`n₁ sin i = ${n1} × sin ${i} = ${lhs} > n₂ = ${n2}: no refracted ray`, `${n1} sin ${i} = ${lhs} > ${n2}`];
   }
 
@@ -678,28 +721,39 @@ function headerText(sol) {
     if (key.type !== 'refract') {
       lines.line2 = ['Total internal reflection at the end face: no light enters the fibre', 'No light enters the fibre'];
       lines.alert = true;
-    } else if (o.guided) {
-      const bounces = o.tirCount === 1 ? '1 total internal reflection' : `${o.tirCount} total internal reflections`;
-      lines.line2 =
-        wall && c !== null
-          ? [`Guided: φ = ${deg(wall.incidence)} > θc = ${deg(c)} at every bounce (${bounces})`, `Guided: φ > θc (${bounces})`, `Guided: φ > θc`]
-          : ['Guided along the axis', 'Guided'];
-      lines.alert = true;
+    } else if (!wall || c === null) {
+      lines.line2 = o.guided ? ['Guided along the axis', 'Guided'] : ['Escapes: the cladding is not less dense than the core, so there is no TIR', 'Escapes the core'];
+      lines.alert = Boolean(o.guided);
+    } else if (Math.abs(wall.incidence - c) < SAME_ANGLE) {
+      lines.line2 = [`At the limit: φ = θc = ${deg(c)}, the ray grazes along the core–cladding boundary`, `φ = θc = ${deg(c)}: grazes the boundary`, 'φ = θc'];
     } else {
-      lines.line2 =
-        wall && c !== null
-          ? [`Escapes: φ = ${deg(wall.incidence)} < θc = ${deg(c)}, so light refracts into the cladding`, `Escapes: φ = ${deg(wall.incidence)} < θc = ${deg(c)}`, 'Escapes: φ < θc']
-          : ['Escapes: the cladding is not less dense than the core, so there is no TIR', 'Escapes the core'];
+      const [phi, crit] = anglePair(wall.incidence, c);
+      if (o.guided) {
+        const bounces = o.tirCount === 1 ? '1 total internal reflection' : `${o.tirCount} total internal reflections`;
+        lines.line2 = [`Guided: φ = ${phi} > θc = ${crit} at every bounce (${bounces})`, `Guided: φ > θc (${bounces})`, 'Guided: φ > θc'];
+        lines.alert = true;
+      } else {
+        lines.line2 = [`Escapes: φ = ${phi} < θc = ${crit}, so light refracts into the cladding`, `Escapes: φ = ${phi} < θc = ${crit}`, 'Escapes: φ < θc'];
+      }
     }
     return lines;
   }
 
   const c = criticalAngle(key.n1, key.n2); // at the surface of interest, in the direction the light travels
-  if (key.type === 'tir') {
-    lines.line2 = [`Total internal reflection: i = ${i} > θc = ${deg(c)}`, `TIR: i > θc = ${deg(c)}`];
+  if (c !== null && Math.abs(key.incidence - c) < SAME_ANGLE) {
+    // The classic demonstration: exactly at the critical angle.
+    lines.line2 =
+      key.type === 'refract'
+        ? [`Critical angle: i = θc = ${deg(c)}, so the refracted ray grazes the surface (r = ${deg(key.refraction)})`, `i = θc = ${deg(c)}: the refracted ray grazes the surface`, 'i = θc']
+        : [`Critical angle: i = θc = ${deg(c)}, so total internal reflection just begins`, `i = θc = ${deg(c)}: TIR begins`, 'i = θc'];
+    lines.alert = true;
+  } else if (key.type === 'tir') {
+    const [a, b] = anglePair(key.incidence, c);
+    lines.line2 = [`Total internal reflection: i = ${a} > θc = ${b}`, `TIR: i > θc = ${b}`];
     lines.alert = true;
   } else if (c !== null) {
-    lines.line2 = [`Refraction: i = ${i} < θc = ${deg(c)}, part of the light reflects`, `Refraction: i < θc = ${deg(c)}`];
+    const [a, b] = anglePair(key.incidence, c);
+    lines.line2 = [`Refraction: i = ${a} < θc = ${b}, part of the light reflects`, `Refraction: i < θc = ${b}`];
   } else if (key.incidence < 0.05 && key.n1 !== key.n2) {
     lines.line2 = ['Along the normal: the ray crosses without bending', 'Along the normal: no bending'];
   } else if (key.n2 > key.n1) {
@@ -709,7 +763,8 @@ function headerText(sol) {
   } else {
     lines.line2 = ['Equal refractive indices: the ray does not bend', 'No bending'];
   }
-  if (scene.kind === 'rect') {
+  if (scene.kind === 'rect' && key.type === 'refract') {
+    // (TIR at the top face itself, from denser surroundings, keeps the message above.)
     const last = sol.main.events.at(-1);
     if (o.tirCount > 0) {
       lines.line2 = [`Total internal reflection inside the block (${o.tirCount})`, 'TIR inside the block'];

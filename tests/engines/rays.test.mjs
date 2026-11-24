@@ -19,7 +19,9 @@ import {
   solve,
   sweep,
   SCENES,
+  PARTIAL_MIN_R,
 } from '../../site/assets/engines/rays/model.js';
+import { headerText, numberPair } from '../../site/assets/engines/rays/view.js';
 
 const DEG = Math.PI / 180;
 const close = (actual, expected, tol, msg) => assert.ok(Math.abs(actual - expected) <= tol, `${msg ?? ''} expected ${expected}, got ${actual}`);
@@ -315,4 +317,102 @@ test('sweep: angle table for the surface of interest, including the current angl
 test('deterministic: same params, same solution', () => {
   const params = p({ scene: 'fibre', angle: 27.3 });
   assert.deepEqual(solve(params), solve(params));
+});
+
+// ---- Review fixes: equal indices, and honest comparisons in the stage header ------------------------
+
+test('equal indices: nothing reflects, so no faint branch and a 0% readout, in every scene', () => {
+  // n₁ = n₂ means no boundary at all: Fresnel gives R = ((n − n)/(n + n))² = 0 at every angle.
+  for (let k = 100; k <= 300; k++) {
+    const n = k / 100;
+    for (const a of [10, 30, 47, 60]) assert.equal(fresnelReflectance(n, n, a), 0, `n = ${n}, ${a}°`);
+  }
+  const same = (n) => ({ boundary: { n1: n, n2: n }, rect: { nBlock: n, nOuter: n }, semi: { nBlock: n, nOuter: n }, fibre: { nCore: n, nClad: n, nOuter: n } });
+  for (const n of [1, 1.33, 1.5, 2.42, 3]) {
+    for (const scene of SCENES) {
+      for (const angle of [10, 30, 47, 60]) {
+        const s = solve(p({ scene, angle, ...same(n)[scene] }));
+        assert.equal(s.outputs.reflectance, 0, `${scene} n = ${n} at ${angle}°`);
+        assert.equal(s.partials.length, 0, `${scene} n = ${n} at ${angle}°: no phantom reflection`);
+        assert.equal(s.outputs.tirCount, 0);
+      }
+    }
+  }
+  // The reviewer's case: n₁ = n₂ = 1.33 at 47°.
+  const s = solve(p({ scene: 'boundary', n1: 1.33, n2: 1.33, angle: 47 }));
+  assert.equal(s.outputs.reflectance, 0);
+  close(s.outputs.refraction, 47, 1e-9, 'straight through');
+});
+
+test('partial reflections weaker than the visible threshold are not traced', () => {
+  assert.equal(PARTIAL_MIN_R, 0.005);
+  let kept = 0;
+  for (const scene of SCENES) {
+    for (let angle = 0; angle <= 89; angle += 4) {
+      for (const [a, b] of [[1, 1.5], [1.49, 1.5], [1.5, 1.4], [1.33, 1.34]]) {
+        const s = solve(p({ scene, angle, n1: a, n2: b, nOuter: a, nBlock: b, nCore: b, nClad: a }));
+        for (const branch of s.partials) {
+          assert.ok(branch.intensity >= PARTIAL_MIN_R, `${scene} ${angle}°: ${branch.intensity}`);
+          kept += 1;
+        }
+        // Every refraction of the main ray at or above the threshold (and off the normal) has its branch.
+        const expected = s.main.events.filter((e) => e.type === 'refract' && e.incidence >= 1 && e.reflectance >= PARTIAL_MIN_R).length;
+        assert.equal(s.partials.length, expected);
+      }
+    }
+  }
+  assert.ok(kept > 50);
+  // 1.49 → 1.50 at normal-ish incidence reflects (0.01/2.99)² ≈ 0.001%: too faint to draw.
+  assert.equal(solve(p({ scene: 'boundary', n1: 1.49, n2: 1.5, angle: 20 })).partials.length, 0);
+});
+
+test('numberPair adds decimals until two values print differently', () => {
+  assert.deepEqual(numberPair(30, 19.47), ['30.0', '19.5']);
+  assert.deepEqual(numberPair(41.8, Math.asin(1 / 1.5) / DEG), ['41.80', '41.81']);
+  assert.deepEqual(numberPair(41.81, Math.asin(1 / 1.5) / DEG), ['41.8100', '41.8103']);
+});
+
+test('header: the critical-angle preset never reads "41.8° < θc = 41.8°"', () => {
+  const s = solve(p({ scene: 'semi', angle: 41.8, nBlock: 1.5, nOuter: 1 }));
+  const text = headerText(s).line2[0];
+  assert.ok(text.includes('i = 41.80° < θc = 41.81°'), text);
+  // TIR just past θc, shown to 2 d.p. as well.
+  const t = headerText(solve(p({ scene: 'semi', angle: 41.82, nBlock: 1.5, nOuter: 1 }))).line2[0];
+  assert.ok(t.includes('i = 41.82° > θc = 41.81°'), t);
+});
+
+test('header: exactly at the critical angle it says i = θc and that the ray grazes (r = 90.0°)', () => {
+  // n = 2.00 into 1.00: θc = asin(1/2) = 30° exactly, so i = 30.0° is the critical angle.
+  const s = solve(p({ scene: 'semi', angle: 30, nBlock: 2, nOuter: 1 }));
+  close(s.outputs.critical, 30, 1e-12);
+  close(s.outputs.refraction, 90, 1e-4);
+  const { line2, alert } = headerText(s);
+  assert.ok(line2[0].includes('i = θc = 30.0°') && line2[0].includes('grazes') && line2[0].includes('r = 90.0°'), line2[0]);
+  assert.ok(!line2.some((l) => /[<>]/.test(l)), 'no < or > at equality');
+  assert.equal(alert, true);
+  // Two media, same physics.
+  assert.ok(headerText(solve(p({ scene: 'boundary', angle: 30, n1: 2, n2: 1 }))).line2[0].includes('i = θc'));
+});
+
+test('header: every printed comparison with θc agrees with the numbers it prints', () => {
+  // Sweep across θc in fine steps for the blocks, and across the acceptance angle for the fibre.
+  const re = /(?:i|φ) = ([\d.]+)° ([<>]) θc = ([\d.]+)°/;
+  let checked = 0;
+  const check = (s) => {
+    const m = headerText(s).line2[0].match(re);
+    if (!m) return;
+    const [x, op, y] = [Number(m[1]), m[2], Number(m[3])];
+    assert.ok(op === '<' ? x < y : x > y, `${m[0]}`);
+    checked += 1;
+  };
+  for (const nBlock of [1.33, 1.5, 2, 2.42]) {
+    const c = Math.asin(1 / nBlock) / DEG;
+    for (let d = -0.2; d <= 0.2; d += 0.01) {
+      check(solve(p({ scene: 'semi', angle: Math.round((c + d) * 100) / 100, nBlock, nOuter: 1 })));
+      check(solve(p({ scene: 'boundary', angle: Math.round((c + d) * 100) / 100, n1: nBlock, n2: 1 })));
+    }
+  }
+  const thetaA = Math.asin(Math.sqrt(1.5 ** 2 - 1.4 ** 2)) / DEG;
+  for (let d = -0.2; d <= 0.2; d += 0.01) check(solve(p({ scene: 'fibre', angle: Math.round((thetaA + d) * 100) / 100, nCore: 1.5, nClad: 1.4, nOuter: 1 })));
+  assert.ok(checked > 300, `checked ${checked}`);
 });

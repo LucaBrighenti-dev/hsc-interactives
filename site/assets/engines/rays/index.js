@@ -50,10 +50,10 @@ export const meta = {
     incidence: { label: 'Angle of incidence θᵢ', unit: '°', sigfigs: 3 },
     refraction: { label: 'Angle of refraction θᵣ', unit: '°', sigfigs: 3 },
     critical: { label: 'Critical angle θc', unit: '°', sigfigs: 3 },
-    reflectance: { label: 'Reflected at the surface', unit: '%', sigfigs: 3 },
-    tirCount: { label: 'Total internal reflections', unit: '', integer: true },
-    interactions: { label: 'Surface interactions', unit: '', integer: true },
-    wallAngle: { label: 'Angle at the cladding φ', unit: '°', sigfigs: 3 },
+    reflectance: { label: 'Reflected', unit: '%', sigfigs: 3 },
+    tirCount: { label: 'TIR count', unit: '', integer: true },
+    interactions: { label: 'Interactions', unit: '', integer: true },
+    wallAngle: { label: 'Angle at cladding φ', unit: '°', sigfigs: 3 },
     acceptance: { label: 'Acceptance angle θₐ', unit: '°', sigfigs: 3 },
     na: { label: 'Numerical aperture', unit: '', sigfigs: 3 },
     guided: { label: 'Guided (1 yes, 0 no)', unit: '', integer: true },
@@ -144,7 +144,12 @@ function describe(sol, params) {
   const f = (x) => `${x.toFixed(1)} degrees`;
   const where = `A ray box shines into ${SCENE_NAMES[sol.scene.kind]} at ${f(params.angle)} to the normal.`;
   if (sol.scene.kind === 'fibre') {
-    const fate = o.guided ? `It is guided along the core by ${o.tirCount} total internal reflections.` : 'It escapes from the core into the cladding.';
+    const fate =
+      o.refraction === null
+        ? 'It is totally internally reflected at the end face, so no light enters the fibre.'
+        : o.guided
+          ? `It is guided along the core by ${o.tirCount} total internal reflections.`
+          : 'It escapes from the core into the cladding.';
     return `${where} ${fate}`;
   }
   if (o.refraction === null) return `${where} It is totally internally reflected.`;
