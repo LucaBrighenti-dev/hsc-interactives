@@ -15,9 +15,13 @@
       "version": "2024",
       "area": "Complex numbers",
       "focusArea": "Introduction to complex numbers",
+      "subtopic": "Powers and roots of complex numbers",
       "year": 12,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ME2-12-03"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-2-11-12-2024/content/year-12/fa0be3067b",
+      "verified": true
     }
   ]
 }

@@ -319,8 +319,14 @@ export function viewport({ x, y, rect, equal = false }) {
  * Space to leave around a plot rectangle for drawAxes' tick labels (left of and below the rectangle).
  * @param {number} px stage font size
  */
-export function axisMargins(px = 18) {
-  return { left: Math.round(px * 3.4), bottom: Math.round(px * 1.9), top: Math.round(px * 0.6), right: Math.round(px * 0.8) };
+export function axisMargins(px = 18, { titles = 'inside' } = {}) {
+  const outside = titles === 'outside';
+  return {
+    left: Math.round(px * 3.4),
+    bottom: Math.round(px * (outside ? 3.4 : 1.9)),
+    top: Math.round(px * (outside ? 1.8 : 0.6)),
+    right: Math.round(px * 0.8),
+  };
 }
 
 /**
@@ -331,14 +337,18 @@ export function axisMargins(px = 18) {
  * @param {ReturnType<typeof viewport>} vp
  * @param {ReturnType<typeof readPalette>} pal
  * @param {{ xTitle?: string, yTitle?: string, px?: number, grid?: boolean, xCount?: number, yCount?: number,
- *   formatX?: (v:number)=>string, formatY?: (v:number)=>string, layer?: 'all'|'under'|'over' }} [opts]
+ *   formatX?: (v:number)=>string, formatY?: (v:number)=>string, layer?: 'all'|'under'|'over',
+ *   xAxisAt?: 'zero'|'bottom', yAxisAt?: 'zero'|'left', titles?: 'inside'|'outside' }} [opts]
+ *   titles: 'outside' puts axis titles beyond the plot so they never cover data; leave axisMargins(px, { titles: 'outside' }).
+ *   xAxisAt/yAxisAt: by default each axis sits at zero when zero is in range; 'bottom'/'left' pin it to the edge
+ *   (histograms, time series).
  */
 export function drawAxes(ctx, vp, pal, opts = {}) {
-  const { xTitle, yTitle, px = 18, grid = true, xCount = 8, yCount = 6, formatX = tickText, formatY = tickText, layer = 'all' } = opts;
+  const { xTitle, yTitle, px = 18, grid = true, xCount = 8, yCount = 6, formatX = tickText, formatY = tickText, layer = 'all', xAxisAt = 'zero', yAxisAt = 'zero', titles = 'inside' } = opts;
   const { rect } = vp;
   // Axes sit at zero when zero is in range, otherwise on the rectangle's edge.
-  const axisY = vp.y[0] <= 0 && vp.y[1] >= 0 ? vp.toY(0) : rect.y + rect.h;
-  const axisX = vp.x[0] <= 0 && vp.x[1] >= 0 ? vp.toX(0) : rect.x;
+  const axisY = xAxisAt === 'zero' && vp.y[0] <= 0 && vp.y[1] >= 0 ? vp.toY(0) : rect.y + rect.h;
+  const axisX = yAxisAt === 'zero' && vp.x[0] <= 0 && vp.x[1] >= 0 ? vp.toX(0) : rect.x;
   ctx.save();
 
   if (layer !== 'over') {
@@ -391,8 +401,14 @@ export function drawAxes(ctx, vp, pal, opts = {}) {
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     for (const t of yt.ticks) tick(formatY(t), rect.x - 10, vp.toY(t), 'right');
-    if (xTitle) label(ctx, xTitle, rect.x + rect.w - 4, axisY - 10, { colour: pal.ink, px, align: 'right', baseline: 'bottom', box: pal.bg });
-    if (yTitle) label(ctx, yTitle, axisX + 12, rect.y + 4, { colour: pal.ink, px, align: 'left', baseline: 'top', box: pal.bg });
+    if (titles === 'outside') {
+      // Titles outside the plot never cover data: x below the tick labels, y above the plot's top-left corner.
+      if (xTitle) label(ctx, xTitle, rect.x + rect.w / 2, rect.y + rect.h + px * 1.5 + 8, { colour: pal.ink, px, align: 'center', baseline: 'top' });
+      if (yTitle) label(ctx, yTitle, rect.x, rect.y - px * 0.6, { colour: pal.ink, px, align: 'left', baseline: 'bottom' });
+    } else {
+      if (xTitle) label(ctx, xTitle, rect.x + rect.w - 4, axisY - 10, { colour: pal.ink, px, align: 'right', baseline: 'bottom', box: pal.bg });
+      if (yTitle) label(ctx, yTitle, axisX + 12, rect.y + 4, { colour: pal.ink, px, align: 'left', baseline: 'top', box: pal.bg });
+    }
   }
   ctx.restore();
 }

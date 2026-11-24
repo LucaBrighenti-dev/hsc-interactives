@@ -15,9 +15,13 @@
       "version": "2024",
       "area": "Proof",
       "focusArea": "The nature of proof",
+      "subtopic": "Proof of inequalities",
       "year": 12,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ME2-12-01"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-2-11-12-2024/content/year-12/faabcfa8e0",
+      "verified": true
     }
   ]
 }

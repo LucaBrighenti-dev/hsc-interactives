@@ -13,18 +13,26 @@
     {
       "course": "Engineering Studies",
       "version": "2011",
-      "area": "Aeronautical Engineering",
-      "outcomes": [],
-      "verified": false
+      "area": "Aeronautical engineering",
+      "subtopic": "Communication",
+      "year": 12,
+      "outcomes": [
+        "H3.3"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011",
+      "verified": true
     },
     {
       "course": "Engineering Studies",
       "version": "2026",
       "focusArea": "Aeronautical and aerospace engineering",
+      "subtopic": "Descriptive geometry",
       "year": 12,
-      "outcomes": [],
-      "verified": false,
-      "subtopic": "Descriptive geometry"
+      "outcomes": [
+        "ES-12-06"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fa66e557c0",
+      "verified": true
     }
   ]
 }

@@ -19,6 +19,7 @@ import { parseQuery, resolveParams, paramsFor, isVisible, createUrlSync, toQuery
 import { downloadCSV } from './csv.js';
 import { ensureFonts } from './engine-kit.js';
 import { renderMarkdown, stripFrontmatter } from './markdown.js';
+import { formatInteger, siPrefix, NNBSP } from './format.js';
 import { el, clear, icon, button, slider, toggle, segmented, select, textField, chip, readout, panel, drawer, modal, toast, qrModal } from './ui/index.js';
 
 /** Course-level NESA links for the tag strip when a tag has no `url` of its own. Links only; never copy syllabus text. */
@@ -159,7 +160,8 @@ export async function mountInteractive(config) {
     el('a', { href: fullUrl(), target: '_blank', rel: 'noopener', text: 'Open full page ↗' }),
   );
 
-  const stage = el('div', { id: 'hsc-stage', class: 'hsc-stage', role: 'img', aria: { label: `${fallbackTitle} simulation` }, tabindex: '-1' });
+  // role=group (not img) so interactive stage content (editors, draggable handles, in-stage buttons) stays accessible.
+  const stage = el('div', { id: 'hsc-stage', class: 'hsc-stage', role: 'group', aria: { roledescription: 'simulation', label: `${fallbackTitle} simulation` }, tabindex: '-1' });
   const loading = el('div', { class: 'hsc-stage-loading', text: 'Loading simulation…' });
   stage.append(loading);
   const stageMsg = el('div', { class: 'hsc-stage-msg', hidden: true, role: 'alert' });
@@ -189,8 +191,9 @@ export async function mountInteractive(config) {
 
   // Header: user menu.
   if (session) {
+    // Native append() turns null into the text "null", so add the badge only when it exists.
+    if (session.founding) userArea.append(el('span', { class: 'badge-founding', text: 'Founding Educator' }));
     userArea.append(
-      session.founding ? el('span', { class: 'badge-founding', text: 'Founding Educator' }) : null,
       el('span', { class: 'hsc-user__name', text: session.user.name || (session.user.kind === 'code' ? 'Class session' : 'Signed in') }),
       button({
         label: 'Sign out',
@@ -280,7 +283,7 @@ export async function mountInteractive(config) {
     const spec = applicable.get(key);
     let control;
     if (spec.type === 'number') {
-      control = slider({ label: spec.label, unit: spec.unit, min: spec.min, max: spec.max, step: spec.step, integer: spec.integer, value: params[key], help: spec.help, onInput: (v) => setParam(key, v) });
+      control = slider({ label: spec.label, unit: spec.unit, min: spec.min, max: spec.max, step: spec.step, integer: spec.integer, value: params[key], onInput: (v) => setParam(key, v) });
     } else if (spec.type === 'boolean') {
       control = toggle({ label: spec.label, checked: params[key], onChange: (v) => setParam(key, v) });
     } else if (spec.type === 'enum') {
@@ -304,6 +307,12 @@ export async function mountInteractive(config) {
       control.setValue = ((orig) => (v) => orig((v || []).join(', ')))(control.setValue);
     }
     const wrap = el('div', { data: { key } }, control);
+    if (spec.help) {
+      const helpId = `help-${key}`;
+      wrap.append(el('p', { id: helpId, class: 'control-help', text: spec.help }));
+      const target = control.matches?.('[role="switch"]') ? control : control.querySelector('input[type="number"], select, [role="radiogroup"], input');
+      target?.setAttribute('aria-describedby', helpId);
+    }
     controls.set(key, control);
     controlWraps.set(key, wrap);
     controlsPanel.body.append(wrap);
@@ -328,7 +337,14 @@ export async function mountInteractive(config) {
   const readouts = new Map();
   for (const key of readoutKeys) {
     const out = meta.outputs[key];
-    const r = readout({ label: out.label, unit: out.unit, sigfigs: out.sigfigs ?? 3 });
+    const sigfigs = out.sigfigs ?? 3;
+    const prefixed = (v) => {
+      // "4.80 mm" from 0.0048 m: split the number from the prefixed unit so the unit span updates too.
+      const s = siPrefix(v, out.unit, { sigfigs });
+      const i = s.lastIndexOf(NNBSP);
+      return i < 0 ? { number: s, unit: '' } : { number: s.slice(0, i), unit: s.slice(i + 1) };
+    };
+    const r = readout({ label: out.label, unit: out.unit, sigfigs, format: out.integer ? formatInteger : out.siPrefix ? prefixed : undefined });
     readouts.set(key, r);
     readoutsEl.append(r);
   }
@@ -376,6 +392,10 @@ export async function mountInteractive(config) {
   // Engine events.
   const onEvent = (type, payload) => {
     if (type === 'outputs') updateReadouts(payload);
+    else if (type === 'params') {
+      // The engine changed params itself (e.g. a dragged point): resync controls, URL and share link.
+      if (engine) afterParamsChange({ fromEngine: true });
+    }
     else if (type === 'complete') syncPlayButton();
     else if (type === 'error') {
       errors.push(payload);
@@ -685,6 +705,7 @@ export async function mountInteractive(config) {
         playlistNav.append(
           prev ? button({ label: 'Previous in playlist', icon: 'arrowLeft', iconOnly: true, href: prev }) : null,
           el('span', { text: `${list.title} · ${flags.i + 1} of ${list.items.length}` }),
+          list.items[flags.i]?.note ? el('span', { class: 'hsc-playlist__note', text: list.items[flags.i].note, title: list.items[flags.i].note }) : null,
           next ? button({ label: 'Next in playlist', icon: 'arrowRight', iconOnly: true, href: next }) : null,
         );
         playlistNav.hidden = false;

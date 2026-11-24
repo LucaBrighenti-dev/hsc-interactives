@@ -5,23 +5,39 @@ import { formatNumber } from '../format.js';
 
 /**
  * Large mono readout with label and unit. update(value) formats to significant figures.
- * @param {{ label: string, unit?: string, sigfigs?: number, format?: (v:any)=>string }} opts
+ * @param {{ label: string, unit?: string, sigfigs?: number, format?: (v:any)=>(string | { number: string, unit: string }) }} opts
+ * A format may return { number, unit } to change the unit with the value (SI prefixes).
  */
 export function readout({ label, unit = '', sigfigs = 3, format }) {
   const number = el('span', { class: 'readout__number', text: '—' });
+  const unitEl = el('span', { class: 'readout__unit', text: unit, hidden: !unit });
   const root = el(
     'div',
     { class: 'readout' },
     el('span', { class: 'readout__label', text: label, title: label }),
-    el('span', { class: 'readout__value' }, number, unit ? el('span', { class: 'readout__unit', text: unit }) : null),
+    el('span', { class: 'readout__value' }, number, unitEl),
   );
   root.update = (value) => {
-    const text = value === null || value === undefined ? '—' : format ? format(value) : typeof value === 'number' ? formatNumber(value, { sigfigs }) : String(value);
+    const empty = value === null || value === undefined;
+    let text = empty ? '—' : format ? format(value) : typeof value === 'number' ? formatNumber(value, { sigfigs }) : String(value);
+    // A blank readout shows the base unit again, never a stale prefixed one ("— mm").
+    if (empty && unitEl.textContent !== unit) {
+      unitEl.textContent = unit;
+      unitEl.hidden = !unit;
+    }
+    if (text && typeof text === 'object') {
+      if (unitEl.textContent !== text.unit) unitEl.textContent = text.unit;
+      unitEl.hidden = !text.unit;
+      text = text.number;
+    }
     if (number.textContent !== text) number.textContent = text;
+    // Long values (scientific notation) shrink so they never spill into the next readout.
+    root.classList.toggle('is-long', text.length > 9 && text.length <= 13);
+    root.classList.toggle('is-xlong', text.length > 13);
     root.dataset.value = typeof value === 'number' ? String(value) : '';
     return text;
   };
-  root.text = () => `${label} ${number.textContent}${unit ? ` ${unit}` : ''}`;
+  root.text = () => `${label} ${number.textContent}${unitEl.textContent ? ` ${unitEl.textContent}` : ''}`;
   return root;
 }
 

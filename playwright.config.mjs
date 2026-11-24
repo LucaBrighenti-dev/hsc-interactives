@@ -25,9 +25,9 @@ export default defineConfig({
   },
   projects: [
     { name: 'desktop', use: { browserName: 'chromium', viewport: { width: 1920, height: 1080 } } },
-    // Acceptance numbers do not depend on the viewport, so they run on desktop only.
-    { name: 'tablet', testIgnore: '**/acceptance.spec.mjs', use: { browserName: 'chromium', viewport: { width: 1180, height: 820 }, hasTouch: true } },
-    { name: 'phone', testIgnore: '**/acceptance.spec.mjs', use: { browserName: 'chromium', viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 } },
+    // Acceptance numbers and engine demo smoke checks do not depend on the viewport, so they run on desktop only.
+    { name: 'tablet', testIgnore: ['**/acceptance.spec.mjs', '**/engines.spec.mjs'], use: { browserName: 'chromium', viewport: { width: 1180, height: 820 }, hasTouch: true } },
+    { name: 'phone', testIgnore: ['**/acceptance.spec.mjs', '**/engines.spec.mjs'], use: { browserName: 'chromium', viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 } },
   ],
   webServer: {
     command: `node scripts/dev.mjs --serve-only --port ${PORT}`,

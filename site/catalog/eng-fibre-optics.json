@@ -15,18 +15,26 @@
     {
       "course": "Engineering Studies",
       "version": "2011",
-      "area": "Telecommunications Engineering",
-      "outcomes": [],
-      "verified": false
+      "area": "Telecommunications engineering",
+      "subtopic": "Engineering materials",
+      "year": 12,
+      "outcomes": [
+        "H1.2"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011",
+      "verified": true
     },
     {
       "course": "Engineering Studies",
       "version": "2026",
       "focusArea": "Aeronautical and aerospace engineering",
+      "subtopic": "Application of materials",
       "year": 12,
-      "outcomes": [],
-      "verified": false,
-      "subtopic": "Application of materials"
+      "outcomes": [
+        "ES-12-02"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fa66e557c0",
+      "verified": true
     }
   ]
 }

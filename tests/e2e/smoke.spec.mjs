@@ -214,3 +214,12 @@ for (const [name, path, signedIn] of [
     expect(problems).toEqual([]);
   });
 }
+
+test('the header never shows "null" for a teacher who is not a Founding Educator', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'desktop only');
+  await signInLocal(page, { founding: false, name: 'Mr Tran' });
+  await page.goto('/interactives/_template.html?test=1');
+  await hscReady(page);
+  await expect(page.locator('.hsc-user')).not.toContainText('null');
+  await expect(page.locator('.badge-founding')).toHaveCount(0);
+});

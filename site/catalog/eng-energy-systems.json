@@ -14,9 +14,13 @@
       "course": "Engineering Studies",
       "version": "2026",
       "focusArea": "Environmental engineering and energy systems",
+      "subtopic": "Energy systems and storage",
       "year": 12,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ES-12-05"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fa4b243f12",
+      "verified": true
     }
   ]
 }

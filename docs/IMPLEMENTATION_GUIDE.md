@@ -65,7 +65,7 @@ Commands (defined in W0-01/W0-02):
 | `npm run build` | Clean `dist/`, copy `site/`, merge + validate catalog fragments into `dist/catalog.json`, copy/bundle vendor libs and fonts |
 | `npm test` | `node --test tests/engines` |
 | `npm run test:e2e` | Playwright smoke + acceptance tests against a built `dist/` |
-| `npm run shots [-- <id or page path>] [-- --thumbs]` | Screenshots of every non-planned page (or one id, or a page path such as `dev/engines/particle2d.html#projectile`), plus the sign-in, dashboard, privacy, styleguide and template pages, at 1920×1080, 1180×820, 390×844 into `test-results/shots/<id>/`. `--thumbs` also writes `site/assets/thumbs/<id>.png` |
+| `npm run shots [-- <id or page path>] [-- --thumbs]` | Screenshots of every non-planned page (or one id, or a page path such as `dev/engines/particle2d.html#projectile`), plus the sign-in, dashboard, privacy, styleguide and template pages, at 1920×1080, 1180×820, 390×844 into `test-results/shots/<id>/`. `--thumbs` also writes `site/assets/thumbs/<id>.png`; `--steps=N` advances the engine N steps before capturing (time-based engines) |
 | `npm run generate [-- --check]` | Create missing catalog fragments, spec stubs and notes stubs from `docs/backlog.json` (idempotent). `--check` exits 1 if anything is out of date (`npm test` runs the same check) |
 | `npm run create-issues [-- --apply]` | One GitHub issue per backlog page via `gh` (dry run unless `--apply`) |
 | `npm run check` | build + test + test:e2e |
@@ -398,7 +398,14 @@ Wave 0 made these additions and clarifications while building §5.1–§5.9. Eac
 - `meta.staticSetups` (optional): setups with no time evolution; the shell hides play, step and reset for them.
 - `meta.stepSize` (optional, default 1): fixed steps per press of the shell's Step button.
 - Param types: `number` (`min`, `max`, `step`, optional `integer`), `boolean`, `enum` (`options: [[value, label], …]`, values are strings), `string` (`maxLength`, default 200; optional `pattern`), `list` (numbers; optional `min`, `max`, `minItems`, `maxItems`). Any param may have `setups`, `visibleWhen: { key: value | [values] }`, `help`, and for enums `widget: 'segmented' | 'select'` (default: segmented for up to three options). Param keys are camelCase and must not be a reserved URL key (`preset`, `embed`, `theme`, `test`, `present`, `playlist`, `i`).
-- Outputs may have `setups`. `unit` is required (`''` when dimensionless).
+- Outputs may have `setups`, `integer: true` (counts: shown as whole numbers with grouping, never "369.0") or `siPrefix: true` (the readout scales the unit, e.g. 0.0048 m shows as "4.80 mm"). `unit` is required (`''` when dimensionless).
+- Any param's `help` text is shown under its control and linked with `aria-describedby`.
+- The stage element is `role="group"` with `aria-roledescription="simulation"` and the `aria-label` (§6.7 said `role="img"`, which hides interactive children such as editors and in-stage buttons). Engines may put focusable controls inside the stage.
+- Output units: SI is the default, but an output may use the topic's conventional unit (eV, MeV, u, nm, µA, ns, kN, MPa, L☉, R☉ and so on) when its `unit` field states it exactly. Acceptance values use the same unit as the output.
+- Tokens: `--c-danger-text` (#FF8A8D) is for small error text on graphite; `--c-danger` is for borders and marks.
+- The shell's playlist bar shows the current item's note when the playlist has one.
+- Event `'params'` (no payload needed): an engine that changes its own params (a dragged point or handle) emits it after `setParams`-equivalent changes, and the shell resyncs the controls, the URL and the share link.
+- `drawAxes` options `xAxisAt: 'zero' | 'bottom'` and `yAxisAt: 'zero' | 'left'` pin an axis to the plot edge (histograms, time series); the default places each axis at zero when zero is in range. `titles: 'outside'` draws the axis titles beyond the plot (x below the ticks, y above the top-left) so they never cover data; pair it with `axisMargins(px, { titles: 'outside' })`.
 - `step(n)` stops early when the scenario completes. Optional `describe()` returns a sentence for the stage's `aria-label`.
 - `setTheme(theme)`: the shell sets `data-theme` on `<html>` first; engines re-read colours with `readPalette`.
 - `tests/engines/_contract.test.mjs` checks every engine automatically: files and exports, meta shape, valid defaults, `timeScale` on time-based engines, a pure `model.js`, and no `eval`/`Function`/remote imports.
@@ -419,6 +426,7 @@ Wave 0 made these additions and clarifications while building §5.1–§5.9. Eac
 - A check may set `"preset": "<name>"` to load that preset first. Every param in `params` must be accepted unchanged by the engine (a clamp fails the check), and `"run": "complete"` must actually complete.
 - Spec frontmatter from `npm run generate` also lists `page` and the `listings` whose presets the page must define.
 - `specs/_demo.md` is the reference spec for `_template.html`; the runner always includes it.
+- Specs may be written before their engine merges and list "keys to reconcile". `npm test` checks a spec's param and output keys against the engine only once its page is in `review` or `live`. The Wave 2 page task reconciles its own spec's keys (params, presets, acceptance JSON) with the merged engine and says so in its PR; the numbers must not change without a hand calculation.
 
 **Auth (§5.6, §5.7)**
 - `LOCAL_ACCESS_CODES` is `[{ code, kind }]`, mirroring the `access_codes` table. There is **one shared access code, `TTT2026`**, for teachers and their classes (Luca, 25 Nov). It also gives the Founding Educator badge. The `kind` column stays so more codes could be added later without a schema change.
@@ -485,7 +493,7 @@ Rules: no `box-shadow`, no gradients, no glow, no blur. Focus ring: 2px solid `-
 ### 6.4 Sign-in page (`signin.html`): the premium front door
 
 - Full-bleed `--c-bg`. Behind everything, a live canvas animation drawn in `--c-accent` at about 35% opacity: slope-field streamlines drifting slowly, or a family of projectile arcs. Self-contained in `assets/signin/background.js` (no engine dependency). With `prefers-reduced-motion`, show one static frame.
-- Left (desktop) / top (mobile): wordmark `SITE_NAME` in Archivo Expanded 800, 48–72 px, uppercase. A one-line promise underneath in Inter, e.g. "Interactive simulations for Extension Maths, Physics and Engineering Studies." Small mono line: `NSW STAGE 6 · 2017–2026 SYLLABUSES`.
+- Left (desktop) / top (mobile): wordmark `SITE_NAME` in Archivo Expanded 800, 48–72 px, uppercase. A one-line promise underneath in Inter, e.g. "Interactive simulations for Extension Maths, Physics and Engineering Studies." Small mono line: `NSW STAGE 6 · 2011–2026 SYLLABUSES`.
 - Right / below: a sharp-framed card (`--c-surface`, 1px `--c-line`, no radius):
   - `Continue with Microsoft` and `Continue with Google` (full-width, secondary style, provider marks as plain monochrome glyphs)
   - divider `OR`
@@ -699,7 +707,7 @@ Run `npm run create-issues -- --apply` once (after Gate B) so every page has a G
 | `site/index.html`, `site/assets/hub/**` | W1-HUB |
 | `syllabus` arrays in fragments, `scripts/scrape-syllabus.mjs`, `docs/syllabus-reference/**`, `docs/gates/syllabus-report.md` | W1-SYL |
 | `specs/<prefix>-*.md`, `docs/gates/gate-b-<subject>.md` | W1-SPEC-<subject> |
-| A page's HTML, fragment (except `syllabus`), notes, custom engine, its tests, its thumbnail | That page's Wave 2 task |
+| A page's HTML, fragment (except `syllabus`), notes, custom engine, its tests, its thumbnail, and reconciling its own spec's keys with the merged engine (§5.10) | That page's Wave 2 task |
 
 ### 13.4 Branches and merging
 

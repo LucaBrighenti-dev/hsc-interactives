@@ -13,18 +13,38 @@
     {
       "course": "Engineering Studies",
       "version": "2011",
-      "area": "Engineered Products",
-      "outcomes": [],
-      "verified": false
+      "area": "Engineering fundamentals",
+      "subtopic": "Engineering mechanics",
+      "year": 11,
+      "outcomes": [
+        "P3.1"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011",
+      "verified": true
     },
     {
       "course": "Engineering Studies",
       "version": "2026",
       "focusArea": "Applied engineering analysis",
+      "subtopic": "Mechanics of simple machines",
       "year": 11,
-      "outcomes": [],
-      "verified": false,
-      "subtopic": "Mechanics of simple machines"
+      "outcomes": [
+        "ES-11-04"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-11/faa305594d",
+      "verified": true
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Transport engineering and automation",
+      "subtopic": "Simple machines",
+      "year": 12,
+      "outcomes": [
+        "ES-12-04"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fab1f95ed9",
+      "verified": true
     }
   ]
 }

@@ -14,16 +14,25 @@
       "course": "Physics",
       "version": "2017",
       "area": "Module 4: Electricity and Magnetism",
-      "outcomes": [],
-      "verified": false
+      "subtopic": "Magnetism",
+      "year": 11,
+      "outcomes": [
+        "PH11-11"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/science/physics-stage-6-2017",
+      "verified": true
     },
     {
       "course": "Physics",
       "version": "2025",
       "focusArea": "Electricity and magnetism",
+      "subtopic": "Magnetism",
       "year": 11,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "PY-11-03"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/science/physics-11-12-2025/content/year-11/fabcbab907",
+      "verified": true
     }
   ]
 }

@@ -15,9 +15,13 @@
       "version": "2024",
       "area": "Calculus",
       "focusArea": "Further applications of calculus",
+      "subtopic": "Areas between curves and volumes of solids of revolution",
       "year": 12,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ME1-12-05"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-1-11-12-2024/content/year-12/faed7f98f9",
+      "verified": true
     }
   ]
 }

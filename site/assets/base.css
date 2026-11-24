@@ -139,6 +139,7 @@ kbd {
 .btn--icon { width: var(--touch); padding: 0; }
 .btn--block { width: 100%; }
 .btn--sm { min-height: 36px; padding: 0 var(--sp-3); font-size: var(--t-14); }
+@media (pointer: coarse) { .btn--sm { min-height: var(--touch); } .btn--sm.btn--icon { width: var(--touch); } }
 .btn[aria-pressed="true"] { border-color: var(--c-accent); color: var(--c-accent); }
 .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
 .btn:disabled:hover { border-color: var(--c-line-strong); }
@@ -184,7 +185,8 @@ textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-
 }
 .select option { background: var(--c-surface); color: var(--c-text); }
 .msg { font-size: var(--t-14); }
-.msg--error { color: #FF8A8D; }
+.control-help { margin-top: var(--sp-1); font-size: 13px; line-height: 1.4; color: var(--c-muted); }
+.msg--error { color: var(--c-danger-text); }
 .msg--ok { color: var(--c-ok); }
 
 /* ---------- slider (label, number entry, unit, range) ---------- */
@@ -288,10 +290,14 @@ button.chip[aria-pressed="true"] { border-color: var(--c-accent); color: var(--c
 
 /* ---------- readout ---------- */
 .readout { display: grid; gap: 2px; min-width: 0; }
-.readout__label { font-family: var(--f-mono); font-size: var(--t-12); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--c-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.readout__value { display: flex; align-items: baseline; gap: 6px; font-family: var(--f-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+.readout__label { font-family: var(--f-mono); font-size: var(--t-14); letter-spacing: 0.01em; color: var(--c-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.readout__value { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; min-width: 0; font-family: var(--f-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
 .readout__number { font-size: var(--t-32); line-height: 1.1; color: var(--c-text); white-space: nowrap; }
 .readout__unit { font-size: var(--t-16); color: var(--c-muted); }
+.readout.is-long .readout__number { font-size: var(--t-24); }
+.readout.is-xlong .readout__number { font-size: var(--t-18); }
+.is-presenter .readout.is-long .readout__number { font-size: var(--t-32); }
+.is-presenter .readout.is-xlong .readout__number { font-size: var(--t-24); }
 
 /* ---------- panel ---------- */
 .panel { background: var(--c-surface); border: var(--border); }
@@ -391,7 +397,8 @@ dialog.drawer[open] { display: flex; flex-direction: column; animation: hsc-slid
 .hsc-crumbs a { color: var(--c-muted); text-decoration: none; }
 .hsc-crumbs a:hover { color: var(--c-text); }
 .hsc-crumbs [aria-current] { color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hsc-playlist { display: flex; align-items: center; gap: var(--sp-2); font-family: var(--f-mono); font-size: var(--t-12); color: var(--c-muted); }
+.hsc-playlist { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; font-family: var(--f-mono); font-size: var(--t-12); color: var(--c-muted); }
+.hsc-playlist__note { font-family: var(--f-body); font-size: var(--t-14); color: var(--c-text); max-width: 40ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hsc-user { margin-left: auto; display: flex; align-items: center; gap: var(--sp-4); font-size: var(--t-14); }
 .hsc-user__name { color: var(--c-text); white-space: nowrap; max-width: 24ch; overflow: hidden; text-overflow: ellipsis; }
 
@@ -525,7 +532,7 @@ dialog.drawer[open] { display: flex; flex-direction: column; animation: hsc-slid
 .is-presenter .slider__label, .is-presenter .toggle, .is-presenter .segmented-wrap__label { font-size: var(--t-18); }
 .is-presenter .slider__number { font-size: var(--t-18); width: 104px; }
 .is-presenter .readout__number { font-size: var(--t-48); }
-.is-presenter .readout__label { font-size: var(--t-14); }
+.is-presenter .readout__label { font-size: var(--t-16); }
 .is-presenter .hsc-trythis li { font-size: var(--t-18); }
 
 /* Embed mode (?embed=1): no header or tag strip, a slim bar instead. */

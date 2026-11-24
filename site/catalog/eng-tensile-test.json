@@ -13,18 +13,39 @@
     {
       "course": "Engineering Studies",
       "version": "2011",
-      "area": "Engineered Products",
-      "outcomes": [],
-      "verified": false
+      "area": "Braking systems",
+      "subtopic": "Engineering mechanics and hydraulics",
+      "year": 11,
+      "outcomes": [
+        "P2.1",
+        "P3.1"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011",
+      "verified": true
     },
     {
       "course": "Engineering Studies",
       "version": "2026",
       "focusArea": "Applied engineering analysis",
+      "subtopic": "Mechanical strength of materials",
       "year": 11,
-      "outcomes": [],
-      "verified": false,
-      "subtopic": "Mechanical strength of materials"
+      "outcomes": [
+        "ES-11-04"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-11/faa305594d",
+      "verified": true
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Engineering materials",
+      "subtopic": "Material stress-strain behaviour",
+      "year": 11,
+      "outcomes": [
+        "ES-11-02"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-11/fa8bab5606",
+      "verified": true
     }
   ]
 }
