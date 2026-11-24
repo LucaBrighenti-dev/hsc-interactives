@@ -2,12 +2,12 @@
   "id": "me1-sampling-simulator",
   "kind": "page",
   "title": "Sampling simulator",
-  "summary": "Bernoulli trials build a binomial histogram; sample means converge to normal as n grows.",
+  "summary": "Bernoulli trials build a binomial histogram; sample means from any population approach a normal shape, with spread σ/√n.",
   "subject": "me1",
   "engine": "statsim",
   "setup": "sampling",
   "priority": "P0",
-  "status": "planned",
+  "status": "review",
   "path": "/interactives/maths-ext1/sampling-simulator.html",
   "syllabus": [
     {
@@ -23,5 +23,6 @@
       "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-1-11-12-2024/content/year-12/fab1724c5e",
       "verified": true
     }
-  ]
+  ],
+  "thumbnail": "/assets/thumbs/me1-sampling-simulator.png"
 }

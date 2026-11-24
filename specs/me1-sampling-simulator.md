@@ -59,8 +59,9 @@ Behaviour the numbers depend on: one fixed step (the shell's Step button, and `s
 ## Readouts
 | Output | Label | Unit | Sig figs |
 | --- | --- | --- | --- |
-| count | Samples drawn | | 5 (whole numbers show exactly) |
-| latest | Latest value | | 4 |
+| count | Samples drawn | | integer |
+| latestX | Latest X | | integer; Bernoulli trials only, otherwise blank |
+| latestMean | Latest mean | | 4; sample means only, otherwise blank |
 | simMean | Simulated mean | | 4 |
 | simSD | Simulated SD | | 4 |
 | theoryMean | Theoretical mean | | 4 |

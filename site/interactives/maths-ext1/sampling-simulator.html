@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sampling simulator · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!-- Spec: specs/me1-sampling-simulator.md (statsim / sampling). -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    mountInteractive({
+      id: 'me1-sampling-simulator',
+      engine: () => import('/assets/engines/statsim/index.js'),
+      setup: 'sampling',
+      presets: {
+        default: { mode: 'binomial', n: 20, p: 0.3, samples: 2000, drawRate: 200, seed: 2027, yScale: 'relative' },
+        'coin-flips': { mode: 'binomial', n: 10, p: 0.5, samples: 200, drawRate: 5, seed: 2027, yScale: 'count' }, // frequency: each sample raises one bar by exactly 1
+        'sample-proportion': { mode: 'means', population: 'bernoulli', p: 0.4, n: 25, samples: 5000, drawRate: 500, seed: 2027, meansAxis: 'zoom' },
+        'dice-means': { mode: 'means', population: 'die', n: 5, samples: 5000, drawRate: 500, seed: 2027 },
+        'skewed-means': { mode: 'means', population: 'exponential', rate: 1, n: 30, samples: 5000, drawRate: 500, seed: 2027 },
+        'population-shape': { mode: 'means', population: 'skewed', n: 1, samples: 2000, drawRate: 500, seed: 2027 },
+      },
+      presetLabels: {
+        default: 'Bernoulli trials: X ~ B(20, 0.3)',
+        'coin-flips': 'Ten coin flips, drawn slowly',
+        'sample-proportion': 'Proportion of successes, n = 25',
+        'dice-means': 'Means of 5 dice',
+        'skewed-means': 'Exponential population, n = 30',
+        'population-shape': 'Skewed population, n = 1',
+      },
+      controls: ['mode', 'population', 'p', 'rate', 'n', 'samples', 'drawRate', 'meansAxis', 'yScale', 'showCurve', 'seed', 'timeScale'],
+      readouts: ['count', 'latestX', 'latestMean', 'simMean', 'simSD', 'theoryMean', 'theorySD', 'popMean', 'popSD'],
+      assumptions: [
+        'Trials are independent, each with the same probability p',
+        'Each sample is n independent values from the population',
+        'Pseudo-random numbers from a fixed seed: the same seed repeats the same samples',
+        'The normal curve N(μ, σ²/n) is an approximation; it is exact only for a normal population',
+      ],
+      prompts: [
+        { kind: 'predict', text: 'With n = 20 and p = 0.3, which number of successes will be most common, and will the histogram be symmetric? Press play and check.' },
+        { kind: 'observe', text: 'Choose the proportion of successes scenario (n = 25) and note the theoretical SD. Set the x̄ axis to Population scale and run it, then change n to 100 and run again. What happened to the spread when n became four times as large?' },
+        { kind: 'predict', text: 'In the skewed population scenario (n = 1), what shape will the histogram be? Now predict the shape for n = 25, then run it.' },
+        { kind: 'observe', text: 'Run B(20, 0.3) twice, once with seed 2027 and once with seed 2028. Which readouts changed and which stayed exactly the same? Why?' },
+        { kind: 'explain', text: 'The SD of a single die roll is about 1.71. Why is the SD of the mean of 10 rolls about 0.54 rather than 0.171?' },
+      ],
+      notes: '/content/notes/me1-sampling-simulator.md',
+    });
+  </script>
+</body>
+</html>
