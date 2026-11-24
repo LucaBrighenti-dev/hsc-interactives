@@ -11,7 +11,7 @@ const TICK = 1 / 120; // s of playback per loop step; the setup turns playback t
 
 export const meta = {
   name: 'statsim',
-  version: '1.1.0',
+  version: '1.2.0',
   setups: ['sampling', 'normal-approx', 'decay'],
   staticSetups: ['normal-approx'],
   stepSize: 1, // Step draws one sample (sampling) or advances one 1 s decay step (decay)
@@ -41,7 +41,7 @@ export const meta = {
       default: 'exponential',
       setups: ['sampling'],
       visibleWhen: { mode: 'means' },
-      help: 'Bernoulli trials always use the Bernoulli population.',
+      help: 'Each sample is n values drawn from this population. Bernoulli trials always draw from Bernoulli (0 or 1).',
     },
     p: { type: 'number', label: 'Success probability p', unit: '', min: 0.01, max: 0.99, step: 0.01, default: 0.3, setups: ['sampling'], visibleWhen: { population: 'bernoulli' } },
     rate: { type: 'number', label: 'Rate λ', unit: '', min: 0.2, max: 5, step: 0.1, default: 1, setups: ['sampling'], visibleWhen: { population: 'exponential' }, help: 'Population mean 1/λ and standard deviation 1/λ.' },
@@ -80,21 +80,22 @@ export const meta = {
     theorySD: { label: 'Theoretical SD', unit: '', sigfigs: 4, setups: ['sampling'] },
     popMean: { label: 'Population mean μ', unit: '', sigfigs: 4, setups: ['sampling'] },
     popSD: { label: 'Population SD σ', unit: '', sigfigs: 4, setups: ['sampling'] },
-    // normal approximation
+    // normal approximation. Labels fit a phone readout column (18 characters): the error is named by its
+    // sign convention, normal − exact, which the stage's results panel also shows.
     exact: { label: 'Exact probability', unit: '', sigfigs: 4, setups: ['normal-approx'] },
-    approx: { label: 'Normal approximation', unit: '', sigfigs: 4, setups: ['normal-approx'] },
-    error: { label: 'Error (normal − exact)', unit: '', sigfigs: 3, setups: ['normal-approx'] },
+    approx: { label: 'Normal approx.', unit: '', sigfigs: 4, setups: ['normal-approx'] },
+    error: { label: 'Normal − exact', unit: '', sigfigs: 3, setups: ['normal-approx'] },
     mean: { label: 'Mean np', unit: '', sigfigs: 4, setups: ['normal-approx'] },
     sd: { label: 'SD √(np(1 − p))', unit: '', sigfigs: 4, setups: ['normal-approx'] },
-    z: { label: 'z-score of the boundary', unit: '', sigfigs: 3, setups: ['normal-approx'] },
+    z: { label: 'Boundary z-score', unit: '', sigfigs: 3, setups: ['normal-approx'] },
     // decay. t is a whole number of 1 s steps; the activity is the whole number of decays in the last 1 s step.
     t: { label: 'Time t', unit: 's', integer: true, setups: ['decay'] },
     remaining: { label: 'Remaining N', unit: '', integer: true, setups: ['decay'] },
     decayed: { label: 'Decayed', unit: '', integer: true, setups: ['decay'] },
     theoryRemaining: { label: 'Theory N₀(½)^(t/H)', unit: '', sigfigs: 4, setups: ['decay'] }, // an expected value, not a count
     measuredHalfLife: { label: 'Measured half-life', unit: 's', sigfigs: 3, setups: ['decay'] },
-    probability: { label: 'Decay probability per step', unit: '', sigfigs: 3, setups: ['decay'] },
-    lastDecays: { label: 'Activity (last step)', unit: 'Bq', integer: true, setups: ['decay'] },
+    probability: { label: 'P(decay) per step', unit: '', sigfigs: 3, setups: ['decay'] },
+    lastDecays: { label: 'Activity', unit: 'Bq', integer: true, setups: ['decay'] }, // decays in the last 1 s step
   },
 };
 

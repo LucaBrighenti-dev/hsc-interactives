@@ -27,6 +27,7 @@ import {
   binomialPmfs,
   binomialCdf,
   normalApprox,
+  zScore,
   decayProbability,
   decayTheory,
   decaySteps,
@@ -38,7 +39,7 @@ import {
   measuredHalfLife,
 } from '../../site/assets/engines/statsim/model.js';
 import { meta } from '../../site/assets/engines/statsim/index.js';
-import { formatProbability } from '../../site/assets/engines/statsim/view.js';
+import { formatProbability, boundaryLabel } from '../../site/assets/engines/statsim/view.js';
 
 const close = (actual, expected, tol, msg) => assert.ok(Math.abs(actual - expected) <= tol, `${msg ?? ''} expected ${expected} ± ${tol}, got ${actual}`);
 const rel = (actual, expected, r, msg) => close(actual, expected, Math.abs(expected) * r, msg);
@@ -442,6 +443,38 @@ test('stage probabilities: 4 decimal places, true minus sign, never "−0.0000"'
   assert.equal(formatProbability(r.exact), '0.1841');
 });
 
+test('boundary z-score: z = (x − np)/√(np(1 − p)), the same z as the readout (spec me1-normal-approx checks 1 to 3)', () => {
+  const sd = Math.sqrt(30 * 0.4 * 0.6); // √7.2 = 2.683281573
+  close(zScore(15, 12, sd), 1.118033989, 1e-9); // (15 − 12)/√7.2
+  close(zScore(15.5, 12, sd), 1.304372987, 1e-9); // (15.5 − 12)/√7.2
+  close(zScore(9.5, 12, sd), -0.9316949906, 1e-9); // (9.5 − 12)/√7.2
+  const cases = [
+    { trials: 30, prob: 0.4, event: 'le', k: 15, continuity: false },
+    { trials: 30, prob: 0.4, event: 'le', k: 15, continuity: true },
+    { trials: 30, prob: 0.4, event: 'ge', k: 10, continuity: true },
+    { trials: 100, prob: 0.5, event: 'le', k: 55, continuity: true },
+  ];
+  for (const c of cases) {
+    const r = normalApprox(c);
+    assert.equal(zScore(c.event === 'ge' ? r.lower : r.upper, r.mean, r.sd), r.z, `${c.event} ${c.k}`);
+  }
+});
+
+test('boundary label: "x = 15.5, z = 1.30", with z to 3 significant figures like the readout', () => {
+  const sd = Math.sqrt(7.2);
+  assert.equal(boundaryLabel(15.5, 12, sd), 'x = 15.5, z = 1.30');
+  assert.equal(boundaryLabel(15, 12, sd), 'x = 15, z = 1.12');
+  assert.equal(boundaryLabel(9.5, 12, sd), 'x = 9.5, z = −0.932'); // true minus sign
+  assert.equal(boundaryLabel(55.5, 50, 5), 'x = 55.5, z = 1.10');
+  // np = 50 × 0.14 is 7.000000000000001 in floating point: the boundary at the mean is z = 0, not "−3.62 × 10⁻¹⁶".
+  assert.equal(50 * 0.14, 7.000000000000001);
+  assert.equal(boundaryLabel(7, 50 * 0.14, Math.sqrt(50 * 0.14 * 0.86)), 'x = 7, z = 0.00');
+  assert.equal(boundaryLabel(12, 12, sd), 'x = 12, z = 0.00');
+  // P(X = 15) in B(50, 0.3) with the correction: limits 15 ± 0.5, z = ±0.5/√10.5 = ±0.154.
+  assert.equal(boundaryLabel(14.5, 15, Math.sqrt(10.5)), 'x = 14.5, z = −0.154');
+  assert.equal(boundaryLabel(15.5, 15, Math.sqrt(10.5)), 'x = 15.5, z = 0.154');
+});
+
 test('normal approximation: the event covers the right values of k', () => {
   const le = normalApprox({ trials: 10, prob: 0.5, k: 3, event: 'le', continuity: true });
   assert.deepEqual([le.kFrom, le.kTo], [0, 3]);
@@ -570,6 +603,18 @@ test('counts are flagged integer (readouts show "344", not "344.0") and are alwa
     while (!decayComplete(s, params)) check('decay', decayOutputs(advanceDecay(s, params, 1), params));
   }
   for (const key of COUNTS) assert.ok(seen.has(key), `${key} was never checked`);
+});
+
+test('readout labels fit a phone readout column (18 characters of 14 px JetBrains Mono, about 154 px)', () => {
+  for (const [key, out] of Object.entries(meta.outputs)) {
+    assert.ok([...out.label].length <= 18, `output "${key}": label "${out.label}" is ${[...out.label].length} characters`);
+  }
+});
+
+test('the Population help covers both modes: what it is for (sample means) and what Bernoulli trials use', () => {
+  const help = meta.params.population.help;
+  assert.match(help, /sample/i);
+  assert.match(help, /Bernoulli trials? .*Bernoulli \(0 or 1\)/);
 });
 
 test('the latest statistic: X (whole) in Bernoulli-trial mode, x̄ (not rounded) in sample-means mode', () => {
