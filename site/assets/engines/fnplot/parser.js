@@ -613,7 +613,8 @@ function tex(node, { trailing = false } = {}) {
       const { op, left, right } = node;
       if (op === '/') return `\\frac{${tex(left)}}{${tex(right)}}`;
       if (op === '^') {
-        if (node.fnPower && left.type === 'call') return callTex(left, { bracket: trailing, powerTex: `^{${tex(right)}}` });
+        // sin^2 x style, only for functions written as a command (not sqrt, |x| or floor).
+        if (node.fnPower && left.type === 'call' && FUNCTIONS[left.name][1]) return callTex(left, { bracket: trailing, powerTex: `^{${tex(right)}}` });
         let base = tex(left);
         if (precOf(left) < PREC.atom || left.type === 'call' && !['abs', 'floor'].includes(left.name)) base = paren(left.type === 'call' ? callTex(left) : base);
         else if (left.type === 'bin' && left.op === '/') base = paren(base);

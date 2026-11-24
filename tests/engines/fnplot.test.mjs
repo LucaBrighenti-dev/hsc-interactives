@@ -369,6 +369,8 @@ test('toTex keeps a function call unambiguous when something follows it', () => 
   const t = (src) => toTex(parse(src, { variables: ['x', 'y'] }));
   assert.equal(t('sin(x) y'), '\\sin\\left(x\\right)y');
   assert.equal(t('(sin x)^2'), '\\left(\\sin x\\right)^{2}');
+  assert.equal(t('sqrt^2 x'), '\\left(\\sqrt{x}\\right)^{2}');
+  assert.equal(t('abs^2(x)'), '\\left|x\\right|^{2}');
 });
 
 // ---------------------------------------------------------------------------------------------
