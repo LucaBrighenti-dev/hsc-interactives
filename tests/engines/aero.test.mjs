@@ -409,6 +409,50 @@ test('speed sweep: thrust needed is least at the (L/D)max speed in level flight'
   for (const [, T, D] of climb) close(T - D, 10000 * Math.sin(5 * DEG), 1e-9);
 });
 
+test('least thrust: exact speed √(2W cos γ/(ρ S C_L*)) and T = W cos γ/(L/D)max + W sin γ', () => {
+  // Level: V* = √(20 000/(1.225 × 16 × 0.774597)) = 36.295 m/s; T* = 10 000/12.9099 = 774.60 N
+  const f = flight();
+  rel(f.minThrustSpeed, 36.295, 1e-4);
+  close(f.minThrustSpeed, f.minDragSpeed, 1e-12);
+  rel(f.minThrust, 10000 / 12.909944, 1e-6);
+  // γ = ±15°: V* = 36.295 × √(cos 15°) = 35.672 m/s; T* = W cos γ/(L/D)max + W sin γ
+  for (const gamma of [-15, 15]) {
+    const c = flight({ gamma });
+    rel(c.minThrustSpeed, 36.295 * Math.sqrt(Math.cos(15 * DEG)), 1e-4);
+    rel(c.minThrustSpeed, 35.672, 1e-4);
+    close(c.minThrust, (10000 * Math.cos(gamma * DEG)) / (1 / (2 * Math.sqrt(0.0015))) + 10000 * Math.sin(gamma * DEG), 1e-9);
+    // No speed on a fine grid needs less thrust.
+    for (const [, T] of speedSweep({ alphaMode: 'trim', alpha: 4, airspeed: 40, gamma, altitude: 0, ...AIRCRAFT }, 0.01)) assert.ok(T >= c.minThrust - 1e-9);
+  }
+});
+
+test('best L/D past the stall: report the best the wing can reach, at C_Lmax and V_s', () => {
+  // C_L0 = 0, α_stall = 8°: C_Lmax = 2π × 8° = 0.877298; C_D0 = k = 0.05 gives C_L* = 1 > C_Lmax.
+  // Best reachable L/D = C_Lmax/(C_D0 + k C_Lmax²) = 0.877298/(0.05 + 0.05 × 0.769652) = 9.9149
+  const f = flight({ cl0: 0, alphaStall: 8, cd0: 0.05, k: 0.05 });
+  const cm = 2 * Math.PI * 8 * DEG;
+  assert.equal(f.maxLDBeyondStall, true);
+  close(f.polarMaxLiftToDrag, 10, 1e-12, 'formula value 1/(2√0.0025) = 10');
+  close(f.maxLiftToDrag, cm / (0.05 + 0.05 * cm * cm), 1e-12);
+  rel(f.maxLiftToDrag, 9.9149, 1e-4);
+  assert.ok(f.maxLiftToDrag < f.polarMaxLiftToDrag);
+  close(f.clAtMaxLD, cm, 1e-12);
+  close(f.minDragSpeed, f.stallSpeed, 1e-9, 'best L/D speed is the stall speed, never below it');
+  close(f.minThrustSpeed, f.stallSpeedOnPath, 1e-9);
+  close(f.bestGlideAngle, Math.atan(1 / f.maxLiftToDrag) / DEG, 1e-12);
+  // No reachable α (pre- or post-stall) beats it.
+  const wing = { cl0: 0, alphaStall: 8, cd0: 0.05, k: 0.05 };
+  for (let a = -5; a <= 25; a += 0.01) assert.ok(liftCoefficient(a, wing) / dragCoefficient(a, wing) <= f.maxLiftToDrag + 1e-12, `α = ${a}`);
+  // C_D0 = 0.1, k = 0.01 with the default wing: polar says 15.81, the wing reaches 1.844934/(0.1 + 0.01 × 3.403782) = 13.764
+  const g = flight({ cd0: 0.1, k: 0.01 });
+  rel(g.polarMaxLiftToDrag, 15.811, 1e-4);
+  rel(g.maxLiftToDrag, 13.764, 1e-4);
+  // When C_L* is reachable nothing changes: the formula value is reported.
+  const d = flight();
+  assert.equal(d.maxLDBeyondStall, false);
+  close(d.maxLiftToDrag, d.polarMaxLiftToDrag, 0);
+});
+
 test('deterministic: same inputs, same outputs', () => {
   assert.deepEqual(flight({ gamma: 3.5, airspeed: 51 }), flight({ gamma: 3.5, airspeed: 51 }));
   const p = { altitude: 2345, airspeed: 61, seaLevelPressure: 1007, altimeterSetting: 1019 };

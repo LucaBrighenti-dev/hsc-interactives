@@ -58,34 +58,37 @@ export const meta = {
   },
   outputs: {
     // Flight forces
-    lift: { label: 'Lift L', unit: 'N', sigfigs: 3, setups: FF },
-    drag: { label: 'Drag D', unit: 'N', sigfigs: 3, setups: FF },
-    weight: { label: 'Weight W', unit: 'N', sigfigs: 3, setups: FF },
-    thrust: { label: 'Thrust needed T', unit: 'N', sigfigs: 3, setups: FF },
-    alpha: { label: 'Angle of attack', unit: '°', sigfigs: 3, setups: FF },
+    lift: { label: 'Lift L', unit: 'N', sigfigs: 3, siPrefix: true, setups: FF },
+    drag: { label: 'Drag D', unit: 'N', sigfigs: 3, siPrefix: true, setups: FF },
+    weight: { label: 'Weight W', unit: 'N', sigfigs: 3, siPrefix: true, setups: FF },
+    thrust: { label: 'Thrust needed T', unit: 'N', sigfigs: 3, siPrefix: true, setups: FF },
+    alpha: { label: 'Angle of attack α', unit: '°', sigfigs: 3, setups: FF },
     cl: { label: 'Lift coefficient CL', unit: '', sigfigs: 3, setups: FF },
     cd: { label: 'Drag coefficient CD', unit: '', sigfigs: 3, setups: FF },
     liftToDrag: { label: 'Lift-to-drag ratio L/D', unit: '', sigfigs: 3, setups: FF },
     stallSpeed: { label: 'Stall speed, level', unit: 'm/s', sigfigs: 3, setups: FF },
-    maxLiftToDrag: { label: 'Best L/D, (L/D)max', unit: '', sigfigs: 3, setups: FF },
-    clAtMaxLD: { label: 'CL at (L/D)max', unit: '', sigfigs: 3, setups: FF },
-    minDragSpeed: { label: 'Speed for (L/D)max, level', unit: 'm/s', sigfigs: 3, setups: FF },
+    // Best reachable L/D: 1/(2√(k·CD0)) unless that optimum lies past the stall, then the value at CLmax.
+    maxLiftToDrag: { label: 'Best L/D the wing can reach', unit: '', sigfigs: 3, setups: FF },
+    clAtMaxLD: { label: 'CL at best L/D', unit: '', sigfigs: 3, setups: FF },
+    minDragSpeed: { label: 'Speed for best L/D, level', unit: 'm/s', sigfigs: 3, setups: FF },
+    minThrustSpeed: { label: 'Speed for least thrust on this path', unit: 'm/s', sigfigs: 3, setups: FF },
+    minThrust: { label: 'Least thrust needed on this path', unit: 'N', sigfigs: 3, siPrefix: true, setups: FF },
     bestGlideAngle: { label: 'Best glide angle', unit: '°', sigfigs: 3, setups: FF },
-    liftSurplus: { label: 'Unbalanced lift', unit: 'N', sigfigs: 3, setups: FF },
+    liftSurplus: { label: 'Unbalanced lift L − W cos γ', unit: 'N', sigfigs: 3, siPrefix: true, setups: FF },
     loadFactor: { label: 'Load factor n = L/W', unit: '', sigfigs: 3, setups: FF },
-    dynamicPressure: { label: 'Dynamic pressure q', unit: 'Pa', sigfigs: 3, setups: FF },
-    stalled: { label: 'Stalled (1 = yes)', unit: '', sigfigs: 1, setups: FF },
+    dynamicPressure: { label: 'Dynamic pressure q', unit: 'Pa', sigfigs: 3, siPrefix: true, setups: FF },
+    stalled: { label: 'Stalled (1 = yes)', unit: '', integer: true, setups: FF },
     // Both
-    density: { label: 'Air density', unit: 'kg/m³', sigfigs: 4 },
-    temperature: { label: 'Air temperature', unit: 'K', sigfigs: 5 },
+    density: { label: 'Air density ρ', unit: 'kg/m³', sigfigs: 4 },
+    temperature: { label: 'Air temperature T', unit: 'K', sigfigs: 5 },
     // Pitot-static
-    staticPressure: { label: 'Static pressure', unit: 'Pa', sigfigs: 6, setups: PS },
-    totalPressure: { label: 'Total pressure', unit: 'Pa', sigfigs: 6, setups: PS },
-    pressureDifference: { label: 'Pressure difference Δp', unit: 'Pa', sigfigs: 3, setups: PS },
-    trueAirspeed: { label: 'Airspeed from pressures', unit: 'm/s', sigfigs: 3, setups: PS },
-    indicatedAirspeed: { label: 'Indicated airspeed', unit: 'm/s', sigfigs: 3, setups: PS },
-    indicatedAltitude: { label: 'Altimeter reading', unit: 'm', sigfigs: 4, setups: PS },
-    pressureAltitude: { label: 'Pressure altitude', unit: 'm', sigfigs: 4, setups: PS },
+    staticPressure: { label: 'Static pressure ps', unit: 'Pa', sigfigs: 4, siPrefix: true, setups: PS },
+    totalPressure: { label: 'Total pressure pt', unit: 'Pa', sigfigs: 4, siPrefix: true, setups: PS },
+    pressureDifference: { label: 'Pressure difference Δp', unit: 'Pa', sigfigs: 3, siPrefix: true, setups: PS },
+    trueAirspeed: { label: 'Airspeed √(2Δp/ρ)', unit: 'm/s', sigfigs: 3, setups: PS },
+    indicatedAirspeed: { label: 'Indicated airspeed (ρ₀)', unit: 'm/s', sigfigs: 3, setups: PS },
+    indicatedAltitude: { label: 'Altimeter reading', unit: 'm', integer: true, setups: PS },
+    pressureAltitude: { label: 'Pressure altitude', unit: 'm', integer: true, setups: PS },
     altimeterError: { label: 'Altimeter error', unit: 'm', sigfigs: 3, setups: PS },
     mach: { label: 'Mach number', unit: '', sigfigs: 3, setups: PS },
   },
@@ -152,12 +155,12 @@ export function create(stage, opts = {}) {
     getData() {
       if (setup === 'pitot-static') {
         return {
-          columns: ['h (m)', 'T (K)', 'p (Pa)', 'ρ (kg/m³)', `Δp at ${params.airspeed} m/s (Pa)`, 'Indicated airspeed (m/s)'],
+          columns: ['h (m), standard-day ISA', 'T (K)', 'p (Pa)', 'ρ (kg/m³)', `Δp at ${params.airspeed} m/s (Pa)`, 'Indicated airspeed (m/s)'],
           rows: isaTable(params),
         };
       }
       if (params.graph === 'thrust-speed') {
-        return { columns: ['V (m/s)', 'T needed (N)', 'D (N)', 'Zero-lift drag (N)', 'Induced drag (N)'], rows: speedSweep(params, 1) };
+        return { columns: ['V (m/s)', `T needed at γ = ${params.gamma}° (N)`, 'D (N)', 'Zero-lift drag (N)', 'Induced drag (N)'], rows: speedSweep(params, 1) };
       }
       return { columns: ['α (°)', 'CL', 'CD', 'L/D', `L at ${params.airspeed} m/s (N)`, `D at ${params.airspeed} m/s (N)`], rows: alphaSweep(params, 0.5) };
     },

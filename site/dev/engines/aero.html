@@ -40,7 +40,7 @@
           'stall-by-hand': 'Stall: α set to 18°',
         },
         controls: ['alphaMode', 'alpha', 'airspeed', 'gamma', 'mass', 'wingArea', 'altitude', 'cl0', 'alphaStall', 'cd0', 'k', 'g', 'graph', 'showComponents', 'zoomThrustDrag'],
-        readouts: ['lift', 'drag', 'weight', 'thrust', 'alpha', 'cl', 'cd', 'liftToDrag', 'stallSpeed', 'maxLiftToDrag'],
+        readouts: ['lift', 'drag', 'weight', 'thrust', 'alpha', 'cl', 'cd', 'liftToDrag', 'stallSpeed', 'maxLiftToDrag', 'minThrustSpeed'],
         assumptions: [
           'Simplified lift model: CL = CL0 + 2πα up to the stall',
           'Steady flight, thrust along the flight path',
@@ -56,7 +56,7 @@
         presetLabels: { default: 'Standard day', 'wrong-qnh': 'Flying into low pressure' },
         controls: ['airspeed', 'altitude', 'seaLevelPressure', 'altimeterSetting'],
         readouts: ['staticPressure', 'totalPressure', 'pressureDifference', 'density', 'trueAirspeed', 'indicatedAirspeed', 'indicatedAltitude'],
-        assumptions: ['Incompressible flow (Bernoulli)', 'ISA temperature profile', 'No instrument or position errors'],
+        assumptions: ['Incompressible flow (Bernoulli)', 'ISA profile, shifted to the sea-level pressure', 'No instrument or position errors'],
       },
     };
     const page = pages[setup];

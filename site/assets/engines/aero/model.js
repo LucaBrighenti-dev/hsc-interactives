@@ -116,7 +116,7 @@ export function altimeterReading(staticPressure, settingHpa) {
 /**
  * The day's atmosphere: the ISA shifted vertically so that the pressure at sea level is
  * `seaLevelPressureHpa`. This keeps the atmosphere hydrostatic (temperature shifts with it, by
- * under 2.5 K across the allowed range) and is exactly the atmosphere in which an altimeter set
+ * up to 3.5 K across the 950–1050 hPa range) and is exactly the atmosphere in which an altimeter set
  * to that pressure reads true altitude.
  */
 export function dayAtmosphere(h, seaLevelPressureHpa = ISA.P0 / 100) {
@@ -229,9 +229,20 @@ export function flightForces(p) {
   const lift = q * S * cl;
   const drag = q * S * cd;
   const thrust = drag + weight * sinG;
-  const ldMax = maxLiftToDrag(p.cd0, p.k);
-  const clStar = clForMaxLiftToDrag(p.cd0, p.k);
   const vs = stallSpeed({ weight, rho, wingArea: S, clMax: cm });
+
+  // Best L/D. The polar's optimum is 1/(2√(k·C_D0)) at C_L* = √(C_D0/k). Below C_L*, L/D rises with
+  // C_L, and past the stall C_L falls while C_D rises, so if C_L* > C_Lmax the wing can't reach the
+  // optimum: its best is at the stall (C_L = C_Lmax, V = V_s). Report what the wing can reach.
+  const polarMaxLD = maxLiftToDrag(p.cd0, p.k);
+  const clStar = clForMaxLiftToDrag(p.cd0, p.k);
+  const beyondStall = clStar > cm;
+  const clBest = beyondStall ? cm : clStar;
+  const ldBest = beyondStall ? cm / (p.cd0 + p.k * cm * cm) : polarMaxLD;
+  // Least thrust on this flight path: T = W cos γ/(L/D) + W sin γ, least where L/D is best, at
+  // V = √(2W cos γ/(ρ S C_L)) with C_L = clBest (so never below the stall boundary V_s√cos γ).
+  const minThrustSpeed = speedForCl({ weight: liftNeeded, rho, wingArea: S, cl: clBest });
+  const minThrust = liftNeeded / ldBest + weight * sinG;
 
   return {
     alphaMode: p.alphaMode === 'manual' ? 'manual' : 'trim',
@@ -256,11 +267,15 @@ export function flightForces(p) {
     stallSpeedOnPath: vs * Math.sqrt(cosG), // stall boundary for steady flight at this γ
     // Thrust for steady (trimmed) flight at this speed and γ, whatever alphaMode is; null below the stall boundary.
     trimThrust: clRequired <= cm * (1 + 1e-12) ? q * S * (p.cd0 + p.k * clRequired * clRequired) + weight * sinG : null,
-    maxLiftToDrag: ldMax,
-    clAtMaxLD: clStar,
-    maxLDBeyondStall: clStar > cm,
-    minDragSpeed: speedForCl({ weight, rho, wingArea: S, cl: clStar }),
-    bestGlideAngle: Math.atan(1 / ldMax) / DEG,
+    maxLiftToDrag: ldBest, // best reachable L/D (the polar's optimum unless that lies past the stall)
+    clAtMaxLD: clBest,
+    polarMaxLiftToDrag: polarMaxLD, // 1/(2√(k·C_D0)), reachable only if C_L* ≤ C_Lmax
+    polarClAtMaxLD: clStar,
+    maxLDBeyondStall: beyondStall,
+    minDragSpeed: speedForCl({ weight, rho, wingArea: S, cl: clBest }), // level flight; V_s when beyondStall
+    minThrustSpeed,
+    minThrust,
+    bestGlideAngle: Math.atan(1 / ldBest) / DEG,
     stalled,
     nearStall: !stalled && alpha >= p.alphaStall - STALL_WARNING_DEG,
   };
