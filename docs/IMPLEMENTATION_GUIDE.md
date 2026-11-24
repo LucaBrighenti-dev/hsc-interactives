@@ -493,7 +493,7 @@ Rules: no `box-shadow`, no gradients, no glow, no blur. Focus ring: 2px solid `-
 ### 6.4 Sign-in page (`signin.html`): the premium front door
 
 - Full-bleed `--c-bg`. Behind everything, a live canvas animation drawn in `--c-accent` at about 35% opacity: slope-field streamlines drifting slowly, or a family of projectile arcs. Self-contained in `assets/signin/background.js` (no engine dependency). With `prefers-reduced-motion`, show one static frame.
-- Left (desktop) / top (mobile): wordmark `SITE_NAME` in Archivo Expanded 800, 48–72 px, uppercase. A one-line promise underneath in Inter, e.g. "Interactive simulations for Extension Maths, Physics and Engineering Studies." Small mono line: `NSW STAGE 6 · 2017–2026 SYLLABUSES`.
+- Left (desktop) / top (mobile): wordmark `SITE_NAME` in Archivo Expanded 800, 48–72 px, uppercase. A one-line promise underneath in Inter, e.g. "Interactive simulations for Extension Maths, Physics and Engineering Studies." Small mono line: `NSW STAGE 6 · 2011–2026 SYLLABUSES`.
 - Right / below: a sharp-framed card (`--c-surface`, 1px `--c-line`, no radius):
   - `Continue with Microsoft` and `Continue with Google` (full-width, secondary style, provider marks as plain monochrome glyphs)
   - divider `OR`
