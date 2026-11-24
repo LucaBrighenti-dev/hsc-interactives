@@ -389,8 +389,10 @@ export function createView(stage, { setup, onError, onCamera }) {
     content.traverse((o) => {
       o.geometry?.dispose();
       if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m.dispose());
+      // Removing the group fires 'removed' on the group only, so take each label's element out here.
+      if (o.isCSS2DObject) o.element.remove();
     });
-    scene.remove(content); // CSS2D labels remove their own elements when removed from the scene
+    scene.remove(content);
     content = null;
   }
 
@@ -1243,7 +1245,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     ];
     for (const [name, from, to] of arrows) {
       k.arrow(from, to, { colour: blue, width: 3, head: 18 });
-      if (k.showLabels) k.label(from, name, { at: name === 'TOP' ? 'n' : name === 'FRONT' ? 's' : 'e', cls: 'is-blue is-strong' });
+      if (k.showLabels) k.label(from, name, { at: name === 'TOP' ? 'n' : 's', cls: 'is-blue is-strong' });
     }
     // small axes at the origin corner
     const a = big * 0.15;
@@ -1352,6 +1354,11 @@ export function createView(stage, { setup, onError, onCamera }) {
     while (size > 9 && ctx.measureText(str).width > maxWidth) {
       size -= 1;
       ctx.font = font(kind, size);
+    }
+    // Centred text stays on the sheet.
+    if (align === 'center') {
+      const half = ctx.measureText(str).width / 2;
+      x = Math.min(Math.max(x, half + 8), sizes.sw - half - 8);
     }
     ctx.fillStyle = colour;
     ctx.textAlign = align;
@@ -1555,7 +1562,11 @@ export function createView(stage, { setup, onError, onCamera }) {
     const sym = projectionSymbol(ctx, pad + 6, by, px * 1.6, s.method);
     const room = W - (pad + 6 + sym + px) - pad;
     text(ctx, s.method === 'first' ? 'FIRST-ANGLE PROJECTION' : 'THIRD-ANGLE PROJECTION', pad + 6 + sym + px, by - px * 0.6, { align: 'left', kind: 'strong', px, maxWidth: room });
-    text(ctx, `${s.part.label.toUpperCase()} · DIMENSIONS IN mm · NOT TO SCALE`, pad + 6 + sym + px, by + px * 0.65, { align: 'left', colour: pal.muted, px, maxWidth: room });
+    // the longest note that fits
+    ctx.font = font('label', 9);
+    const notes = [`${s.part.label.toUpperCase()} · DIMENSIONS IN mm · NOT TO SCALE`, 'DIMENSIONS IN mm · NOT TO SCALE', 'DIMENSIONS IN mm'];
+    const note = notes.find((n) => ctx.measureText(n).width <= room) ?? notes[notes.length - 1];
+    text(ctx, note, pad + 6 + sym + px, by + px * 0.65, { align: 'left', colour: pal.muted, px, maxWidth: room });
   }
 
   function drawDescriptiveSheet(ctx, W, H, s, p) {
