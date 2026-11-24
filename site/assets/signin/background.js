@@ -8,10 +8,12 @@
 // so no numerical integration is needed and nothing accumulates error. As t grows the field slides right.
 //
 // Self-contained: no engine dependency. Drawn in --c-accent at about 35% opacity, flat lines only.
-// Light on CPU: about 30 frames a second, device pixel ratio capped at 2 (and a pixel budget for very
-// large screens), paused while the tab is hidden, and one static frame with prefers-reduced-motion.
+// Light on CPU: about 30 frames a second (15 or 10 on a slow machine), device pixel ratio capped at 2
+// (and a pixel budget for very large screens), paused while the tab is hidden, and one static frame
+// with prefers-reduced-motion.
 //
-// Test hooks: canvas.dataset.motion is 'running' | 'paused' | 'static'; canvas.hscFrames counts frames drawn.
+// Test hooks: canvas.dataset.motion is 'running' | 'paused' | 'static'; canvas.hscFrames counts frames
+// drawn; canvas.hscFrameMs is the current target frame interval.
 
 const FRAME_MS = 1000 / 30;
 const DRIFT = 0.1; // rad/s: one wavelength (2π) every ~63 s
@@ -122,19 +124,34 @@ export function mountBackground(canvas, opts = {}) {
     canvas.hscFrames += 1;
   }
 
+  // Adaptive rate: a laptop drawing canvases in software (GPU blocklisted) gets 15 or 10 frames a
+  // second instead of 30. The drift is slow, so it still looks smooth. `cost` is the smoothed time of
+  // one draw; `gap` is the smoothed time between animation frames (long gaps mean a busy main thread).
+  let frameMs = FRAME_MS;
+  let cost = 0;
+  let gap = 1000 / 60;
+  let prev = 0;
+
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (now - last < FRAME_MS - 1) return;
-    const dt = last ? Math.min(0.1, (now - last) / 1000) : 0; // no jump after a pause
+    if (prev) gap = gap * 0.9 + Math.min(250, now - prev) * 0.1;
+    prev = now;
+    if (now - last < frameMs - 1) return;
+    const dt = last ? Math.min(0.2, (now - last) / 1000) : 0; // no jump after a pause
     last = now;
     t += dt * DRIFT;
+    const started = performance.now();
     draw();
+    cost = cost * 0.9 + (performance.now() - started) * 0.1;
+    frameMs = cost > 12 || gap > 50 ? 100 : cost > 5 || gap > 30 ? 1000 / 15 : FRAME_MS;
+    canvas.hscFrameMs = frameMs;
   }
 
   function stop(state) {
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
     last = 0;
+    prev = 0;
     canvas.dataset.motion = state;
   }
 

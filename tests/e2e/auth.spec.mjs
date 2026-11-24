@@ -179,13 +179,35 @@ test.describe('redirects and returns', () => {
     await page.getByLabel('Access code').fill('TTT2026');
     await page.getByRole('button', { name: 'Enter', exact: true }).click();
     await expect(page).toHaveURL(home);
-    // Already signed in: the sign-in page sends you straight on, still only within this site.
-    for (const bad of ['//example.com/', '/\\example.com', 'javascript:alert(1)', 'https:example.com', '/signin.html?next=/']) {
+    // Already signed in: the sign-in page sends you straight on (no click), still only within this site.
+    // Dot segments must not normalise into a protocol-relative //host (review of PR #37, fixed in #47).
+    for (const bad of [
+      '//example.com/',
+      '/\\example.com',
+      'javascript:alert(1)',
+      'https:example.com',
+      '/signin.html?next=/',
+      '/.//evil.example/phish',
+      '/%2e//evil.example/phish',
+      '/../' + '/evil.example/phish',
+      '/a/..//evil.example/phish',
+    ]) {
       await page.goto(`/signin.html?next=${encodeURIComponent(bad)}`);
       await expect(page).toHaveURL(home);
     }
     await page.goto(signinWith());
     await expect(page).toHaveURL(NEXT_URL);
+  });
+
+  test('a dot-segment `next` (/.//evil.example) lands on / after the access code', async ({ page }, testInfo) => {
+    desktopOnly(testInfo);
+    await page.goto('/signin.html?next=%2F.%2F%2Fevil.example%2Fphish');
+    await page.getByLabel('Access code').fill('TTT2026');
+    await page.getByRole('button', { name: 'Enter', exact: true }).click();
+    await expect(page).toHaveURL(/^http:\/\/localhost:\d+\/(\?.*)?$/);
+    // And again while already signed in: no click needed, still home.
+    await page.goto('/signin.html?next=%2F.%2F%2Fevil.example%2Fphish');
+    await expect(page).toHaveURL(/^http:\/\/localhost:\d+\/(\?.*)?$/);
   });
 
   test('sign out, then the gate sends you back to sign-in with `next`', async ({ page }, testInfo) => {
@@ -212,6 +234,10 @@ test.describe('redirects and returns', () => {
     await expect(message).toContainText('expired or has already been used');
     await expect(page).toHaveURL(/\/signin\.html\?next=[^&]+$/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
+    // Unknown codes get our generic text; a crafted description is never shown.
+    await page.goto(`${signinWith()}&error=server_trouble&error_description=Call+0400+000+000+to+unlock+your+account`);
+    await expect(message).toContainText('Sign-in did not finish');
+    await expect(message).not.toContainText('0400');
     // The page still works.
     await page.getByLabel('Access code').fill('TTT2026');
     await page.getByRole('button', { name: 'Enter', exact: true }).click();
@@ -297,6 +323,23 @@ test.describe('layout at every size', () => {
       els.filter((e) => e.offsetParent && e.getBoundingClientRect().height < 44).map((e) => e.textContent || e.id),
     );
     expect(small).toEqual([]);
+    expect(problems).toEqual([]);
+  });
+
+  test('reflow at 320 px: no sideways scroll on sign-in, onboarding or privacy', async ({ page }, testInfo) => {
+    desktopOnly(testInfo);
+    const problems = watchConsole(page);
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto('/privacy.html');
+    await page.evaluate(() => document.fonts.ready);
+    expect(await overflowsX(page)).toBe(false);
+    await page.goto('/signin.html');
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('.signin__wordmark')).toHaveCSS('font-size', /^(2[4-9]|3\d)(\.\d+)?px$/);
+    expect(await overflowsX(page)).toBe(false);
+    await page.getByRole('button', { name: 'Continue with Google' }).click();
+    await expect(page.getByRole('dialog', { name: 'Welcome' })).toBeVisible();
+    expect(await overflowsX(page)).toBe(false);
     expect(problems).toEqual([]);
   });
 

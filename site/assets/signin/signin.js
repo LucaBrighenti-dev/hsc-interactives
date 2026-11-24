@@ -51,8 +51,7 @@ mountBackground($('[data-signin-bg]'));
 if (authMode === 'local') {
   const hint = $('[data-local-hint]');
   const codes = LOCAL_ACCESS_CODES.map((c) => c.code).join(', ');
-  hint.innerHTML = '';
-  hint.append(
+  hint.replaceChildren(
     Object.assign(document.createElement('span'), { className: 'signin__local-tag', textContent: 'Local preview' }),
     document.createTextNode(` No real accounts: every option signs you in on this device. Access code ${codes}.`),
   );
@@ -61,10 +60,10 @@ if (authMode === 'local') {
 
 /**
  * Size the wordmark so its longest word fits the column: 72 px at most, smaller only when a word
- * would not fit (a phone, or a long site name).
+ * would not fit (a phone, or a long site name). The 24 px floor keeps a 320 px screen from scrolling sideways.
  */
-function fitWordmark(node, text, { min = 30, max = 72 } = {}) {
-  node.textContent = '';
+function fitWordmark(node, text, { min = 24, max = 72 } = {}) {
+  node.replaceChildren();
   const words = String(text).trim().split(/\s+/);
   words.forEach((word, i) => {
     const span = document.createElement('span');
@@ -170,9 +169,12 @@ window.addEventListener('pageshow', (e) => {
 // Returning from a provider or a magic link
 // ---------------------------------------------------------------------------------------------
 
-/** Plain-language messages for errors a provider or Supabase puts in the URL. */
-function returnErrorMessage({ error, errorCode, errorDescription }) {
-  const code = errorCode || error || '';
+/**
+ * Plain-language messages for errors a provider or Supabase puts in the URL. Only known codes are
+ * recognised and the text is always ours: anyone can craft a link, so the URL's own description is
+ * never shown.
+ */
+function returnErrorMessage({ error, errorCode }) {
   const known = {
     otp_expired: 'That sign-in link has expired or has already been used. Ask for a new one below.',
     access_denied: 'Sign-in was cancelled or not allowed. Try again, or choose another way in.',
@@ -185,11 +187,9 @@ function returnErrorMessage({ error, errorCode, errorDescription }) {
     server_error: 'The sign-in service had a problem. Wait a moment and try again.',
     temporarily_unavailable: 'The sign-in service is busy. Wait a moment and try again.',
   };
-  if (known[errorCode]) return known[errorCode];
-  if (known[error]) return known[error];
-  if (/expired|invalid/i.test(errorDescription || '')) return known.otp_expired;
-  const detail = String(errorDescription || code || '').replace(/\s+/g, ' ').trim().slice(0, 160);
-  return detail ? `Sign-in did not finish (${detail}). Please try again.` : 'Sign-in did not finish. Please try again.';
+  if (Object.hasOwn(known, errorCode || '')) return known[errorCode];
+  if (Object.hasOwn(known, error || '')) return known[error];
+  return 'Sign-in did not finish. Please try again, or choose another way in.';
 }
 
 /** Remove the one-time return parameters so a refresh doesn't replay them. `next` stays. */
