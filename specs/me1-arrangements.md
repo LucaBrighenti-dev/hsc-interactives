@@ -23,7 +23,7 @@ Default view at 1920×1080 (projector theme), line mode, 6 people, the 2 highlig
 - **Seats (top half):** 6 seats in a row (or round a table in circle mode), each holding a person token: a circle with a letter A, B, C, … The restricted group (A and B by default) is drawn with a thick orange outline and a filled corner tag "G" (group). A "Shuffle" button deals a new random arrangement (seeded, view only) and a banner says whether it satisfies the restriction ("A and B together ✓" or "✗").
 - **Reasoning panel (bottom left):** the counting argument as numbered steps in KaTeX with the current numbers, e.g. "Glue A and B into one block → 5 units → 5! orders → × 2! orders inside the block = 240". Each step can be revealed in turn ("Next step"). For "no two together", the panel and the seats show the gap method: the others seated first, with ^ marks in the gaps.
 - **Check panel (bottom right):** the formula count beside a brute-force count "found by checking all 720 arrangements: 240", and the fraction of arrangements that satisfy the restriction (240/720 = 1/3).
-- **Small cases:** with 5 or fewer people (or 6 or fewer letters), a "List them" toggle shows every arrangement as a grid of small rows, with those that satisfy the restriction filled and the others hollow.
+- **List them** (toggle): every arrangement as a grid of small rows, with those that satisfy the restriction filled and the others hollow, and a count "240 of 720 satisfy". *Line and word modes:* one arrangement per row (distinct orderings only, for words), in dictionary order. *Circle mode:* the n! seatings are grouped into their (n − 1)! rotation classes, one class per row, with the n rotations of that seating side by side; a class is filled when its seatings satisfy the restriction (rotations of a seating all satisfy it or all fail). This shows why each round-table arrangement is counted once, not n times. *Cap:* at most 120 arrangements (or, in circle mode, 120 seatings: 24 classes of 5) are drawn at once, which covers 5 people in a row, round tables of up to 5, and BANANA (60). Larger cases show the first 120 rows with the label "showing the first 120 of 720", and the counts stay exact. Cells keep 18 px text at 1920×1080; the grid scrolls inside the stage rather than shrinking.
 - **Word mode:** the letters as tiles, identical letters sharing a colour and a subscript (A₁, A₂, A₃) that can be switched off to show why they are indistinguishable.
 - **Pigeonhole mode:** b boxes and m balls. "Deal" fills the boxes as evenly as possible, the fullest box is outlined and labelled "at least ⌈m/b⌉".
 
@@ -39,7 +39,7 @@ This is a custom page (`site/assets/engines/custom/me1-arrangements/`); the spec
 | word | Word | | | | | BANANA | string, letters only (pattern `^[A-Za-z]{1,12}$`), treated as capitals |
 | items | Balls m | | 1 | 60 | 1 | 13 | integer; pigeonhole |
 | boxes | Boxes b | | 1 | 12 | 1 | 4 | integer; pigeonhole |
-| showList | List every arrangement (small cases) | | | | | off | available for n ≤ 5 people or words of up to 6 letters |
+| showList | List them | | | | | off | toggle; at most 120 rows drawn (see What the student sees) |
 | showSubscripts | Label repeated letters | | | | | off | word mode |
 | seed | Shuffle seed | | 1 | 99999 | 1 | 1 | integer; the Shuffle button advances a mulberry32 generator from this seed (view only) |
 
@@ -84,8 +84,8 @@ Formulas the engine uses (n people, special group of k; in a circle, rotations o
 1. Predict: 6 people in a row with A and B together. Is the answer 5!, 5! × 2 or 6! − 5!? Reveal the reasoning steps to check.
 2. Observe: switch to "no two together" for the same 6 people. Add the two answers. What do you notice, and why?
 3. Predict: with 7 people and the 3 special people, which is bigger: "not all together" or "no two together"? Explain the difference.
-4. Observe: switch to the round table with 6 people. Why is the total 120, not 720? Turn on "List them" with 4 people to see the rotations.
-5. Explain: in the pigeonhole preset, deal the 13 balls as evenly as you can. Why can no dealing avoid a box with 4?
+4. Observe: switch to the round table with 6 people. Why is the total 120, not 720? Set 4 people and turn on "List them": each row holds one seating and its 4 rotations.
+5. Explain: in the pigeonhole preset, press Deal to share the 13 balls as evenly as possible. Why can no way of sharing them avoid a box with at least 4?
 
 ## Teacher notes outline
 - Misconceptions to target: forgetting the k! orders inside a block; "apart" for three people meaning "not all together" (versus no two together); treating circular arrangements as n!; dividing by 2 for a circle when reflections are distinct (only for necklaces and keyrings); dividing by the wrong factorials for repeated letters; reading the pigeonhole principle as "every box has at least ⌈m/b⌉".
@@ -94,7 +94,7 @@ Formulas the engine uses (n people, special group of k; in a circle, rotations o
 
 ## Accessibility notes
 - Second cues beyond colour: special people have a thick outline and a "G" tag; satisfying arrangements in the list are filled and others hollow; the banner uses ✓ or ✗ with words; repeated letters can show subscripts.
-- Keyboard: all parameters are panel controls; Shuffle, Next step, List them and Deal are buttons.
+- Keyboard: all parameters are panel controls; Shuffle, Next step and Deal are buttons, and List them is a toggle.
 - Stage aria-label (from `describe()`), for example: "Six people in a row, with A and B kept together. 240 of the 720 arrangements satisfy this, one third. The computer's count agrees."
 
 ## Engine change requests

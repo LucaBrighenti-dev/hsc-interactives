@@ -20,7 +20,7 @@ Students understand the structure of a proof by mathematical induction (base cas
 ## What the student sees
 Default view at 1920×1080 (projector theme), the sum of the first n odd numbers, dominoes n = 1 to 12:
 
-- **Domino row (top third):** 12 upright dominoes labelled n = 1, 2, 3, … Each shows a small check of P(n) underneath, e.g. "1 + 3 + 5 = 9 = 3²". Pressing play pushes the first domino at the base case; each domino that falls tips the next, one every 0.2 s. A domino whose statement is false does not fall: it is drawn with a thick outline and a ✗, and the chain stops there. Dominoes before the base case (n < n₀) are greyed out with the label "not claimed".
+- **Domino rows (top third):** upright dominoes labelled n = 1, 2, 3, … up to `upTo`, in rows of at most 15 (so 12 dominoes make one row, 45 make three, 60 make four), each at least 60 px wide at 1920×1080 so its label ("n = 41") stays at 18 px. When there are 12 dominoes or fewer and the check fits in the domino's width, each shows a small check of P(n) underneath, e.g. "1 + 3 + 5 = 9 = 3²"; otherwise the checks appear only in the checker panel (for the domino under the pointer or keyboard focus, or the one that has just fallen). Long numbers such as 5¹² + 3 = 244 140 628 always go in the checker panel. Pressing play pushes the first domino at the base case; each domino that falls tips the next, one every 0.2 s. A domino whose statement is false does not fall: it is drawn with a thick outline and a ✗, and the chain stops there. Dominoes before the base case (n < n₀) are greyed out with the label "not claimed".
 - **Proof panel (bottom two-thirds):** the induction proof for the chosen statement, revealed one line at a time with "Next line" (or the `reveal` slider). Each line has a tag: **Base case**, **Assume**, **Prove**, **Step**, **Conclusion**. The line that uses the assumption is highlighted where the assumed expression is substituted. For a statement where the proof breaks down, the failing line is marked ✗ with a short reason.
 - **Checker (right):** "Check n = …": the left side, the right side and whether P(n) holds, for any n from 1 to 60.
 
@@ -30,8 +30,8 @@ This is a custom page (`site/assets/engines/custom/me1-induction-dominoes/`); th
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | statement | Statement | | | | | odd-sum | enum: `odd-sum`, `square-sum`, `divisible`, `inequality`, `false-base`, `euler` (see the table below). Select |
-| start | Base case n₀ | | 1 | 10 | 1 | 1 | integer; where the first push happens |
-| upTo | Dominoes up to n = | | 5 | 60 | 1 | 12 | integer |
+| start | Base case n₀ | | 1 | 10 | 1 | 1 | integer; where the first push happens. Choosing a statement does not change it (the presets set it); when it differs from the statement's usual base case in the table, the stage notes "the usual base case is n = 5" |
+| upTo | Dominoes up to n = | | 5 | 60 | 1 | 12 | integer; if it is less than n₀, no domino is claimed (see below) |
 | nCheck | Check n = | | 1 | 60 | 1 | 3 | integer |
 | reveal | Proof lines shown | | 0 | 6 | 1 | 0 | integer |
 | timeScale | Playback speed | × | 0.25 | 2 | 0.25 | 1 | |
@@ -49,7 +49,7 @@ The statements (all for whole numbers n ≥ 1; the default base case is shown in
 
 Exact integer arithmetic: the engine uses BigInt for `divisible` (5⁶⁰ has 42 digits); `lhs` and `rhs` are reported as Numbers (rounded for very large n, which only affects the display).
 
-Domino timing (the run): with a fixed step of 1/60 s, one domino falls every 12 steps. Let L be the length of the chain: the number of consecutive n from n₀ up to `upTo` for which P(n) holds (L = 0 if P(n₀) is false). After s steps, **fallen = min(⌊s/12⌋, L)**. The run is complete when ⌊s/12⌋ ≥ L + 1 if the chain was stopped by a false P(n) within the range (one extra beat shows the domino that stays up), or when ⌊s/12⌋ ≥ L if every domino up to `upTo` falls. Changing any parameter except `reveal` and `timeScale` resets the run.
+Domino timing (the run): with a fixed step of 1/60 s, one domino falls every 12 steps. Let L be the length of the chain: the number of consecutive n from n₀ up to `upTo` for which P(n) holds (L = 0 if P(n₀) is false). After s steps, **fallen = min(⌊s/12⌋, L)**. The run is complete when ⌊s/12⌋ ≥ L + 1 if the chain was stopped by a false P(n) within the range (one extra beat shows the domino that stays up), or when ⌊s/12⌋ ≥ L if every domino up to `upTo` falls. Changing `statement`, `start` or `upTo` resets the run; `nCheck`, `reveal` and `timeScale` do not. If `start` > `upTo`, no domino is claimed: L = 0, fallen = 0, firstFailure = 0, the run is complete at once, and the stage says "Set the last domino at or after the base case".
 
 Proof lines (revealed one at a time; written for this page, with the current statement's algebra):
 - **odd-sum:** (1) Base case n = 1: LHS = 1, RHS = 1² = 1, true. (2) Assume true for n = k: 1 + 3 + … + (2k − 1) = k². (3) Prove for n = k + 1: 1 + 3 + … + (2k − 1) + (2k + 1) = (k + 1)². (4) LHS = k² + (2k + 1), by the assumption. (5) = (k + 1)² = RHS. (6) True for n = 1, and true for n = k + 1 whenever true for n = k, so true for all n ≥ 1.

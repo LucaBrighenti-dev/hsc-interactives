@@ -40,7 +40,7 @@ This is a custom page (`site/assets/engines/custom/me1-pascal-binomial/`); the s
 | showIdentity | Pascal's identity | | | | | on | |
 | showExpansion | Full expansion | | | | | on | hidden automatically for n > 10 (too long to read) |
 
-The expansion is (p xᵅ + q xᵝ)ⁿ. Examples: (x + 1)ⁿ is p = 1, α = 1, q = 1, β = 0; (2x + 3)⁵ is p = 2, α = 1, q = 3, β = 0; (x + 1/x)⁸ is p = 1, α = 1, q = 1, β = −1. Exact integer arithmetic: the engine works in BigInt and converts outputs to Number. Every term coefficient in these ranges is below 2⁵³ in size (at most ¹⁶C₈ × 5¹⁶ ≈ 1.96 × 10¹⁵), so they convert exactly; only the largest sums of coefficients (up to 10¹⁶) may be rounded in the last digit on display.
+The expansion is (p xᵅ + q xᵝ)ⁿ. Examples: (x + 1)ⁿ is p = 1, α = 1, q = 1, β = 0; (2x + 3)⁵ is p = 2, α = 1, q = 3, β = 0; (x + 1/x)⁸ is p = 1, α = 1, q = 1, β = −1. Exact integer arithmetic: the engine works in BigInt and converts outputs to Number. Every term coefficient in these ranges is below 2⁵³ in size (at most ¹⁶C₈ × 5¹⁶ ≈ 1.96 × 10¹⁵), so they convert exactly; so does every coefficient sum (p + q)ⁿ, whose largest possible size, 10¹⁶, is exactly representable. Powers use 0⁰ = 1, so p = 0 or q = 0 leaves a single term (for example (0x + 3)⁴ = 81).
 
 ## Presets
 | Name | Values | Why |
