@@ -28,7 +28,7 @@ The stage at 1920×1080 shows a square Argand diagram (equal scales, gridlines e
 This setup is static: there is no play button.
 
 ## Parameters
-Keys are from the `argand` engine meta on `origin/w1/engine-argand` (commit 8caa8d0). The polynomial is P(z) = c_d z^d + … + c₁z + c₀ with d = degree; only c₀ can be given an imaginary part.
+Keys are from the `argand` engine meta, merged to `main` in #13 (first written against commit 8caa8d0; all checks pass on both). The polynomial is P(z) = c_d z^d + … + c₁z + c₀ with d = degree; only c₀ can be given an imaginary part.
 
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -96,7 +96,7 @@ Definitions (from the engine): the roots are found numerically and counted with 
 - Stage aria-label (from `describe()`), for example: "Roots of z cubed minus 3 z squared plus 4 z minus 2: a real root at 1 and the conjugate pair 1 ± i, mirror images in the real axis."
 
 ## Engine change requests
-Keys and outputs above match the `argand` meta on `origin/w1/engine-argand` (8caa8d0). Requests (not used by the acceptance block below):
+Keys and outputs above match the `argand` meta now on `main` (#13). Requests (not used by the acceptance block below):
 - **Mirror gap** output `mirrorGap`: the largest distance from the conjugate of a root to the nearest root (0 for real coefficients). It turns "the symmetry breaks" into a number. Test values: z² − 2i gives 2 (the conjugate of 1 + i is 1 − i, which is 2 from both roots 1 + i and −1 − i); z² + 2z + 5 + i gives 2p = √(2√17 − 8) = 0.496196787.
 - **Real factor labels** (toggle `showFactors`): each conjugate pair labelled with its real quadratic factor z² − 2Re(α)z + |α|², for example "z² − 2z + 2".
 - **Graph of P(x)** inset (toggle `showGraph`) for real coefficients, so the x-intercepts line up with the real roots.
