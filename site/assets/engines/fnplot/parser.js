@@ -18,8 +18,8 @@
 //
 //   `variables` lists the names an expression may use (['x'], ['x', 'y'], ['t', 'a', 'b'] …).
 //   With it, any other name is an error that lists the allowed ones. Without it (exploring only),
-//   every single letter is a variable. Variable names are letters only and must not clash with a
-//   function or constant name (so never 'e').
+//   every single letter is a variable (lower-cased, so X and x are the same). Variable names are
+//   letters only and must not clash with a function or constant name (so never 'e').
 //
 // ── Syntax ─────────────────────────────────────────────────────────────────────────────────────
 //   Numbers 2, 2.5, .5 (no 1e5 notation: "2e" means 2 × e). Constants pi (π) and e.
@@ -28,13 +28,19 @@
 //   2xy, pi x. Runs of letters split into known names, longest first: "sinx" = sin x, "ax" = a·x
 //   when a and x are variables, "asinx" = asin x (write "a sin x" for a·sin x). A number may not
 //   follow a value directly ("x2" is an error).
+//   Typed exponents and fractions follow the precedence above, which differs from Desmos's editor:
+//     e^2x = e²·x, e^-kt = e^(−k)·t, 1/2x = x/2, sin pi/6 = sin(π)/6. Use brackets: e^(2x), 1/(2x).
 //   Functions: sin cos tan asin acos atan sec csc cot exp ln log (base 10) sqrt abs sign floor,
-//   with aliases cosec, arcsin, arccos, arctan, sgn. Names are case-insensitive.
+//   with aliases cosec, arcsin, arccos, arctan, sgn. Names are case-insensitive. Angles are in
+//   radians. "log10(x)" and "ln2(x)" are errors (they would read as log(10x)): write log(x).
 //   Arguments: sin(x+1), or without brackets, where the argument runs over implicit products and
 //   powers and stops at + − * / or the next function: sin 2x = sin(2x), sin x^2 = sin(x²),
 //   sin x/2 = (sin x)/2, 2 sin x cos x = 2·sin(x)·cos(x).
 //   Function powers: sin^2 x = (sin x)². Inverse trig: sin^-1 x = asin x (also cos, tan).
-//   Absolute value bars: |x − 1|, 2|x|. Unicode: π θ α β λ μ ω φ, − × · ÷ √ ² ³ are accepted.
+//   Absolute value bars: |x − 1|, 2|x|, |sqrt(2|x|) − 3|. Bars directly inside bars are ambiguous
+//   (|2|x| − 3| reads as |2|·x·|−3|): use abs() for nested absolute values.
+//   Unicode: π θ α β λ μ ω φ, − – × · ÷ √ and superscript digits (x²³ = x^23) are accepted; any
+//   Unicode space counts as a space.
 //   x^(p/q) with q odd gives the real root of a negative base: (-8)^(1/3) = −2.
 //   Domain errors evaluate to NaN or ±Infinity (sqrt(-1), ln 0, 1/0); they never throw.
 
@@ -52,8 +58,11 @@ const sec = (x) => 1 / Math.cos(x);
 const csc = (x) => 1 / Math.sin(x);
 const cot = (x) => Math.cos(x) / Math.sin(x);
 
+// Lookup tables have no prototype, so names such as "constructor" or "toString" are never found.
+const table = (entries) => Object.freeze(Object.assign(Object.create(null), entries));
+
 // name → [implementation, LaTeX command]
-const FUNCTIONS = {
+const FUNCTIONS = table({
   sin: [Math.sin, '\\sin'],
   cos: [Math.cos, '\\cos'],
   tan: [Math.tan, '\\tan'],
@@ -70,12 +79,12 @@ const FUNCTIONS = {
   abs: [Math.abs, null],
   sign: [Math.sign, '\\operatorname{sgn}'],
   floor: [Math.floor, null],
-};
-const ALIASES = { cosec: 'csc', arcsin: 'asin', arccos: 'acos', arctan: 'atan', sgn: 'sign' };
-const INVERSES = { sin: 'asin', cos: 'acos', tan: 'atan' };
-const CONSTANTS = { pi: Math.PI, e: Math.E };
-const GREEK = { 'π': 'pi', 'θ': 'theta', 'α': 'alpha', 'β': 'beta', 'λ': 'lambda', 'μ': 'mu', 'ω': 'omega', 'φ': 'phi' };
-const GREEK_TEX = { theta: '\\theta', alpha: '\\alpha', beta: '\\beta', lambda: '\\lambda', mu: '\\mu', omega: '\\omega', phi: '\\phi' };
+});
+const ALIASES = table({ cosec: 'csc', arcsin: 'asin', arccos: 'acos', arctan: 'atan', sgn: 'sign' });
+const INVERSES = table({ sin: 'asin', cos: 'acos', tan: 'atan' });
+const CONSTANTS = table({ pi: Math.PI, e: Math.E });
+const GREEK = table({ 'π': 'pi', 'θ': 'theta', 'α': 'alpha', 'β': 'beta', 'λ': 'lambda', 'μ': 'mu', 'ω': 'omega', 'φ': 'phi' });
+const GREEK_TEX = table({ theta: '\\theta', alpha: '\\alpha', beta: '\\beta', lambda: '\\lambda', mu: '\\mu', omega: '\\omega', phi: '\\phi' });
 
 export const FUNCTION_NAMES = Object.freeze([...Object.keys(FUNCTIONS), ...Object.keys(ALIASES)]);
 export const CONSTANT_NAMES = Object.freeze(Object.keys(CONSTANTS));
@@ -84,17 +93,19 @@ export const CONSTANT_NAMES = Object.freeze(Object.keys(CONSTANTS));
  * `pattern` for string params holding an expression: letters, digits, spaces, operators, brackets,
  * bars and the Unicode maths symbols the parser accepts. Markup and quote characters never pass.
  */
-export const EXPRESSION_PATTERN = '^[0-9A-Za-z .+\\-*/^()|πθαβλμωφ−×·⋅÷√²³]*$';
+export const EXPRESSION_PATTERN = '^[0-9A-Za-z\\s.+\\-*/^()|πθαβλμωφ−–×·⋅÷√⁰¹²³⁴⁵⁶⁷⁸⁹]*$';
 
 // Binding powers (Pratt).
-const BP = { '+': 10, '-': 10, '*': 20, '/': 20, '^': 30 };
+const BP = table({ '+': 10, '-': 10, '*': 20, '/': 20, '^': 30 });
 const IMPLICIT_BP = 20;
 const UNARY_BP = 25; // weaker than ^, stronger than * and /
 const FN_ARG_BP = 19; // a bare function argument takes implicit products, not explicit * or /
+const MAX_DEPTH = 200; // nested brackets and operators; far beyond any real expression
 
-const OP_CHARS = { '+': '+', '-': '-', '*': '*', '/': '/', '^': '^', '−': '-', '×': '*', '·': '*', '⋅': '*', '÷': '/' };
-const SUPERSCRIPTS = { '²': 2, '³': 3 };
+const OP_CHARS = table({ '+': '+', '-': '-', '*': '*', '/': '/', '^': '^', '−': '-', '–': '-', '×': '*', '·': '*', '⋅': '*', '÷': '/' });
+const SUPERSCRIPTS = table({ '⁰': 0, '¹': 1, '²': 2, '³': 3, '⁴': 4, '⁵': 5, '⁶': 6, '⁷': 7, '⁸': 8, '⁹': 9 });
 
+const isSpace = (c) => /\s/u.test(c);
 const isDigit = (c) => c >= '0' && c <= '9';
 const isLetter = (c) => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 const quote = (s) => `"${s}"`;
@@ -120,7 +131,7 @@ function tokenize(src, vars) {
   let i = 0;
   while (i < n) {
     const c = src[i];
-    if (c === ' ' || c === '\t' || c === '\n' || c === '\r') {
+    if (isSpace(c)) {
       i += 1;
       continue;
     }
@@ -158,9 +169,12 @@ function tokenize(src, vars) {
       continue;
     }
     if (c in SUPERSCRIPTS) {
-      tokens.push({ type: 'op', value: '^', text: c, pos: i, end: i + 1 });
-      tokens.push({ type: 'num', value: SUPERSCRIPTS[c], text: String(SUPERSCRIPTS[c]), pos: i, end: i + 1 });
-      i += 1;
+      // A run of superscript digits is one exponent: x²³ = x^23.
+      const start = i;
+      let digits = '';
+      while (i < n && src[i] in SUPERSCRIPTS) digits += SUPERSCRIPTS[src[i++]];
+      tokens.push({ type: 'op', value: '^', text: src.slice(start, i), pos: start, end: i });
+      tokens.push({ type: 'num', value: Number(digits), text: digits, pos: start, end: i });
       continue;
     }
     if (c === '√') {
@@ -195,7 +209,7 @@ function lookup(name, vars) {
     for (const v of vars) if (v.toLowerCase() === lower) return { kind: 'var', name: v };
     return null;
   }
-  if (name.length === 1 || lower in GREEK_TEX) return { kind: 'var', name };
+  if (name.length === 1 || lower in GREEK_TEX) return { kind: 'var', name: lower };
   return null;
 }
 
@@ -257,7 +271,18 @@ class Parser {
   constructor(tokens) {
     this.toks = tokens;
     this.i = 0;
+    this.absDepth = 0; // open |…| groups at the current bracket level
+    this.depth = 0; // recursion guard
+  }
+
+  /** The inside of ( … ) after the "(" token: bars inside brackets start afresh. */
+  bracketed(open) {
+    const saved = this.absDepth;
     this.absDepth = 0;
+    const inner = this.expr(0);
+    const close = this.expectClose(open);
+    this.absDepth = saved;
+    return { inner, close };
   }
 
   peek(k = 0) {
@@ -284,6 +309,18 @@ class Parser {
 
   /** Parse while the next operator binds tighter than rbp. fnArg: a bare function argument. */
   expr(rbp, fnArg = false) {
+    if (++this.depth > MAX_DEPTH) {
+      const t = this.peek();
+      throw new ExpressionError(`This expression is nested too deeply to read (${at(t.pos)}).`, t.pos, t.end);
+    }
+    try {
+      return this.exprInner(rbp, fnArg);
+    } finally {
+      this.depth -= 1;
+    }
+  }
+
+  exprInner(rbp, fnArg) {
     let left = this.nud(this.next());
     for (;;) {
       const t = this.peek();
@@ -327,11 +364,8 @@ class Parser {
         }
         throw new ExpressionError(`${quote(t.text)} ${at(t.pos)} needs something before it.`, t.pos, t.end);
       }
-      case 'lparen': {
-        const inner = this.expr(0);
-        this.expectClose(t);
-        return inner;
-      }
+      case 'lparen':
+        return this.bracketed(t).inner;
       case 'bar': {
         this.absDepth += 1;
         const inner = this.expr(0);
@@ -368,6 +402,15 @@ class Parser {
   call(t) {
     let name = t.name;
     let power = null;
+    const after = this.peek();
+    if ((name === 'log' || name === 'ln') && after.type === 'num' && after.pos === t.end) {
+      // "log10(x)" would read as log(10x): almost certainly not what was meant.
+      throw new ExpressionError(
+        `"${t.text}${after.text}" isn't a function here (it would mean ${t.text}(${after.text}x)). Write log(x) for base 10 or ln(x) for base e; for base b use ln(x)/ln(b).`,
+        t.pos,
+        after.end,
+      );
+    }
     if (this.peek().type === 'op' && this.peek().value === '^') {
       const caret = this.next();
       if (this.isMinusOne()) {
@@ -376,19 +419,16 @@ class Parser {
       } else {
         const pt = this.next();
         if (pt.type === 'num') power = { type: 'num', value: pt.value, text: pt.text, pos: pt.pos, end: pt.end };
-        else if (pt.type === 'lparen') {
-          power = this.expr(0);
-          this.expectClose(pt);
-        } else throw new ExpressionError(`Write the power of ${quote(t.text)} as a number, for example sin^2 x.`, caret.pos, caret.end);
+        else if (pt.type === 'lparen') power = this.bracketed(pt).inner;
+        else throw new ExpressionError(`Write the power of ${quote(t.text)} as a number, for example sin^2 x.`, caret.pos, caret.end);
       }
     }
     const nx = this.peek();
     let arg;
     if (nx.type === 'lparen') {
       this.next();
-      arg = this.expr(0);
-      const close = this.expectClose(nx);
-      arg = { ...arg, end: close.end };
+      const { inner, close } = this.bracketed(nx);
+      arg = { ...inner, end: close.end };
     } else if (nx.type === 'end' || nx.type === 'rparen' || (nx.type === 'bar' && this.absDepth > 0) || (nx.type === 'op' && nx.value !== '-')) {
       throw new ExpressionError(`${quote(t.text)} ${at(t.pos)} needs something to act on, for example ${t.name === 'sqrt' ? 'sqrt(x)' : `${t.text}(x)`}.`, t.pos, t.end);
     } else {
@@ -523,7 +563,8 @@ export function tryCompile(src, opts = {}) {
     return { ok: true, fn, ast: fn.ast };
   } catch (err) {
     if (err instanceof ExpressionError) return { ok: false, error: { message: err.message, pos: err.pos, end: err.end } };
-    return { ok: false, error: { message: err.message, pos: 0, end: 0 } };
+    // Anything else (an engine passing bad options, or an absurdly long input) gets a calm message.
+    return { ok: false, error: { message: "This expression can't be read. Try a shorter or simpler one.", pos: 0, end: 0 } };
   }
 }
 
@@ -585,6 +626,8 @@ function callTex(node, { bracket = false, powerTex = '' } = {}) {
 
 /** First character of a LaTeX string that will be printed (to decide between juxtaposition and ×). */
 const startsWithDigit = (s) => /^[0-9.]/.test(s);
+/** Joining "\pi" and "x" needs a space, or LaTeX reads one command "\pix". */
+const joinTex = (l, r) => (startsWithDigit(r) ? `${l}\\times ${r}` : /\\[A-Za-z]+$/.test(l) && /^[A-Za-z]/.test(r) ? `${l} ${r}` : `${l}${r}`);
 
 /**
  * LaTeX for an AST, for KaTeX labels.
@@ -605,7 +648,7 @@ function tex(node, { trailing = false } = {}) {
       return GREEK_TEX[node.name] ?? (node.name.length > 1 ? `\\mathit{${node.name}}` : node.name);
     case 'neg': {
       const a = tex(node.arg, { trailing });
-      return precOf(node.arg) <= PREC.add || node.arg.type === 'neg' ? `-${paren(a)}` : `-${a}`;
+      return precOf(node.arg) <= PREC.add || a.startsWith('-') ? `-${paren(a)}` : `-${a}`;
     }
     case 'call':
       return callTex(node, { bracket: trailing });
@@ -620,11 +663,11 @@ function tex(node, { trailing = false } = {}) {
         else if (left.type === 'bin' && left.op === '/') base = paren(base);
         return `${base}^{${tex(right)}}`;
       }
-      const negRight = right.type === 'neg' || (right.type === 'num' && right.value < 0);
+      // Anything on the right that starts with a minus sign keeps its brackets: 2(−3x), x − (−2x).
       if (op === '+' || op === '-') {
         const l = tex(left);
         let r = tex(right, { trailing });
-        if (negRight || (op === '-' && precOf(right) <= PREC.add)) r = paren(r);
+        if (r.startsWith('-') || (op === '-' && precOf(right) <= PREC.add)) r = paren(r);
         return `${l}${op}${r}`;
       }
       // Multiplication: juxtapose ("2x", "x\sin x"), with × only before a digit. A function call on
@@ -632,8 +675,8 @@ function tex(node, { trailing = false } = {}) {
       let l = tex(left, { trailing: true });
       if (precOf(left) < PREC.mul) l = paren(l);
       let r = tex(right, { trailing });
-      if (precOf(right) < PREC.mul || negRight) r = paren(r);
-      return `${l}${startsWithDigit(r) ? '\\times ' : ''}${r}`;
+      if (precOf(right) < PREC.mul || r.startsWith('-')) r = paren(r);
+      return joinTex(l, r);
     }
     default:
       return '';

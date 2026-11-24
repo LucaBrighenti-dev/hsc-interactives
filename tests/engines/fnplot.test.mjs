@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import katex from 'katex';
 import { parse, compile, tryCompile, evaluate, freeVariables, toTex, ExpressionError, EXPRESSION_PATTERN } from '../../site/assets/engines/fnplot/parser.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
@@ -379,6 +380,135 @@ test('toTex keeps a function call unambiguous when something follows it', () => 
 
 test('EXPRESSION_PATTERN accepts expressions and rejects markup', () => {
   const re = new RegExp(EXPRESSION_PATTERN, 'u');
-  for (const ok of ['2x^2-3x+1', 'sin(pi/6)', '|x−1| + 2π', 'x² + √x', 'a sin x + b cos x', '3×x ÷ 2', '']) assert.ok(re.test(ok), ok);
+  for (const ok of ['2x^2-3x+1', 'sin(pi/6)', '|x−1| + 2π', 'x² + √x', 'a sin x + b cos x', '3×x ÷ 2', 'x + 1', 'x – 1', 'x²³', '']) assert.ok(re.test(ok), ok);
   for (const bad of ['<script>', 'x"y', "x'", 'x;y', 'x{1}', '`x`', 'x&y']) assert.ok(!re.test(bad), bad);
+});
+
+// ---------------------------------------------------------------------------------------------
+// Review fixes (PR #5): valid LaTeX, brackets kept, bars inside brackets, no prototype lookups
+// ---------------------------------------------------------------------------------------------
+
+const TEX_VARS = ['x', 'y', 't', 'A', 'omega', 'theta', 'k'];
+const texOf = (src) => toTex(parse(src, { variables: TEX_VARS }));
+const renders = (t) => katex.renderToString(t, { throwOnError: true, strict: 'ignore' });
+
+test('toTex: a command followed by a letter gets a separator, so KaTeX can read it', () => {
+  const cases = {
+    '2pi x': '2\\pi x',
+    'cos(2pi x)': '\\cos\\left(2\\pi x\\right)',
+    '-pi x': '-\\pi x',
+    'A cos(omega t)': 'A\\cos\\left(\\omega t\\right)',
+    'θx': '\\theta x',
+    'floor(x)y': '\\left\\lfloor x\\right\\rfloor y',
+  };
+  for (const [src, want] of Object.entries(cases)) {
+    assert.equal(texOf(src), want, src);
+    assert.doesNotThrow(() => renders(texOf(src)), src);
+  }
+});
+
+test('toTex: a factor or term that starts with a minus keeps its brackets', () => {
+  assert.equal(texOf('2(-3x)'), '2\\left(-3x\\right)');
+  assert.equal(texOf('y(-2 sin x)'), 'y\\left(-2\\sin x\\right)');
+  assert.equal(texOf('x(-x y)'), 'x\\left(-xy\\right)');
+  assert.equal(texOf('x - (-2x)'), 'x-\\left(-2x\\right)');
+  assert.equal(texOf('x + (-2x)'), 'x+\\left(-2x\\right)');
+  assert.equal(texOf('-(-2x)'), '-\\left(-2x\\right)');
+  assert.equal(texOf('-2x'), '-2x', 'a leading minus needs no brackets');
+});
+
+test('toTex: every label from the toTex tests and a seeded random sample renders in KaTeX', () => {
+  const fixed = ['2x^2-3x+1', 'sqrt(x)/2', 'sin^2 x', 'sin^-1 x', '|x-1|', '(-2)^2', '2pi', 'e^(-x)', 'cosec x', 'ln|x|', 'sqrt^2 x', 'abs^2(x)', 'floor(x)^2', '2*3', 'x^(1/3)', 'sin(x)cos(x)', 'theta^2 omega', 'log(x) ln(x) exp(x)', 'sign(x) sec x cot x', '(x+1)/(x-1)(x+2)'];
+  for (const src of fixed) assert.doesNotThrow(() => renders(texOf(src)), src);
+  // Random expressions from a small grammar (mulberry32, fixed seed: the same cases every run).
+  let seed = 20261125;
+  const rand = () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let r = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+  const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+  const atoms = ['x', 'y', 't', 'A', 'omega', 'theta', 'k', 'pi', 'e', '2', '3.5', '0.25', 'π', 'θ'];
+  const fns = ['sin', 'cos', 'tan', 'asin', 'atan', 'sec', 'cosec', 'cot', 'exp', 'ln', 'log', 'sqrt', 'abs', 'sign', 'floor', 'sin^2', 'cos^-1'];
+  const gen = (d) => {
+    if (d <= 0) return pick(atoms);
+    switch (Math.floor(rand() * 9)) {
+      case 0: return `${gen(d - 1)} + ${gen(d - 1)}`;
+      case 1: return `${gen(d - 1)} - ${gen(d - 1)}`;
+      case 2: return `${gen(d - 1)}*${gen(d - 1)}`;
+      case 3: return `(${gen(d - 1)})/(${gen(d - 1)})`;
+      case 4: return `(${gen(d - 1)})^(${gen(d - 1)})`;
+      case 5: return `-(${gen(d - 1)})`;
+      case 6: return `${pick(fns)}(${gen(d - 1)})`;
+      case 7: return `${pick(['2', '3', 'pi', 'x', 'A', 'omega'])} ${pick(['x', 'y', 'theta', 't', 'pi'])} (${gen(d - 1)})`;
+      default: return `|${gen(d - 1)}|`;
+    }
+  };
+  let tried = 0;
+  for (let i = 0; i < 3000; i++) {
+    const src = gen(1 + Math.floor(rand() * 3));
+    const r = tryCompile(src, { variables: TEX_VARS });
+    if (!r.ok) continue;
+    tried += 1;
+    const t = toTex(r.ast);
+    assert.doesNotThrow(() => renders(t), `${src} → ${t}`);
+  }
+  assert.ok(tried > 2000, `most random cases should parse (${tried})`);
+});
+
+test('bars inside brackets inside bars: |sqrt(2|x|) − 3|, |ln(x|x|)|, |(2|x|) − 1|, |x^(2|x|)|', () => {
+  const v = { variables: ['x'] };
+  assert.equal(val('|sqrt(2|x|) - 3|', { x: -2 }, v), 1); // |√4 − 3|
+  close(val('|ln(x|x|)|', { x: 2 }, v), Math.log(4), 1e-15);
+  assert.equal(val('|(2|x|) - 1|', { x: -3 }, v), 5);
+  assert.equal(val('|x^(2|x|)|', { x: -1 }, v), 1); // |(−1)²|
+  close(val('sin^(|x|)(x)', { x: -1 }, v), Math.sin(-1), 1e-15, 'bars inside a bracketed function power: (sin(−1))^|−1|');
+});
+
+test('name lookups never reach Object.prototype', () => {
+  const long = { variables: ['x', 'abcdefghijk'] };
+  const r = tryCompile('constructor(x)', long);
+  assert.equal(r.ok, false);
+  assert.match(r.error.message, /"constructor"/);
+  assert.equal(tryCompile('toString + valueOf', long).ok, false);
+  assert.equal(toTex(parse('valueOf + 1', { variables: ['valueOf'] })), '\\mathit{valueOf}+1');
+  assert.equal(typeof toTex(parse('toString', { variables: ['toString'] })), 'string');
+  const f = compile('constructor + 1', { variables: ['constructor'] });
+  assert.equal(f({ constructor: 2 }), 3);
+  assert.ok(Number.isNaN(f({})), 'a missing variable is NaN, even when its name is on Object.prototype');
+});
+
+test('log10(x) and ln2(x) are explained, not read as log(10x)', () => {
+  for (const src of ['log10(x)', 'log10 x', 'ln2x']) {
+    const r = tryCompile(src, { variables: ['x'] });
+    assert.equal(r.ok, false, src);
+    assert.match(r.error.message, /log\(x\)/, src);
+    assert.equal(r.error.pos, 0);
+  }
+  assert.equal(val('log 100'), 2, 'with a space it is log(100)');
+  assert.equal(val('log(100)'), 2);
+});
+
+test('Unicode spaces, the en dash and runs of superscript digits', () => {
+  const v = { variables: ['x'] };
+  assert.equal(val('x + 1', { x: 2 }, v), 3, 'no-break space');
+  assert.equal(val('2 x', { x: 2 }, v), 4, 'thin space');
+  assert.equal(val('x – 1', { x: 2 }, v), 1, 'en dash');
+  assert.equal(val('x²³', { x: 2 }, v), 2 ** 23);
+  assert.equal(val('x¹⁰', { x: 2 }, v), 1024);
+});
+
+test('exploring without a variables list: X and x are the same variable', () => {
+  assert.deepEqual(freeVariables(parse('X + x')), ['x']);
+  assert.equal(val('X + x', { x: 2 }), 4);
+});
+
+test('very deep nesting is a calm error, not a stack overflow', () => {
+  const src = `${'('.repeat(300)}x${')'.repeat(300)}`;
+  const r = tryCompile(src, { variables: ['x'] });
+  assert.equal(r.ok, false);
+  assert.match(r.error.message, /nested too deeply/);
+  const fine = `${'('.repeat(40)}x${')'.repeat(40)}`;
+  assert.equal(val(fine, { x: 3 }, { variables: ['x'] }), 3);
 });
