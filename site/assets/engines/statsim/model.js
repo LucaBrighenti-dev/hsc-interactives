@@ -207,7 +207,9 @@ export function samplingTheory(params) {
  * Binomial mode: one bin per integer value of X with non-negligible probability.
  * Means mode: on the population's axis ('shared') or zoomed to μ ± 4.5σ/√n ('zoom'). Means of
  * integer-valued populations lie on the lattice j/n, so each bin holds the same whole number of lattice
- * points and no point sits on a bin edge (otherwise the histogram shows a false comb pattern).
+ * points and no point sits on a bin edge (otherwise the histogram shows a false comb pattern). A zoomed
+ * lattice keeps at least 3 steps 1/n either side of μ: when σ/√n is below the step (Bernoulli p = 0.01,
+ * n = 2) μ ± 4.5σ/√n alone would hold a single bin.
  */
 export function samplingBins(params, pop = samplingPopulation(params)) {
   const n = params.n;
@@ -227,8 +229,9 @@ export function samplingBins(params, pop = samplingPopulation(params)) {
   const zoom = params.meansAxis === 'zoom';
   let [lo, hi] = pop.binRange;
   if (zoom) {
-    lo = Math.max(lo, pop.mean - 4.5 * se);
-    hi = Math.min(hi, pop.mean + 4.5 * se);
+    const half = pop.discrete ? Math.max(4.5 * se, 3 / n) : 4.5 * se;
+    lo = Math.max(lo, pop.mean - half);
+    hi = Math.min(hi, pop.mean + half);
   }
   const span = hi - lo;
   let width = zoom ? se / 4 : Math.min(span / MIN_BINS, se / 3);
@@ -311,12 +314,20 @@ export function samplingComplete(state, params) {
   return state.count >= params.samples;
 }
 
-/** Outputs (dimensionless, unrounded). Simulated SD uses the n − 1 divisor; null until there are two samples. */
+/**
+ * Outputs (dimensionless, unrounded). The simulated SD is the SD of the statistics drawn so far, dividing
+ * by (number of samples − 1), not by the sample size n; it is null until there are two samples.
+ * `latest` is the latest statistic in either mode; `latestX` (a whole number) and `latestMean` give it
+ * only in their own mode (otherwise null), so a readout can show X without decimals.
+ */
 export function samplingOutputs(state, params) {
   const t = samplingTheory(params);
+  const binomialMode = params.mode === 'binomial';
   return {
     count: state.count,
     latest: state.latestValue,
+    latestX: binomialMode ? state.latestValue : null,
+    latestMean: binomialMode ? null : state.latestValue,
     simMean: state.count ? state.mean : null,
     simSD: state.count >= 2 ? Math.sqrt(state.m2 / (state.count - 1)) : null,
     theoryMean: t.mean,

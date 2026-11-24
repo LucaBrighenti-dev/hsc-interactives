@@ -2,7 +2,7 @@
 // Setups: 'sampling' (Bernoulli trials → binomial; sample means → normal), 'normal-approx' (binomial
 // with a normal overlay and continuity correction; static), 'decay' (random-decay grid and half-life).
 import * as M from './model.js';
-import { createView, populationLabel } from './view.js';
+import { createView, populationLabel, formatProbability } from './view.js';
 import { createLoop, createEmitter } from '../../engine-kit.js';
 import { defaultsFor, clampParams } from '../../state.js';
 import { formatNumber, formatPlain } from '../../format.js';
@@ -11,7 +11,7 @@ const TICK = 1 / 120; // s of playback per loop step; the setup turns playback t
 
 export const meta = {
   name: 'statsim',
-  version: '1.0.0',
+  version: '1.1.0',
   setups: ['sampling', 'normal-approx', 'decay'],
   staticSetups: ['normal-approx'],
   stepSize: 1, // Step draws one sample (sampling) or advances one 1 s decay step (decay)
@@ -66,9 +66,14 @@ export const meta = {
     timeScale: { type: 'number', label: 'Playback speed', unit: '×', min: 0.25, max: 2, step: 0.25, default: 1, setups: ['sampling', 'decay'] },
   },
   outputs: {
-    // sampling (X in binomial mode, x̄ in means mode)
-    count: { label: 'Samples drawn', unit: '', sigfigs: 5, setups: ['sampling'] },
-    latest: { label: 'Latest value', unit: '', sigfigs: 4, setups: ['sampling'] },
+    // sampling (X in binomial mode, x̄ in means mode). Counts are integer: shown as "344", never "344.0".
+    count: { label: 'Samples drawn', unit: '', integer: true, setups: ['sampling'] },
+    latest: { label: 'Latest value', unit: '', sigfigs: 4, setups: ['sampling'] }, // X or x̄; prefer latestX and latestMean
+    // Bernoulli trials only (successes in the latest sample), else null.
+    latestX: { label: 'Latest X', unit: '', integer: true, setups: ['sampling'] },
+    // Sample means only (x̄ of the latest sample), else null. No "x̄" in the label: JetBrains Mono, the
+    // readout label font, misplaces the combining macron.
+    latestMean: { label: 'Latest mean', unit: '', sigfigs: 4, setups: ['sampling'] },
     simMean: { label: 'Simulated mean', unit: '', sigfigs: 4, setups: ['sampling'] },
     simSD: { label: 'Simulated SD', unit: '', sigfigs: 4, setups: ['sampling'] },
     theoryMean: { label: 'Theoretical mean', unit: '', sigfigs: 4, setups: ['sampling'] },
@@ -82,15 +87,14 @@ export const meta = {
     mean: { label: 'Mean np', unit: '', sigfigs: 4, setups: ['normal-approx'] },
     sd: { label: 'SD √(np(1 − p))', unit: '', sigfigs: 4, setups: ['normal-approx'] },
     z: { label: 'z-score of the boundary', unit: '', sigfigs: 3, setups: ['normal-approx'] },
-    // decay
-    t: { label: 'Time t', unit: 's', sigfigs: 3, setups: ['decay'] },
-    // Counts: sig figs chosen so every whole number in range shows exactly (≤ 10 000 → 4, ≤ 20 000 → 5).
-    remaining: { label: 'Remaining N', unit: '', sigfigs: 4, setups: ['decay'] },
-    decayed: { label: 'Decayed', unit: '', sigfigs: 4, setups: ['decay'] },
-    theoryRemaining: { label: 'Theory N₀(½)^(t/H)', unit: '', sigfigs: 4, setups: ['decay'] },
+    // decay. t is a whole number of 1 s steps; the activity is the whole number of decays in the last 1 s step.
+    t: { label: 'Time t', unit: 's', integer: true, setups: ['decay'] },
+    remaining: { label: 'Remaining N', unit: '', integer: true, setups: ['decay'] },
+    decayed: { label: 'Decayed', unit: '', integer: true, setups: ['decay'] },
+    theoryRemaining: { label: 'Theory N₀(½)^(t/H)', unit: '', sigfigs: 4, setups: ['decay'] }, // an expected value, not a count
     measuredHalfLife: { label: 'Measured half-life', unit: 's', sigfigs: 3, setups: ['decay'] },
     probability: { label: 'Decay probability per step', unit: '', sigfigs: 3, setups: ['decay'] },
-    lastDecays: { label: 'Activity (last step)', unit: 'Bq', sigfigs: 4, setups: ['decay'] },
+    lastDecays: { label: 'Activity (last step)', unit: 'Bq', integer: true, setups: ['decay'] },
   },
 };
 
@@ -138,7 +142,7 @@ const SIMS = {
     describe(s, p) {
       const r = s.result;
       const sym = { le: 'at most', ge: 'at least', eq: 'exactly' }[p.event];
-      return `Binomial distribution with n = ${p.trials} and p = ${formatPlain(p.prob)}, with the normal curve of mean ${formatNumber(r.mean)} and standard deviation ${formatNumber(r.sd)} overlaid. The probability of ${sym} ${p.k} successes is ${r.exact.toFixed(4)} exactly and ${r.approx.toFixed(4)} by the normal approximation${p.continuity ? ' with the continuity correction' : ''}.`;
+      return `Binomial distribution with n = ${p.trials} and p = ${formatPlain(p.prob)}, with the normal curve of mean ${formatNumber(r.mean)} and standard deviation ${formatNumber(r.sd)} overlaid. The probability of ${sym} ${p.k} successes is ${formatProbability(r.exact)} exactly and ${formatProbability(r.approx)} by the normal approximation${p.continuity ? ' with the continuity correction' : ''}.`;
     },
   },
   decay: {
