@@ -5,7 +5,7 @@ subject: me2
 engine: space3d
 setup: lines-spheres
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/maths-ext2/3d-lines-spheres.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Mathematics Extension 2","version":"2024","area":"Vectors","focusArea":"Further work with vectors","year":12,"outcomes":[],"verified":false}

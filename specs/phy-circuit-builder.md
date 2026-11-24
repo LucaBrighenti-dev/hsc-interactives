@@ -5,7 +5,7 @@ subject: phy
 engine: circuit
 setup: builder
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/physics/circuit-builder.html
 listings:            # catalogue listings that open this page with a preset; define these presets
   - {"id":"eng-circuits-as1102","preset":"eng-as1102","title":"Circuits with AS 1102 symbols"}

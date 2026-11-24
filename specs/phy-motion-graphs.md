@@ -5,7 +5,7 @@ subject: phy
 engine: particle2d
 setup: cart
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/physics/motion-graphs.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Physics","version":"2017","area":"Module 1: Kinematics","outcomes":[],"verified":false}

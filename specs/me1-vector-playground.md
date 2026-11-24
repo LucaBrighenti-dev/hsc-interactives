@@ -5,7 +5,7 @@ subject: me1
 engine: space3d
 setup: vectors
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/maths-ext1/vector-playground.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Mathematics Extension 1","version":"2024","area":"Vectors","focusArea":"Introduction to vectors","year":12,"outcomes":[],"verified":false}

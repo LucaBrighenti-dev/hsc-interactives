@@ -5,7 +5,7 @@ subject: phy
 engine: statsim
 setup: decay
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/physics/radioactive-decay.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Physics","version":"2017","area":"Module 8: From the Universe to the Atom","outcomes":[],"verified":false}

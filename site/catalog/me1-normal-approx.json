@@ -7,7 +7,7 @@
   "engine": "statsim",
   "setup": "normal-approx",
   "priority": "P1",
-  "status": "review",
+  "status": "live",
   "path": "/interactives/maths-ext1/normal-approx.html",
   "syllabus": [
     {

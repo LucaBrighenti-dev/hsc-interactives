@@ -5,7 +5,7 @@ subject: phy
 engine: particle2d
 setup: projectile
 priority: P0
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/physics/projectile-lab.html
 listings:            # catalogue listings that open this page with a preset; define these presets
   - {"id":"me1-projectile-vectors","preset":"me1-vectors","title":"Projectile motion with vectors"}

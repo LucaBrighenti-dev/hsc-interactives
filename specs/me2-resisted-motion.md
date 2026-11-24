@@ -5,7 +5,7 @@ subject: me2
 engine: particle2d
 setup: resisted-1d
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/maths-ext2/resisted-motion.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Mathematics Extension 2","version":"2024","area":"Mechanics","focusArea":"Applications of calculus to mechanics","year":12,"outcomes":[],"verified":false}

@@ -5,7 +5,7 @@ subject: phy
 engine: rays
 setup: ray-box
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/physics/ray-box.html
 listings:            # catalogue listings that open this page with a preset; define these presets
   - {"id":"eng-fibre-optics","preset":"eng-fibre","title":"Optical fibre"}

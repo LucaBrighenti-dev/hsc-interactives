@@ -7,7 +7,7 @@
   "engine": "statsim",
   "setup": "sampling",
   "priority": "P0",
-  "status": "review",
+  "status": "live",
   "path": "/interactives/maths-ext1/sampling-simulator.html",
   "syllabus": [
     {

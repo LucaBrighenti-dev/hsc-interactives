@@ -5,7 +5,7 @@ subject: me2
 engine: argand
 setup: operations
 priority: P0
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/maths-ext2/argand-explorer.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Mathematics Extension 2","version":"2024","area":"Complex numbers","focusArea":"Introduction to complex numbers","year":12,"outcomes":[],"verified":false}

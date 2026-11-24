@@ -5,7 +5,7 @@ subject: phy
 engine: statics
 setup: incline
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/physics/inclined-plane.html
 listings:            # catalogue listings that open this page with a preset; define these presets
   - {"id":"eng-friction-horizontal","preset":"eng-horizontal","title":"Static friction on a horizontal plane"}

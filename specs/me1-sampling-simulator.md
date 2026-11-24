@@ -5,7 +5,7 @@ subject: me1
 engine: statsim
 setup: sampling
 priority: P0
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/maths-ext1/sampling-simulator.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Mathematics Extension 1","version":"2024","area":"Statistical analysis","focusArea":"The binomial distribution and the sampling distribution of the mean","year":12,"outcomes":[],"verified":false}

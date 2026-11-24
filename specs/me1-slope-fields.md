@@ -5,7 +5,7 @@ subject: me1
 engine: field2d
 setup: slope-field
 priority: P0
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/maths-ext1/slope-fields.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Mathematics Extension 1","version":"2024","area":"Calculus","focusArea":"Further applications of calculus","year":12,"outcomes":[],"verified":false}

@@ -5,7 +5,7 @@ subject: phy
 engine: particle2d
 setup: circular
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/physics/circular-motion.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Physics","version":"2017","area":"Module 5: Advanced Mechanics","outcomes":[],"verified":false}

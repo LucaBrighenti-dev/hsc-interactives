@@ -5,7 +5,7 @@ subject: me1
 engine: space3d
 setup: trig3d
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/maths-ext1/3d-trig.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Mathematics Extension 1","version":"2024","area":"Trigonometric functions","focusArea":"Further trigonometry","year":11,"outcomes":[],"verified":false}

@@ -5,7 +5,7 @@ subject: phy
 engine: wave
 setup: wave-machine
 priority: P1
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/physics/wave-machine.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Physics","version":"2017","area":"Module 3: Waves and Thermodynamics","outcomes":[],"verified":false}
