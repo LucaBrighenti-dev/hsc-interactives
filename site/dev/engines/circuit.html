@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>circuit engine demo · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!--
+    Engine demo page (guide §9.1): mounts the circuit engine through the shell for each setup.
+    Pick the setup with the #hash: #builder (the only setup). Not linked from the hub.
+    The Scenario menu loads each preset circuit, including the Engineering AS 1102 symbol set.
+  -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+
+    const { meta } = await import('/assets/engines/circuit/index.js');
+    const wanted = location.hash.slice(1);
+    const setup = meta.setups.includes(wanted) ? wanted : meta.setups[0];
+    addEventListener('hashchange', () => location.reload());
+
+    const CONFIG = {
+      builder: {
+        presets: {
+          default: { circuit: 'series', symbols: 'physics' },
+          single: { circuit: 'single' },
+          parallel: { circuit: 'parallel', dotSpeed: 1 },
+          mixed: { circuit: 'mixed', showReadings: true },
+          wheatstone: { circuit: 'wheatstone', showVoltages: true, dotSpeed: 6 },
+          internal: { circuit: 'internal', showReadings: true },
+          blank: { circuit: 'custom', netlist: '' },
+          'eng-as1102': { circuit: 'series', symbols: 'as1102' },
+        },
+        presetLabels: {
+          default: 'Series pair: 10 Ω + 10 Ω on 12 V',
+          single: 'Single resistor (Ohm’s law)',
+          parallel: 'Parallel pair: 10 Ω ∥ 10 Ω',
+          mixed: 'Series and parallel lamps',
+          wheatstone: 'Wheatstone bridge (balanced)',
+          internal: 'Internal resistance: ε = 12 V, r = 2 Ω',
+          blank: 'Empty grid',
+          'eng-as1102': 'AS 1102 symbols (Engineering)',
+        },
+        controls: ['circuit', 'symbols', 'showDots', 'dotSpeed', 'showReadings', 'showVoltages', 'lampRating', 'timeScale', 'netlist'],
+        readouts: ['current', 'terminalVoltage', 'resistance', 'power', 'a1', 'a2', 'v1', 'v2', 'partCurrent', 'partVoltage', 'partPower'],
+        assumptions: [
+          'Ideal wires and ammeters (no resistance); ideal voltmeters (no current)',
+          'Lamps are fixed resistors',
+          'Conventional current: out of + and round the circuit to −',
+          'Potentials measured from the cell’s − terminal',
+        ],
+      },
+    };
+    const c = CONFIG[setup];
+
+    mountInteractive({
+      id: 'dev-circuit',
+      title: `circuit · ${setup}`,
+      engine: () => import('/assets/engines/circuit/index.js'),
+      setup,
+      presets: c.presets,
+      presetLabels: c.presetLabels,
+      controls: c.controls,
+      readouts: c.readouts,
+      assumptions: c.assumptions,
+      prompts: [],
+    }).then(() => {
+      const nav = document.createElement('nav');
+      nav.setAttribute('aria-label', 'Setups');
+      nav.className = 'cluster';
+      nav.style.cssText = 'gap: 8px; padding: 0 16px 16px; font-family: var(--f-mono); font-size: 14px;';
+      for (const s of meta.setups) {
+        const a = document.createElement('a');
+        a.href = `#${s}`;
+        a.textContent = s;
+        if (s === setup) a.setAttribute('aria-current', 'page');
+        nav.append(a);
+      }
+      const side = document.querySelector('.hsc-side');
+      (side ?? document.body).prepend(nav);
+    });
+  </script>
+</body>
+</html>
