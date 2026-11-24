@@ -2,13 +2,13 @@
 
 Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this file. Sessions resume from the first open box.
 
-- **Current wave:** 0
-- **Contracts:** READY FOR GATE A (guide §5 incl. §5.10; locked when Luca approves)
+- **Current wave:** 1
+- **Contracts:** LOCKED (Gate A approved 2026-11-25; guide §5 incl. §5.10)
 - **Auth mode:** local (switch to supabase after H3–H5)
 
 ## Gates
 
-- [ ] **Gate A**: Luca approves Wave 0 foundations and contracts (`docs/gates/gate-a.md`): **waiting on Luca**. PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/1 (CI green)
+- [x] **Gate A**: approved by Luca 2026-11-25. Wave 0 merged: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/1
 - [ ] **Gate B / me1**: Maths Ext 1 specs approved
 - [ ] **Gate B / me2**: Maths Ext 2 specs approved
 - [ ] **Gate B / phy**: Physics specs approved
@@ -49,12 +49,12 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 ### Engines (`engine-builder`)
 
-- [ ] W1-E-particle2d | PR: | review:
-- [ ] W1-E-statics | PR: | review:
-- [ ] W1-E-statsim | PR: | review:
-- [ ] W1-E-argand | PR: | review:
-- [ ] W1-E-aero | PR: | review:
-- [ ] W1-E-wave | PR: | review:
+- [ ] W1-E-particle2d | building (batch 1) | PR: | review:
+- [ ] W1-E-statics | building (batch 1) | PR: | review:
+- [ ] W1-E-statsim | building (batch 1) | PR: | review:
+- [ ] W1-E-argand | building (batch 1) | PR: | review:
+- [ ] W1-E-aero | building (batch 1) | PR: | review:
+- [ ] W1-E-wave | building (batch 1) | PR: | review:
 - [ ] W1-E-fnplot | PR: | review: (owns the shared parser; field2d depends on it)
 - [ ] W1-E-field2d | PR: | review:
 - [ ] W1-E-space3d | PR: | review:
@@ -172,3 +172,4 @@ Tracked on each PR (reviewer comment `VERDICT: PASS/FAIL`) and in `docs/gates/ga
 - 2026-11-25: Wave 0 complete on local branch `w0/foundations` (git initialised locally; no GitHub remote yet). `npm run check` passes: 34 unit tests, 27 browser tests, 4 acceptance checks on the reference template. Gate A report written; waiting on Luca for Gate A and H1 (GitHub repo, push, PR so CI runs).
 - 2026-11-25: Luca's answers applied: root guide copy deleted; one access code `TTT2026` for everyone (no class codes, no request restriction); privacy contact added. Starting H1 (GitHub) with Luca.
 - 2026-11-25: H1 done: public repo LucaBrighenti-dev/hsc-interactives created, `main` and `w0/foundations` pushed, PR #1 opened, CI green on first run (screenshots artifact attached), `main` protected. Next: Luca approves Gate A, then merge PR #1 and start Wave 1. H2 (Render) after PR #1 merges, because `main` has no site until then.
+- 2026-11-25: Gate A approved by Luca. PR #1 (Wave 0) merged, plus lead PRs #2 (unique e2e port per worktree) and #3 (shots accepts page paths). Contracts LOCKED. Wave 1 batch 1 started: the six P0 engines (particle2d, statics, statsim, argand, aero, wave). Next as slots free: fnplot, then field2d (needs the fnplot parser), space3d, rays, circuit, materials, W1-AUTH, W1-HUB, W1-SYL; spec writers once the P0 engines merge so spec params match engine meta.
