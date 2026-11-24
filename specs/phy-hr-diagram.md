@@ -71,9 +71,11 @@ Formulas for the selected or custom star (T in K, L in L☉):
 | antares | Antares | M1.5 Iab | 3600 | 75 000 | ≈ |
 | rigel | Rigel | B8 Ia | 12 000 | 120 000 | ≈ |
 | deneb | Deneb | A2 Ia | 8500 | 200 000 | ≈ |
-| siriusb | Sirius B | DA2 white dwarf | 25 400 | 0.0245 | (Bond et al. 2017, *ApJ* 840, 70: T = 25 369 K, R = 0.008 098 R☉, so L = R²(T/5772)⁴ = 0.0245 L☉) |
+| siriusb | Sirius B | DA2 white dwarf | 25 400 | 0.0245 | |
 | eridanib | 40 Eridani B | DA white dwarf | 16 500 | 0.013 | |
 | procyonb | Procyon B | white dwarf | 7700 | 0.0005 | ≈ |
+
+Sirius B's values come from Bond et al. 2017, *ApJ* 840, 70 (T = 25 369 K and R = 0.008 098 R☉, so L = R²(T/5772)⁴ = 0.0245 L☉); its `source` field records this.
 
 When `star` is a catalogue star, the outputs use that row's T and L; the temperature and luminosity sliders are hidden.
 

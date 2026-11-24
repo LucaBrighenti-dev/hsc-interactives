@@ -90,6 +90,7 @@ No catalogue listing reuses this page.
 - Loop and solenoid fields from Biot–Savart (solenoid as up to 200 loops)
 - μ₀ = 4π × 10⁻⁷ T m A⁻¹
 - Field-line spacing shows strength only roughly
+- Conductors are 2 mm thick; the field inside a conductor is approximate
 
 ## Try this (3–5 predict, observe, explain prompts)
 1. **Predict:** current comes out of the screen. Which way will the compass needles point above the wire? Check with the right-hand grip rule, then reverse the current.
