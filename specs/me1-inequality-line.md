@@ -52,16 +52,16 @@ How the engine finds and classifies critical points (static setup): let h(x) = l
 ## Readouts
 | Output | Label | Unit | Sig figs |
 | --- | --- | --- | --- |
-| criticalCount | Critical points in view | | exact integer |
+| criticalCount | Critical points in view | | integer (`integer: true`) |
 | critical1 | First critical point | | 4 |
 | critical2 | Second critical point | | 4 |
 | critical3 | Third critical point | | 4 |
-| closed1 | First point included (1 = yes) | | exact integer |
-| closed2 | Second point included (1 = yes) | | exact integer |
-| closed3 | Third point included (1 = yes) | | exact integer |
+| closed1 | First point included (1 = yes) | | integer (`integer: true`) |
+| closed2 | Second point included (1 = yes) | | integer (`integer: true`) |
+| closed3 | Third point included (1 = yes) | | integer (`integer: true`) |
 | testLhs | Left side at the test point | | 4 |
 | testRhs | Right side at the test point | | 4 |
-| testHolds | Inequality holds at the test point (1 = yes) | | exact integer |
+| testHolds | Inequality holds at the test point (1 = yes) | | integer (`integer: true`) |
 
 Critical points are in increasing order; missing ones are NaN. `testLhs`, `testRhs` and `testHolds` are NaN where either side is undefined at testX.
 

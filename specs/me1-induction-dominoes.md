@@ -73,11 +73,11 @@ Proof lines (revealed one at a time; written for this page, with the current sta
 ## Readouts
 | Output | Label | Unit | Sig figs |
 | --- | --- | --- | --- |
-| lhs | Left side at the checked n | | exact integer (`integer: true`) |
-| rhs | Right side at the checked n | | exact integer (`integer: true`) |
-| holds | P(n) holds at the checked n (1 = yes, 0 = no) | | exact integer |
-| fallen | Dominoes fallen | | exact integer |
-| firstFailure | First n ≥ n₀ (up to the last domino) where P(n) is false (0 = none) | | exact integer |
+| lhs | Left side at the checked n | | integer (`integer: true`) |
+| rhs | Right side at the checked n | | integer (`integer: true`) |
+| holds | P(n) holds at the checked n (1 = yes, 0 = no) | | integer (`integer: true`) |
+| fallen | Dominoes fallen | | integer (`integer: true`) |
+| firstFailure | First n ≥ n₀ (up to the last domino) where P(n) is false (0 = none) | | integer (`integer: true`) |
 
 ## Assumptions shown on stage
 - n is a whole number; each domino stands for one statement P(n)
