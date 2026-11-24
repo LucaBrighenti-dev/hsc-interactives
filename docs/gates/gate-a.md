@@ -30,7 +30,7 @@ First time only: `npm ci` then `npx playwright install chromium`.
 | Dashboard lists all 76 entries as Coming soon, grouped by subject, with search and filter | Done |
 | Template page: controls, readouts, URL state, share + QR, CSV, theme, presenter, notes drawer, try-this | Done (automated test covers each) |
 | Styleguide looks like the design language | Ready for your eye |
-| CI green on the Wave 0 PR with screenshots as an artifact | **Blocked on H1.** There's no GitHub repo yet. `npm run check` passes locally, and `.github/workflows/ci.yml` runs the same steps and uploads `test-results/shots`. |
+| CI green on the Wave 0 PR with screenshots as an artifact | Done: [PR #1](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/1), first run green in 1m11s with the `screenshots` artifact |
 | Contract deviations below are acceptable | Your call |
 
 ## What exists
@@ -74,7 +74,8 @@ These are the ones worth your attention. All are additions; nothing in §5 was r
 
 ## Your next human tasks
 
-- **H1 (needed before Wave 1):** create the GitHub repo, then add it as `origin` and push both branches: `git push -u origin main w0/foundations`. Open the PR `w0/foundations` → `main` so CI runs, install `gh` and run `gh auth login`, then protect `main` (require the CI check). Wave 1 agents open PRs, so they need this.
-- H2 can happen any time after H1. H3–H5 aren't needed until W1-AUTH reaches Supabase mode.
+- **H1:** done (25 Nov). Public repo `LucaBrighenti-dev/hsc-interactives`, `gh` signed in, `main` protected (the CI check is required; admins can still push `status:` commits).
+- **H2 (Render):** after PR #1 merges. Before that, `main` has only the starter kit, so there is nothing to deploy.
+- H3–H5 (Supabase) aren't needed until W1-AUTH reaches Supabase mode.
 
-**To approve:** tell me "Gate A approved" (with answers to the questions, or "use your defaults"). I'll mark the contracts LOCKED in STATUS and start Wave 1.
+**To approve:** tell me "Gate A approved". I'll merge PR #1, mark the contracts LOCKED in STATUS, and start Wave 1.
