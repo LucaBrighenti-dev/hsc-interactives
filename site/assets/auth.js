@@ -34,8 +34,12 @@ export function safeNext(next) {
   try {
     const url = new URL(next, 'https://hub.invalid');
     if (url.origin !== 'https://hub.invalid') return '/';
+    // Check the normalised result too: URL() removes dot segments, so "/.//evil.example"
+    // becomes "//evil.example", which the browser would treat as another site.
+    const out = url.pathname + url.search + url.hash;
+    if (!out.startsWith('/') || /^\/[/\\]/.test(out)) return '/';
     if (url.pathname === '/signin.html') return '/';
-    return url.pathname + url.search + url.hash;
+    return out;
   } catch {
     return '/';
   }
