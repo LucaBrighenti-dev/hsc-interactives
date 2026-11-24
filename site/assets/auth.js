@@ -67,8 +67,16 @@ function announce() {
   window.dispatchEvent(new CustomEvent(AUTH_EVENT));
 }
 
+let crossTab = false;
 /** Subscribe to sign-in / sign-out / profile changes. Returns an unsubscribe function. */
 export function onAuthChange(fn) {
+  // Local mode: a sign-in or sign-out in another tab of this site counts as a change here too.
+  if (!crossTab && AUTH_MODE !== 'supabase') {
+    crossTab = true;
+    window.addEventListener('storage', (e) => {
+      if (e.key === null || e.key === K.session || e.key.startsWith('hsc:profile:')) announce();
+    });
+  }
   window.addEventListener(AUTH_EVENT, fn);
   return () => window.removeEventListener(AUTH_EVENT, fn);
 }
@@ -120,15 +128,19 @@ const local = {
     announce();
   },
   async signInWithProvider(provider) {
-    local.startSession({ id: `local-${provider}`, kind: 'oauth', provider, email: null, name: provider === 'azure' ? 'Microsoft teacher' : 'Google teacher' });
+    // No stand-in name: like a real account with no name shared, onboarding asks for one.
+    local.startSession({ id: `local-${provider}`, kind: 'oauth', provider, email: null, name: null });
     return { signedIn: true };
   },
   async signInWithEmail(email) {
     local.startSession({ id: `local-email-${email.toLowerCase()}`, kind: 'email', email, name: null });
     return { signedIn: true, sent: false };
   },
+  findCode(code) {
+    return LOCAL_ACCESS_CODES.find((c) => normaliseCode(c.code) === code);
+  },
   async signInWithCode(code) {
-    const match = LOCAL_ACCESS_CODES.find((c) => c.code === code);
+    const match = local.findCode(code);
     if (!match) return false;
     const id = `local-code-${uuid()}`;
     if (match.kind === 'event') write(K.profile(id), { ...emptyProfile(), founding: true });
@@ -137,7 +149,7 @@ const local = {
   },
   async redeemAccessCode(code) {
     const user = local.requireUser();
-    const match = LOCAL_ACCESS_CODES.find((c) => c.code === code);
+    const match = local.findCode(code);
     if (!match) return false;
     if (match.kind === 'event') {
       write(K.profile(user.id), { ...(read(K.profile(user.id), null) ?? emptyProfile()), founding: true });
@@ -254,24 +266,140 @@ let clientPromise = null;
 function sb() {
   clientPromise ??= (async () => {
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) throw new Error('Sign-in is not set up yet: SUPABASE_URL and SUPABASE_ANON_KEY are empty in config.js.');
-    const { createClient } = await import('/vendor/supabase.mjs');
+    let createClient;
+    try {
+      ({ createClient } = await import('/vendor/supabase.mjs'));
+    } catch {
+      throw new Error(NETWORK_MESSAGE);
+    }
+    // detectSessionInUrl + PKCE: on /signin.html?code=… the client swaps the code for a session as it starts.
     return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce', storageKey: 'hsc:sb' },
     });
-  })();
+  })().catch((err) => {
+    clientPromise = null; // let a later call try again (e.g. after the network comes back)
+    throw err;
+  });
   return clientPromise;
 }
 
+const PROVIDER_NAMES = { azure: 'Microsoft', google: 'Google' };
+const NETWORK_MESSAGE = 'Could not reach the sign-in service. Check your internet connection and try again.';
+const OTHER_WAYS = 'Use another way in on this page.';
+
+// Supabase Auth error codes (https://supabase.com/docs/guides/auth/debugging/error-codes) → what a teacher can do.
+const AUTH_MESSAGES = {
+  provider_disabled: `That sign-in option is not switched on yet. ${OTHER_WAYS}`,
+  email_provider_disabled: 'Email sign-in links are not switched on yet. Use Microsoft, Google or the access code.',
+  anonymous_provider_disabled: 'Access codes are not switched on yet. Sign in with Microsoft, Google or an email link.',
+  signup_disabled: 'New accounts are switched off at the moment. Use the access code for now.',
+  email_address_invalid: 'That email address does not look right. Check it and try again.',
+  email_address_not_authorized: 'This site cannot send email to that address yet. Sign in with Microsoft or Google, or use the access code.',
+  over_email_send_rate_limit: 'Too many sign-in emails have gone out in the last hour. Wait a few minutes, or sign in with Microsoft, Google or the access code.',
+  over_request_rate_limit: 'Too many sign-in attempts from this network. Wait a minute and try again.',
+  over_sms_send_rate_limit: 'Too many attempts. Wait a minute and try again.',
+  otp_expired: 'That sign-in link has expired or has already been used. Ask for a new one below.',
+  otp_disabled: 'Email sign-in links are not switched on yet. Use Microsoft, Google or the access code.',
+  flow_state_expired: 'That sign-in took too long to finish. Please start again.',
+  flow_state_not_found: 'That sign-in link has already been used, or was opened in a different browser. Ask for a new one below.',
+  bad_code_verifier: 'Open the sign-in link in the same browser you asked for it from, or ask for a new one below.',
+  bad_oauth_callback: 'That sign-in did not finish. Please start again from this page.',
+  bad_oauth_state: 'That sign-in did not finish. Please start again from this page.',
+  oauth_provider_not_supported: `That sign-in option is not switched on yet. ${OTHER_WAYS}`,
+  access_denied: 'Sign-in was cancelled or not allowed. Try again, or choose another way in.',
+  session_expired: 'Your session has ended. Please sign in again.',
+  session_not_found: 'Your session has ended. Please sign in again.',
+  refresh_token_not_found: 'Your session has ended. Please sign in again.',
+  refresh_token_already_used: 'Your session has ended. Please sign in again.',
+  user_banned: 'This account cannot sign in. The contact address is on the Privacy page.',
+  request_timeout: NETWORK_MESSAGE,
+  hook_timeout: NETWORK_MESSAGE,
+  captcha_failed: 'The sign-in check did not pass. Reload the page and try again.',
+};
+
+/**
+ * Turn a supabase-js (auth or PostgREST) error into an Error whose message is safe and useful to show.
+ * Known codes get a plain-language message; anything else keeps the service's own words in brackets.
+ */
 function friendly(error, fallback) {
   if (!error) return new Error(fallback);
-  const msg = String(error.message || error);
-  if (/fetch|network|Failed to fetch/i.test(msg)) return new Error('Could not reach the sign-in service. Check your connection and try again.');
-  if (/rate limit|too many/i.test(msg)) return new Error('Too many attempts. Wait a minute and try again.');
-  return new Error(`${fallback} (${msg})`);
+  const code = String(error.code || error.details?.code || error.error_code || '');
+  if (AUTH_MESSAGES[code]) return new Error(AUTH_MESSAGES[code]);
+  const msg = typeof error === 'string' ? error : String(error.message || error.msg || '');
+  const status = Number(error.status) || 0;
+  if (error.name === 'AuthRetryableFetchError' || /failed to fetch|network|load failed|fetch failed|timed? ?out/i.test(msg)) return new Error(NETWORK_MESSAGE);
+  if (status === 429 || /rate limit|too many/i.test(msg)) return new Error('Too many attempts. Wait a minute and try again.');
+  if (/provider is not enabled|unsupported provider/i.test(msg)) return new Error(AUTH_MESSAGES.provider_disabled);
+  if (/anonymous sign-ins are disabled/i.test(msg)) return new Error(AUTH_MESSAGES.anonymous_provider_disabled);
+  if (/signups? not allowed/i.test(msg)) return new Error(AUTH_MESSAGES.signup_disabled);
+  if (/expired|invalid.*(link|token)/i.test(msg) && /otp|link|token/i.test(msg)) return new Error(AUTH_MESSAGES.otp_expired);
+  if (code === 'PGRST301' || /jwt expired/i.test(msg)) return new Error(AUTH_MESSAGES.session_expired);
+  if (code === '42501' || /permission denied|row-level security/i.test(msg)) return new Error(`${fallback}: this account is not allowed to do that.`);
+  return new Error(msg ? `${fallback} (${msg.slice(0, 200)})` : `${fallback}. Please try again.`);
 }
 
 function redirectTo(next) {
   return `${location.origin}/signin.html?next=${encodeURIComponent(safeNext(next))}`;
+}
+
+/**
+ * Which providers the project has switched on, from Supabase Auth's public settings endpoint.
+ * Checked before an OAuth redirect: a disabled provider otherwise fails on Supabase's own page with raw JSON.
+ * Resolves null when the settings can't be read for a reason other than the network (then we just try).
+ */
+let settingsPromise = null;
+function authSettings() {
+  settingsPromise ??= fetch(`${SUPABASE_URL.replace(/\/+$/, '')}/auth/v1/settings`, { headers: { apikey: SUPABASE_ANON_KEY } })
+    .then((res) => (res.ok ? res.json() : null))
+    .catch((err) => {
+      settingsPromise = null;
+      throw err;
+    });
+  return settingsPromise;
+}
+
+async function assertProviderEnabled(provider) {
+  let settings;
+  try {
+    settings = await authSettings();
+  } catch {
+    throw new Error(NETWORK_MESSAGE);
+  }
+  if (settings?.external && settings.external[provider] === false) {
+    throw new Error(`${PROVIDER_NAMES[provider]} sign-in is not switched on yet. Use an email link or the access code for now.`);
+  }
+}
+
+const EMAIL_LINK_TYPES = ['email', 'magiclink', 'signup', 'invite'];
+let returnHandled = false;
+
+/**
+ * Finish a sign-in that came back in the URL, once per page load:
+ *  - ?code=… (PKCE, OAuth or magic link): supabase-js exchanges it while the client starts; report a failure.
+ *  - ?token_hash=…&type=email (the optional email template in supabase/README.md): verify it here. Unlike
+ *    ?code=, this works when the link is opened in a different browser or on another device.
+ * Errors the provider puts in the URL (?error=…) are left for the sign-in page to show.
+ * @returns {Promise<Error|null>}
+ */
+async function finishUrlReturn(client) {
+  if (returnHandled || typeof location === 'undefined') return null;
+  returnHandled = true;
+  const query = new URLSearchParams(location.search);
+  const hash = new URLSearchParams(location.hash.slice(1));
+  const urlError = query.has('error') || query.has('error_description') || hash.has('error') || hash.has('error_description');
+  const { error: initError } = await client.auth.initialize();
+  const tokenHash = query.get('token_hash');
+  if (tokenHash && !urlError) {
+    const type = EMAIL_LINK_TYPES.includes(query.get('type')) ? query.get('type') : 'email';
+    const { error } = await client.auth.verifyOtp({ token_hash: tokenHash, type });
+    const url = new URL(location.href);
+    url.searchParams.delete('token_hash');
+    url.searchParams.delete('type');
+    history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+    return error ? friendly(error, 'Could not finish signing in') : null;
+  }
+  if (initError && !urlError && (query.has('code') || hash.has('access_token'))) return friendly(initError, 'Could not finish signing in');
+  return null;
 }
 
 async function supaUser() {
@@ -289,6 +417,8 @@ async function supaRequireUser() {
 
 const supa = {
   async getSession() {
+    const returnError = await finishUrlReturn(await sb());
+    if (returnError) throw returnError;
     const { client, user } = await supaUser();
     if (!user) return null;
     const { data: profile } = await client.from('profiles').select('display_name, founding').eq('id', user.id).maybeSingle();
@@ -299,27 +429,36 @@ const supa = {
   },
   async signInWithProvider(provider, { next = '/' } = {}) {
     const client = await sb();
+    await assertProviderEnabled(provider);
     const { error } = await client.auth.signInWithOAuth({
       provider,
+      // Microsoft must be asked for the email scope, or Supabase refuses the account (no email).
       options: { redirectTo: redirectTo(next), ...(provider === 'azure' ? { scopes: 'email' } : {}) },
     });
-    if (error) throw friendly(error, 'Could not start sign-in');
+    if (error) throw friendly(error, `Could not open ${PROVIDER_NAMES[provider]} sign-in`);
     return { redirecting: true };
   },
   async signInWithEmail(email, { next = '/' } = {}) {
     const client = await sb();
-    const { error } = await client.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo(next) } });
+    const { error } = await client.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo(next), shouldCreateUser: true } });
     if (error) throw friendly(error, 'Could not send the sign-in link');
     return { sent: true, signedIn: false };
   },
   async signInWithCode(code) {
     const client = await sb();
     const { error } = await client.auth.signInAnonymously();
-    if (error) throw friendly(error, 'Could not start a session');
+    if (error) throw friendly(error, 'Could not start a class session');
     const { data: ok, error: rpcError } = await client.rpc('redeem_access_code', { p_code: code });
-    if (rpcError) throw friendly(rpcError, 'Could not check the access code');
-    if (!ok) {
-      await client.auth.signOut();
+    if (rpcError || !ok) {
+      // Remove the anonymous user that was just made, so a mistyped code leaves nothing behind.
+      try {
+        await client.rpc('delete_my_account');
+      } catch {
+        /* best effort: the clean-up query in the migration catches strays */
+      }
+      await client.auth.signOut({ scope: 'local' });
+      announce();
+      if (rpcError) throw friendly(rpcError, 'Could not check the access code');
       return false;
     }
     announce();
@@ -334,7 +473,13 @@ const supa = {
   },
   async signOut() {
     const client = await sb();
-    await client.auth.signOut();
+    // 'local' ends this browser's session only (logins are shared, so never sign everyone else out).
+    // supabase-js clears this browser before it calls the server, so signing out never waits on the network.
+    try {
+      await client.auth.signOut({ scope: 'local' });
+    } catch {
+      /* the local session is already gone */
+    }
     announce();
   },
   async getProfile() {
@@ -430,7 +575,7 @@ const supa = {
     const { client } = await supaRequireUser();
     const { error } = await client.rpc('delete_my_account');
     if (error) throw friendly(error, 'Could not delete the account');
-    await client.auth.signOut();
+    await client.auth.signOut({ scope: 'local' }); // the user no longer exists; just clear this browser
     announce();
   },
 };

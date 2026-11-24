@@ -15,6 +15,8 @@
 --     delete from auth.users where is_anonymous is true and created_at < now() - interval '30 days';
 -- - delete_my_account() deletes from auth.users as the function owner (postgres). Test it once in the
 --   project after applying (sign in as a throwaway account, delete it from the dashboard).
+--   The sign-in page also calls it to remove the anonymous user made by a mistyped access code.
+-- - Provider, redirect-URL, email-template and rate-limit settings for H4: see supabase/README.md.
 -- =============================================================================================
 
 -- ---------- tables ----------
@@ -79,9 +81,12 @@ revoke all on public.profiles, public.saved_scenarios, public.playlists, public.
   from anon, authenticated;
 
 -- founding is never writable from the browser: only redeem_access_code() sets it.
+-- update includes id because saveProfile() upserts, and PostgREST's upsert writes
+-- "on conflict (id) do update set id = excluded.id, ...", which needs UPDATE on every column it sets.
+-- RLS keeps id equal to auth.uid() both before and after, so nobody can move a profile.
 grant select, delete on public.profiles to authenticated;
 grant insert (id, display_name, school, subjects) on public.profiles to authenticated;
-grant update (display_name, school, subjects) on public.profiles to authenticated;
+grant update (id, display_name, school, subjects) on public.profiles to authenticated;
 
 grant select, insert, update, delete on public.saved_scenarios to authenticated;
 grant select, insert, update, delete on public.playlists to authenticated;

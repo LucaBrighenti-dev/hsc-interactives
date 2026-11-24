@@ -2,55 +2,86 @@
 <html lang="en-AU" data-theme="projector">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Sign in · HSC Interactives Hub</title>
   <meta name="description" content="Interactive simulations for NSW Stage 6 Extension Maths, Physics and Engineering Studies.">
+  <meta name="theme-color" content="#0F1012">
   <link rel="stylesheet" href="/assets/base.css">
   <link rel="stylesheet" href="/assets/signin/signin.css">
 </head>
 <body class="signin">
+  <a class="skip-link" href="#signin-card">Skip to sign in</a>
+  <canvas class="signin__bg" data-signin-bg aria-hidden="true"></canvas>
+
   <main class="signin__main">
-    <section class="signin__intro">
-      <p class="signin__wordmark wordmark" data-site-name>HSC Interactives Hub</p>
-      <p class="signin__tagline" data-site-tagline>Interactive simulations for Extension Maths, Physics and Engineering Studies.</p>
-      <p class="eyebrow">NSW Stage 6 · 2011–2026 syllabuses</p>
+    <section class="signin__intro" aria-labelledby="site-title">
+      <h1 class="signin__wordmark" id="site-title" data-site-name>HSC Interactives Hub</h1>
+      <p class="signin__tagline"><span class="signin__plate" data-site-tagline>Interactive simulations for Extension Maths, Physics and Engineering Studies.</span></p>
+      <p class="signin__meta">NSW Stage 6 · 2011–2026 syllabuses</p>
     </section>
 
-    <section class="signin__card panel" aria-labelledby="signin-title">
-      <h1 id="signin-title" class="signin__title">Sign in</h1>
-      <p class="signin__local" data-local-hint hidden></p>
+    <section class="signin__card" id="signin-card" aria-label="Sign in" tabindex="-1" data-card>
+      <!-- View 1: the four ways in -->
+      <div class="signin__view" data-view="choose">
+        <header class="signin__head">
+          <h2 class="signin__title" id="signin-title">Sign in</h2>
+          <p class="signin__lede">Teachers, use your school account. Students, use the access code from your teacher.</p>
+        </header>
+        <p class="signin__local" data-local-hint hidden></p>
+        <p class="msg signin__msg" id="signin-message" data-message data-anchor="top" role="status" aria-live="polite" hidden></p>
 
-      <div class="stack">
-        <button class="btn btn--block" type="button" data-provider="azure">Continue with Microsoft</button>
-        <button class="btn btn--block" type="button" data-provider="google">Continue with Google</button>
+        <div class="signin__providers" data-section="providers">
+          <button class="btn btn--block signin__provider" type="button" data-provider="azure" data-busy-label="Opening Microsoft…">
+            <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M1 1h8.5v8.5H1zM10.5 1H19v8.5h-8.5zM1 10.5h8.5V19H1zM10.5 10.5H19V19h-8.5z"/></svg>
+            <span>Continue with Microsoft</span>
+          </button>
+          <button class="btn btn--block signin__provider" type="button" data-provider="google" data-busy-label="Opening Google…">
+            <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2.6" d="M16.6 5.4A8 8 0 1 0 18 10h-7.4"/></svg>
+            <span>Continue with Google</span>
+          </button>
+        </div>
+
+        <p class="divider-label signin__divider" aria-hidden="true">or</p>
+
+        <form class="signin__email" data-form="email" data-section="email" novalidate>
+          <div class="field">
+            <label class="field__label" for="email">Email</label>
+            <input class="input" id="email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="you@school.edu.au" maxlength="254" required>
+          </div>
+          <button class="btn btn--primary btn--block" type="submit" data-busy-label="Sending your link…"><span>Email me a sign-in link</span></button>
+        </form>
+
+        <p class="divider-label signin__divider">Have an access code?</p>
+
+        <form class="signin__code" data-form="code" data-section="code" novalidate>
+          <label class="sr-only" for="code">Access code</label>
+          <input class="input input--code" id="code" name="code" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="ACCESS CODE" maxlength="40" enterkeyhint="go">
+          <button class="btn signin__enter" type="submit" data-busy-label="Checking…"><span>Enter</span></button>
+        </form>
       </div>
 
-      <p class="divider-label">or</p>
+      <!-- View 2: a sign-in is finishing (magic-link or provider return, or an existing session) -->
+      <div class="signin__view signin__busy" data-view="busy" hidden>
+        <p class="signin__kicker">One moment</p>
+        <h2 class="signin__title" data-busy-title tabindex="-1">Signing you in…</h2>
+        <div class="signin__progress" role="progressbar" aria-label="Signing you in" aria-busy="true"><span></span></div>
+        <p class="signin__lede" data-busy-detail>Checking your sign-in.</p>
+      </div>
 
-      <form class="stack" data-form="email" novalidate>
-        <div class="field">
-          <label class="field__label" for="email">Email</label>
-          <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="you@school.edu.au" required>
-        </div>
-        <button class="btn btn--primary btn--block" type="submit">Email me a sign-in link</button>
-      </form>
-
-      <p class="divider-label">Have an access code?</p>
-
-      <form class="signin__code" data-form="code" novalidate>
-        <label class="sr-only" for="code">Access code</label>
-        <input class="input input--code" id="code" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ACCESS CODE" maxlength="40">
-        <button class="btn" type="submit">Enter</button>
-      </form>
-
-      <p class="msg" data-message role="status" aria-live="polite"></p>
+      <!-- View 3: a magic link is on its way (Supabase mode) -->
+      <div class="signin__view signin__sent" data-view="sent" hidden>
+        <p class="signin__kicker">Link sent</p>
+        <h2 class="signin__title" data-sent-title tabindex="-1">Check your inbox</h2>
+        <p class="signin__lede">We sent a sign-in link to <strong class="signin__address" data-sent-address></strong>. Open it in this browser on this device. It works once.</p>
+        <p class="signin__lede">Nothing there after a minute? Check your junk folder, or ask your IT team whether school email blocks outside senders.</p>
+        <button class="btn btn--block" type="button" data-action="back"><span>Use a different email</span></button>
+      </div>
     </section>
   </main>
 
   <footer class="signin__footer">
-    <span data-site-credit>Built by Luca Brighenti for UNSW Teach the Teachers 2026</span>
-    <span aria-hidden="true">·</span>
-    <a href="/privacy.html">Privacy</a>
+    <p class="signin__figure" aria-hidden="true"><span class="signin__figure-label">Slope field</span> dy/dx = sin(x − t) · cos y</p>
+    <p class="signin__credit"><span data-site-credit>Built by Luca Brighenti for UNSW Teach the Teachers 2026</span> <span aria-hidden="true">·</span> <a href="/privacy.html">Privacy</a></p>
   </footer>
 
   <script type="module" src="/assets/signin/signin.js"></script>
