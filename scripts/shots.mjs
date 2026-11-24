@@ -3,7 +3,8 @@
 // With no ids: every catalog page that isn't `planned`, the reference template, and the platform pages
 // (signin, dashboard, privacy, styleguide). An argument containing ".html" is a page path, e.g.
 // dev/engines/particle2d.html#projectile (leading slash optional; Git Bash's path rewriting is undone).
-// With --thumbs: also write site/assets/thumbs/<id>.png
+// --steps=N advances interactive pages N engine steps before capturing (a run in progress, for
+// time-based engines). With --thumbs: also write site/assets/thumbs/<id>.png
 // (the stage only, 640×360) for catalog pages. Runs against a built dist/ (`npm run build` first).
 // Exits 1 if any page logs a console error or warning.
 import fs from 'node:fs';
@@ -64,7 +65,7 @@ async function signIn(context) {
   });
 }
 
-export async function shots({ ids = [], thumbs = false, outDir = path.join(ROOT, 'test-results', 'shots') } = {}) {
+export async function shots({ ids = [], thumbs = false, steps = 0, outDir = path.join(ROOT, 'test-results', 'shots') } = {}) {
   if (!fs.existsSync(path.join(DIST, 'catalog.json'))) throw new Error('dist/ is missing. Run `npm run build` first.');
   const catalog = JSON.parse(fs.readFileSync(path.join(DIST, 'catalog.json'), 'utf8'));
   const targets = targetsFor(ids, catalog);
@@ -92,6 +93,7 @@ export async function shots({ ids = [], thumbs = false, outDir = path.join(ROOT,
         if (target.interactive) {
           await page.waitForFunction(() => window.__hsc);
           await page.evaluate(() => window.__hsc.ready);
+          if (steps > 0) await page.evaluate((n) => window.__hsc.step(n), steps); // show a run in progress (time-based engines)
         }
         await page.evaluate(() => document.fonts.ready);
         await page.waitForTimeout(250);
@@ -108,6 +110,7 @@ export async function shots({ ids = [], thumbs = false, outDir = path.join(ROOT,
         await page.goto(`${base}${withFlags(target.path, 'test=1&present=1')}`, { waitUntil: 'networkidle' });
         await page.waitForFunction(() => window.__hsc);
         await page.evaluate(() => window.__hsc.ready);
+        if (steps > 0) await page.evaluate((n) => window.__hsc.step(n), steps);
         await page.waitForTimeout(250);
         const thumb = path.join(SITE, 'assets', 'thumbs', `${target.id}.png`);
         ensureDir(path.dirname(thumb));
@@ -126,7 +129,8 @@ export async function shots({ ids = [], thumbs = false, outDir = path.join(ROOT,
 if (isMain(import.meta.url)) {
   const args = process.argv.slice(2);
   const ids = args.filter((a) => !a.startsWith('--'));
-  shots({ ids, thumbs: args.includes('--thumbs') })
+  const stepsArg = args.find((a) => a.startsWith('--steps='));
+  shots({ ids, thumbs: args.includes('--thumbs'), steps: stepsArg ? Math.max(0, Number(stepsArg.split('=')[1]) || 0) : 0 })
     .then(({ written, problems }) => {
       console.log(`shots: ${written.length} images`);
       for (const w of written) console.log(`  ${w.split(path.sep).join('/')}`);

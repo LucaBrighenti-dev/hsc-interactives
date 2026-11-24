@@ -191,8 +191,9 @@ export async function mountInteractive(config) {
 
   // Header: user menu.
   if (session) {
+    // Native append() turns null into the text "null", so add the badge only when it exists.
+    if (session.founding) userArea.append(el('span', { class: 'badge-founding', text: 'Founding Educator' }));
     userArea.append(
-      session.founding ? el('span', { class: 'badge-founding', text: 'Founding Educator' }) : null,
       el('span', { class: 'hsc-user__name', text: session.user.name || (session.user.kind === 'code' ? 'Class session' : 'Signed in') }),
       button({
         label: 'Sign out',

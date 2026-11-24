@@ -65,7 +65,7 @@ Commands (defined in W0-01/W0-02):
 | `npm run build` | Clean `dist/`, copy `site/`, merge + validate catalog fragments into `dist/catalog.json`, copy/bundle vendor libs and fonts |
 | `npm test` | `node --test tests/engines` |
 | `npm run test:e2e` | Playwright smoke + acceptance tests against a built `dist/` |
-| `npm run shots [-- <id or page path>] [-- --thumbs]` | Screenshots of every non-planned page (or one id, or a page path such as `dev/engines/particle2d.html#projectile`), plus the sign-in, dashboard, privacy, styleguide and template pages, at 1920×1080, 1180×820, 390×844 into `test-results/shots/<id>/`. `--thumbs` also writes `site/assets/thumbs/<id>.png` |
+| `npm run shots [-- <id or page path>] [-- --thumbs]` | Screenshots of every non-planned page (or one id, or a page path such as `dev/engines/particle2d.html#projectile`), plus the sign-in, dashboard, privacy, styleguide and template pages, at 1920×1080, 1180×820, 390×844 into `test-results/shots/<id>/`. `--thumbs` also writes `site/assets/thumbs/<id>.png`; `--steps=N` advances the engine N steps before capturing (time-based engines) |
 | `npm run generate [-- --check]` | Create missing catalog fragments, spec stubs and notes stubs from `docs/backlog.json` (idempotent). `--check` exits 1 if anything is out of date (`npm test` runs the same check) |
 | `npm run create-issues [-- --apply]` | One GitHub issue per backlog page via `gh` (dry run unless `--apply`) |
 | `npm run check` | build + test + test:e2e |

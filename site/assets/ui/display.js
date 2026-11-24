@@ -18,7 +18,13 @@ export function readout({ label, unit = '', sigfigs = 3, format }) {
     el('span', { class: 'readout__value' }, number, unitEl),
   );
   root.update = (value) => {
-    let text = value === null || value === undefined ? '—' : format ? format(value) : typeof value === 'number' ? formatNumber(value, { sigfigs }) : String(value);
+    const empty = value === null || value === undefined;
+    let text = empty ? '—' : format ? format(value) : typeof value === 'number' ? formatNumber(value, { sigfigs }) : String(value);
+    // A blank readout shows the base unit again, never a stale prefixed one ("— mm").
+    if (empty && unitEl.textContent !== unit) {
+      unitEl.textContent = unit;
+      unitEl.hidden = !unit;
+    }
     if (text && typeof text === 'object') {
       if (unitEl.textContent !== text.unit) unitEl.textContent = text.unit;
       unitEl.hidden = !text.unit;
