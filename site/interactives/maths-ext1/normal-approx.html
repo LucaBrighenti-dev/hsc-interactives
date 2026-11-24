@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Normal approximation to the binomial · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!-- Spec: specs/me1-normal-approx.md (statsim / normal-approx). Enrichment beyond the 2024 Extension 1 course. -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    mountInteractive({
+      id: 'me1-normal-approx',
+      engine: () => import('/assets/engines/statsim/index.js'),
+      setup: 'normal-approx',
+      presets: {
+        default: { trials: 30, prob: 0.4, event: 'le', k: 15, continuity: false },
+        'upper-tail': { trials: 30, prob: 0.4, event: 'ge', k: 10, continuity: true },
+        'large-n': { trials: 100, prob: 0.5, event: 'le', k: 55, continuity: true },
+        skewed: { trials: 20, prob: 0.1, event: 'le', k: 2, continuity: true },
+        'single-value': { trials: 50, prob: 0.3, event: 'eq', k: 15, continuity: false },
+      },
+      presetLabels: {
+        default: 'B(30, 0.4): P(X ≤ 15)',
+        'upper-tail': 'Upper tail: P(X ≥ 10)',
+        'large-n': 'Large n: B(100, 0.5), P(X ≤ 55)',
+        skewed: 'Skewed: B(20, 0.1), P(X ≤ 2)',
+        'single-value': 'Single value: B(50, 0.3), P(X = 15)',
+      },
+      controls: ['trials', 'prob', 'event', 'k', 'continuity'],
+      readouts: ['exact', 'approx', 'error', 'mean', 'sd', 'z'],
+      assumptions: [
+        'Enrichment: the normal approximation to the binomial is beyond the 2024 Extension 1 course',
+        'X ~ B(n, p): n independent trials with the same p',
+        'Normal curve with the same mean and SD as the binomial',
+        'Rule of thumb: np and n(1 − p) both at least 5 (some texts use 10)',
+      ],
+      prompts: [
+        { kind: 'predict', text: 'With n = 30 and p = 0.4, will the normal approximation to P(X ≤ 15) be too big or too small? Read the error.' },
+        { kind: 'observe', text: 'Turn the continuity correction on. Where does the boundary move, and which part of the bar at 15 does the hatched area now include?' },
+        { kind: 'predict', text: 'In the skewed scenario (n = 20, p = 0.1), will the curve fit the bars well? Work out np first.' },
+        { kind: 'observe', text: 'In the single value scenario, what is the normal approximation to P(X = 15) with the correction off? Why?' },
+        { kind: 'explain', text: 'Keep p = 0.1 and increase n until np reaches 10. Why does a larger n make a skewed binomial look normal?' },
+      ],
+      notes: '/content/notes/me1-normal-approx.md',
+    });
+  </script>
+</body>
+</html>
