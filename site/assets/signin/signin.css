@@ -1,41 +1,521 @@
-/* Sign-in page: functional layout (W0-08). W1-AUTH builds the premium version (guide §6.4). */
-.signin { display: flex; flex-direction: column; min-height: 100dvh; }
+/*
+ * Sign-in page, onboarding and privacy page (guide §6.4). W1-AUTH.
+ * Tokens only. No box-shadow, gradients, glow or blur; sharp frames; hover changes border or text colour.
+ * Mobile first: on a phone the card sits above the fold.
+ */
+
+/* ---------- page frame ---------- */
+.signin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+.signin__bg,
+.legal__bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity calc(var(--dur) * 3) var(--ease);
+}
+.signin__bg.is-ready,
+.legal__bg.is-ready { opacity: 1; }
+.signin__main,
+.signin__footer { position: relative; z-index: 1; }
+
 .signin__main {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 440px);
-  align-items: center;
-  gap: var(--sp-16);
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--sp-6);
   width: 100%;
-  max-width: 1280px;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: var(--sp-16) var(--sp-8);
+  padding: var(--sp-4) var(--sp-4) var(--sp-8);
 }
-.signin__intro { display: grid; gap: var(--sp-4); }
-.signin__wordmark { font-size: clamp(40px, 5vw, var(--t-72)); line-height: 0.95; white-space: normal; }
-.signin__tagline { font-size: var(--t-24); line-height: 1.3; color: var(--c-muted); max-width: 30ch; }
-.signin__card { display: grid; gap: var(--sp-4); padding: var(--sp-8); }
-.signin__title { font-size: var(--t-24); text-transform: uppercase; letter-spacing: var(--tracking-label); }
+
+/* ---------- intro: wordmark, promise, syllabus line ---------- */
+.signin__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr); /* the column, not the longest word, sets the width */
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.signin__wordmark {
+  font-family: var(--f-display);
+  font-stretch: var(--f-display-stretch);
+  font-weight: 800;
+  font-size: clamp(30px, 8.6vw, var(--t-72)); /* signin.js refines this so the longest word fits */
+  line-height: 0.94;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--c-text);
+  overflow-wrap: normal;
+}
+/*
+ * Plates: the intro text sits on flat --c-bg rectangles, so the background lines pass behind it
+ * without crossing the letters. The plate edges are invisible; only the lines stop.
+ */
+.signin__word,
+.signin__plate,
+.signin__meta { background: var(--c-bg); }
+.signin__word { display: inline-block; padding: 0.06em 0.12em 0.02em; margin: 0 -0.12em; }
+.signin__plate {
+  padding: 0.1em 0.35em;
+  margin: 0 -0.35em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.signin__wordmark::after {
+  content: '';
+  display: block;
+  width: 0.72em;
+  height: 0.09em;
+  min-height: 4px;
+  margin-top: 0.28em;
+  background: var(--c-accent);
+  outline: 6px solid var(--c-bg);
+}
+.signin__tagline {
+  max-width: 34ch;
+  font-size: var(--t-16);
+  line-height: 1.45;
+  color: var(--c-text);
+}
+.signin__meta {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 4px 8px;
+  margin-left: -8px;
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: var(--t-12);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+.signin__meta::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  background: var(--c-accent);
+}
+
+/* ---------- the card ---------- */
+.signin__card {
+  position: relative;
+  min-width: 0;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-top: 2px solid var(--c-accent);
+  padding: 20px var(--sp-4);
+  animation: signin-fade var(--dur) var(--ease) both;
+}
+.signin__card:focus { outline: none; }
+.signin__view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  animation: signin-fade var(--dur) var(--ease) both;
+}
+.signin__view[hidden] { display: none; }
+@keyframes signin-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.signin__head { display: grid; gap: var(--sp-1); }
+.signin__title {
+  font-family: var(--f-display);
+  font-stretch: var(--f-display-stretch);
+  font-weight: 800;
+  font-size: var(--t-18);
+  line-height: 1.15;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--c-text);
+}
+.signin__title:focus { outline: none; }
+.signin__lede { font-size: var(--t-14); line-height: 1.5; color: var(--c-muted); }
+.signin__lede strong { color: var(--c-text); font-weight: 600; overflow-wrap: anywhere; }
+.signin__kicker {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: var(--t-12);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
 .signin__local {
   padding: var(--sp-2) var(--sp-3);
   border: 1px dashed var(--c-line-strong);
-  font-family: var(--f-mono);
-  font-size: var(--t-12);
+  font-size: 13px;
+  line-height: 1.45;
   color: var(--c-muted);
 }
-.signin__code { display: grid; grid-template-columns: 1fr auto; gap: var(--sp-2); }
-.signin__footer {
-  display: flex; flex-wrap: wrap; gap: var(--sp-2); justify-content: center;
-  padding: var(--sp-6); color: var(--c-muted); font-size: var(--t-14);
+.signin__local-tag {
+  margin-right: var(--sp-1);
+  font-family: var(--f-mono);
+  font-weight: 600;
+  font-size: var(--t-12);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--c-text);
 }
+
+.signin__providers { display: grid; gap: var(--sp-2); }
+.signin__provider { padding-inline: 52px; }
+.signin__provider svg {
+  position: absolute;
+  left: var(--sp-4);
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  color: var(--c-text);
+}
+.signin__divider { margin-block: 2px; }
+.signin__email { display: grid; gap: var(--sp-3); }
+.signin__code {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-2);
+}
+.signin__enter { min-width: 96px; }
+
+/* One status region; signin.js moves it next to the part of the card it is about. */
+.signin__msg {
+  margin-top: calc(var(--sp-1) * -1);
+  padding-left: var(--sp-3);
+  border-left: 2px solid currentColor;
+  line-height: 1.45;
+  animation: signin-fade var(--dur) var(--ease) both;
+}
+.signin__msg[hidden] { display: none; }
+
+/* Busy states: the whole card waits while one action runs. */
+.signin__card.is-busy .input { opacity: 0.6; }
+.signin__card .btn { transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), opacity var(--dur) var(--ease); }
+.signin__card .btn.is-busy { opacity: 1; }
+
+/* "Signing you in…" */
+.signin__busy { min-height: 200px; justify-content: center; }
+.signin__progress {
+  position: relative;
+  height: 2px;
+  overflow: hidden;
+  background: var(--c-line-strong);
+}
+.signin__progress span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32%;
+  height: 100%;
+  background: var(--c-accent);
+  animation: signin-progress 1100ms linear infinite;
+}
+@keyframes signin-progress { from { transform: translateX(-100%); } to { transform: translateX(320%); } }
+
+.signin__sent .btn { margin-top: var(--sp-2); }
+
+/* ---------- footer ---------- */
+.signin__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-6);
+  padding: var(--sp-4);
+  border-top: 1px solid var(--c-line);
+  background: var(--c-bg);
+  font-size: var(--t-14);
+  color: var(--c-muted);
+}
+.signin__footer p { margin: 0; }
+.signin__credit { text-align: center; }
 .signin__footer a { color: var(--c-muted); }
 .signin__footer a:hover { color: var(--c-text); }
+.signin__figure {
+  display: none;
+  font-family: var(--f-mono);
+  font-size: var(--t-12);
+  letter-spacing: 0.02em;
+  color: var(--c-muted);
+}
+.signin__figure-label {
+  margin-right: var(--sp-2);
+  color: var(--c-accent);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
 
-.onboarding__subjects { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
-.onboarding__subjects .chip { min-height: var(--touch); padding: 0 var(--sp-4); font-size: var(--t-14); }
-
-@media (max-width: 899px) {
-  .signin__main { grid-template-columns: minmax(0, 1fr); gap: var(--sp-8); padding: var(--sp-8) var(--sp-4); }
-  .signin__card { padding: var(--sp-6); }
+/* ---------- larger phones and small tablets ---------- */
+@media (min-width: 600px) {
+  .signin__main { padding: var(--sp-12) var(--sp-8); gap: var(--sp-8); }
+  .signin__card { padding: var(--sp-8); }
+  .signin__view { gap: var(--sp-4); }
   .signin__tagline { font-size: var(--t-18); }
+}
+
+/* ---------- two columns: intro left, card right ---------- */
+@media (min-width: 900px) {
+  .signin__main {
+    grid-template-columns: minmax(0, 1fr) minmax(380px, 440px);
+    align-content: center;
+    align-items: center;
+    column-gap: clamp(48px, 6vw, 120px);
+    padding: var(--sp-12) clamp(32px, 4vw, 64px);
+  }
+  .signin__intro { gap: var(--sp-6); }
+  .signin__tagline { font-size: clamp(var(--t-18), 1.1vw + 6px, var(--t-24)); line-height: 1.35; }
+  .signin__meta { font-size: var(--t-14); }
+  .signin__title { font-size: var(--t-24); }
+  .signin__footer { justify-content: space-between; padding: var(--sp-4) clamp(32px, 4vw, 64px); }
+  .signin__figure { display: block; }
+}
+
+/* ---------- onboarding dialog ---------- */
+dialog.onboard {
+  width: min(640px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 0;
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 1px solid var(--c-line-strong);
+  border-top: 2px solid var(--c-accent);
+}
+dialog.onboard::backdrop { background: var(--c-scrim); }
+dialog.onboard[open] { display: flex; flex-direction: column; animation: signin-fade var(--dur) var(--ease); }
+.onboard__form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.onboard__head { display: grid; gap: var(--sp-1); padding: var(--sp-6) var(--sp-4) 0; }
+.onboard__kicker {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: var(--t-12);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+.onboard__title {
+  font-family: var(--f-display);
+  font-stretch: var(--f-display-stretch);
+  font-weight: 800;
+  font-size: var(--t-24);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.onboard__intro { font-size: var(--t-14); line-height: 1.5; color: var(--c-muted); max-width: 52ch; }
+.onboard__body {
+  display: grid;
+  gap: var(--sp-6);
+  padding: var(--sp-6) var(--sp-4);
+  overflow: auto;
+  min-height: 0;
+}
+.onboard__group { margin: 0; padding: 0; border: 0; min-width: 0; display: grid; gap: var(--sp-2); }
+.onboard__legend { padding: 0; margin-bottom: var(--sp-2); }
+.onboard__subjects { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-2); }
+.onboard__subject {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 52px;
+  padding: var(--sp-2) var(--sp-4);
+  border: 1px solid var(--c-line-strong);
+  background: var(--c-bg);
+  color: var(--c-text);
+  text-align: left;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.25;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.onboard__subject:hover { border-color: var(--c-text); }
+.onboard__subject[aria-pressed="true"] { border-color: var(--c-accent); }
+.onboard__box {
+  position: relative;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--c-muted);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.onboard__subject[aria-pressed="true"] .onboard__box { background: var(--c-accent); border-color: var(--c-accent); }
+/* A tick as well as the colour, so the choice never depends on colour alone. */
+.onboard__subject[aria-pressed="true"] .onboard__box::after {
+  content: '';
+  position: absolute;
+  left: 4.5px;
+  top: 0.5px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--c-on-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.onboard__subject-name { flex: 1; min-width: 0; }
+.onboard__subject-code {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: var(--t-12);
+  letter-spacing: var(--tracking-label);
+  color: var(--c-muted);
+}
+.onboard__subject[aria-pressed="true"] .onboard__subject-code { color: var(--c-accent); }
+.onboard__row { display: grid; gap: var(--sp-6); grid-template-columns: minmax(0, 1fr); }
+.onboard__field .control-help { margin-top: 0; }
+.onboard__error[hidden], .onboard__status[hidden] { display: none; }
+.onboard__error { line-height: 1.4; }
+.onboard__status { padding-left: var(--sp-3); border-left: 2px solid currentColor; }
+.onboard__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-top: var(--border);
+  flex: none;
+}
+.onboard__continue { min-width: 140px; }
+
+@media (min-width: 560px) {
+  .onboard__head { padding: var(--sp-8) var(--sp-8) 0; }
+  .onboard__body { padding: var(--sp-6) var(--sp-8); }
+  .onboard__foot { padding: var(--sp-4) var(--sp-8); }
+  .onboard__subjects { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .onboard__row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
+  .onboard__title { font-size: var(--t-32); }
+}
+
+/* ---------- privacy page ---------- */
+.legal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+.legal__header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-bottom: 1px solid var(--c-line);
+}
+.legal__header .legal__bg { position: absolute; z-index: -1; }
+.legal__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  min-height: var(--header-h);
+  padding: 0 var(--sp-4);
+  border-bottom: 1px solid var(--c-line);
+  background: var(--c-bg);
+}
+.legal__bar .wordmark { font-size: var(--t-14); white-space: normal; }
+.legal__bar .btn { min-height: var(--touch); flex: none; }
+.legal__hero {
+  display: grid;
+  gap: var(--sp-4);
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--sp-12) var(--sp-4);
+}
+.legal__hero > .eyebrow,
+.legal__hero h1 {
+  justify-self: start;
+  background: var(--c-bg);
+  padding: 4px 8px;
+  margin-left: -8px;
+}
+.legal__hero h1 {
+  font-size: clamp(var(--t-48), 9vw, var(--t-72));
+  line-height: 0.95;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.legal__hero h1::after {
+  content: '';
+  display: block;
+  width: 0.72em;
+  height: 0.09em;
+  min-height: 4px;
+  margin-top: 0.28em;
+  background: var(--c-accent);
+}
+.legal__lede {
+  max-width: 56ch;
+  padding: var(--sp-4);
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  font-size: var(--t-16);
+  line-height: 1.6;
+  color: var(--c-text);
+}
+.legal__main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--sp-4) var(--sp-4) var(--sp-16);
+  background: var(--c-bg);
+}
+.legal__section {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-8) 0;
+  border-bottom: 1px solid var(--c-line);
+}
+.legal__section:last-child { border-bottom: 0; }
+.legal__section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  font-family: var(--f-display);
+  font-stretch: var(--f-display-stretch);
+  font-weight: 800;
+  font-size: var(--t-18);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.legal__num {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: var(--t-14);
+  color: var(--c-accent);
+}
+.legal__text { max-width: 64ch; font-size: var(--t-16); line-height: 1.65; color: #D5D7DA; }
+.legal__text > * + * { margin-top: var(--sp-3); }
+.legal__text ul { padding-left: 1.2em; }
+.legal__text li + li { margin-top: var(--sp-2); }
+.legal__text li::marker { color: var(--c-accent); }
+.legal__text strong { color: var(--c-text); }
+.legal__text a { overflow-wrap: anywhere; }
+.legal .signin__footer { position: relative; z-index: 1; }
+
+@media (min-width: 900px) {
+  /* Line the bar up with the content column below it. */
+  .legal__bar { padding: 0 max(clamp(32px, 4vw, 64px), calc((100% - 1120px) / 2 + clamp(32px, 4vw, 64px))); }
+  .legal__bar .wordmark { font-size: var(--t-16); }
+  .legal__hero { padding: var(--sp-16) clamp(32px, 4vw, 64px); }
+  .legal__lede { font-size: var(--t-18); padding: var(--sp-6); }
+  .legal__main { padding: var(--sp-8) clamp(32px, 4vw, 64px) var(--sp-16); }
+  .legal__section { grid-template-columns: 320px minmax(0, 1fr); gap: var(--sp-8); padding: var(--sp-12) 0; }
+  .legal__section h2 { font-size: var(--t-18); flex-direction: column; gap: var(--sp-2); }
+}
+
+/* Reduced motion: no fades or moving bars (the background script draws one static frame). */
+@media (prefers-reduced-motion: reduce) {
+  .signin__progress span { animation: none; width: 100%; opacity: 0.6; }
 }
