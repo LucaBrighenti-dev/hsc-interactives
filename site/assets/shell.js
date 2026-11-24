@@ -19,6 +19,7 @@ import { parseQuery, resolveParams, paramsFor, isVisible, createUrlSync, toQuery
 import { downloadCSV } from './csv.js';
 import { ensureFonts } from './engine-kit.js';
 import { renderMarkdown, stripFrontmatter } from './markdown.js';
+import { formatInteger } from './format.js';
 import { el, clear, icon, button, slider, toggle, segmented, select, textField, chip, readout, panel, drawer, modal, toast, qrModal } from './ui/index.js';
 
 /** Course-level NESA links for the tag strip when a tag has no `url` of its own. Links only; never copy syllabus text. */
@@ -328,7 +329,7 @@ export async function mountInteractive(config) {
   const readouts = new Map();
   for (const key of readoutKeys) {
     const out = meta.outputs[key];
-    const r = readout({ label: out.label, unit: out.unit, sigfigs: out.sigfigs ?? 3 });
+    const r = readout({ label: out.label, unit: out.unit, sigfigs: out.sigfigs ?? 3, format: out.integer ? formatInteger : undefined });
     readouts.set(key, r);
     readoutsEl.append(r);
   }

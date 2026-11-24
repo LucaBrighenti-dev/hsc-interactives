@@ -65,6 +65,14 @@ export function formatNumber(x, opts = {}) {
   return sign(s);
 }
 
+/** Whole numbers (counts): rounded, grouped from 10 000 up, true minus sign. formatInteger(12345) → "12 345". */
+export function formatInteger(x) {
+  if (!Number.isFinite(x)) return formatNumber(x);
+  const n = Math.round(x);
+  const s = group(String(Math.abs(n)));
+  return n < 0 ? MINUS + s : s;
+}
+
 /**
  * A value as entered, for labels that echo inputs ("y = 2 sin(…)", "θ = 30°"): up to 6 significant
  * figures, trailing zeros dropped, true minus sign. Use formatNumber for computed results.
