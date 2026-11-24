@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inclined plane and friction · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!-- Spec: specs/phy-inclined-plane.md (statics / incline). The eng-horizontal preset serves the
+       eng-friction-horizontal catalogue listing (g = 10 m/s² for Engineering). -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    mountInteractive({
+      id: 'phy-inclined-plane',
+      engine: () => import('/assets/engines/statics/index.js'),
+      setup: 'incline',
+      presets: {
+        default: { angle: 30, mass: 5, muS: 0.6, muK: 0.4, applied: 0, appliedAngle: 0, g: 9.8, showComponents: true },
+        sliding: { angle: 35, mass: 5, muS: 0.6, muK: 0.4, applied: 0, appliedAngle: 0, g: 9.8, showComponents: true },
+        'push-up': { angle: 30, mass: 5, muS: 0.6, muK: 0.4, applied: 60, appliedAngle: 0, g: 9.8, showComponents: false }, // components off: the statics view draws the down-slope f label on the W sin θ label (engine CR in the PR)
+        'eng-horizontal': { angle: 0, mass: 10, muS: 0.5, muK: 0.3, applied: 40, appliedAngle: 0, g: 10, showComponents: true },
+      },
+      presetLabels: {
+        default: '30° slope: friction just holds',
+        sliding: '35° slope: slides down',
+        'push-up': 'Pushed up the slope with 60 N',
+        'eng-horizontal': 'Engineering crate (g = 10)',
+      },
+      controls: ['angle', 'mass', 'muS', 'muK', 'applied', 'appliedAngle', 'g', 'showComponents'],
+      readouts: ['weightParallel', 'normalForce', 'friction', 'frictionMax', 'acceleration', 'reposeAngle'],
+      assumptions: [
+        'Block treated as a particle on a rigid ramp',
+        'Friction: static up to μs N; kinetic μk N when sliding',
+        'No air resistance; g = 9.8 m/s² (10 m/s² in the Engineering scenario), shown top right',
+        'The block starts at rest',
+      ],
+      prompts: [
+        { kind: 'predict', text: 'The block is at rest on a 30° slope. What will happen if you raise the slope by 2°? Try it, then find the angle at which it starts to slide.' },
+        { kind: 'observe', text: 'With the block at rest, change the mass. Does the angle of repose change? Why not?' },
+        { kind: 'explain', text: 'At 30° the friction is 24.5 N, but μs N is 25.5 N. Why is the friction not 25.5 N?' },
+        { kind: 'predict', text: 'Choose the Engineering crate scenario. How hard must you push before the crate moves? Increase F to 51 N. Why does the acceleration jump straight to about 2 m/s² rather than starting from almost zero?' },
+        { kind: 'explain', text: 'In the crate scenario, set the direction of F to 30° (a pull 30° above the floor) and find the smallest F that moves the crate. Why is it less than when you push horizontally? Use the normal force readout.' },
+      ],
+      notes: '/content/notes/phy-inclined-plane.md',
+    });
+  </script>
+</body>
+</html>
