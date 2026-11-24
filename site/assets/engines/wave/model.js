@@ -205,7 +205,9 @@ export function interferenceOutputs(p) {
     firstOrderAngle: angle(s1),
     firstOrderPosition: y1,
     smallAnglePosition: (lambda * L) / g.d,
-    fringeSpacing: y1,
+    // Evenly spaced fringes only for a double slit (θ₁ < 1° across its range). Grating maxima are not
+    // evenly spaced on a flat screen (y = L tan θ), so there is no single "fringe spacing".
+    fringeSpacing: g.kind === 'double' ? y1 : null,
     centralWidth: yz === null ? null : 2 * yz,
     maxOrder: g.kind === 'grating' ? maxOrder(lambda, g.d) : null,
   };
@@ -344,37 +346,81 @@ export function besselJ(n, x) {
 }
 
 /**
- * Single-sided amplitude spectrum: [{ f, amplitude, n }] (n = sideband number), sorted by frequency.
- * AM: carrier 1 and sidebands m/2 (sine) or 2m/(πk) for odd k (square). FM/PM with a sine message:
- * |Jₙ(β)| at f_c + n f_m. Null for FM/PM with a square message (no simple closed form).
+ * Complex-envelope coefficients: s(t) = Re Σₙ Cₙ e^{i2π(f_c + n f_m)t}, as [n, Re Cₙ, Im Cₙ].
+ *   AM sine     C₀ = 1, C±₁ = ∓im/2            (1 + m sin θ)
+ *   AM square   C₀ = 1, C±ₖ = ∓2im/(πk), k odd (square wave (4/π) Σ sin kθ / k)
+ *   FM sine     Cₙ = e^{iβ} (−i)ⁿ Jₙ(β)        (phase β(1 − cos θ), Jacobi–Anger)
+ *   PM sine     Cₙ = Jₙ(Δφ)                     (phase Δφ sin θ)
+ * Null for FM/PM with a square message (no simple closed form).
  */
-export function modulationSpectrum(p) {
+function envelopeCoefficients(p) {
   const fc = p.carrierFrequency;
   const fm = p.messageFrequency;
-  const lines = [];
-  const add = (f, amplitude, n) => {
-    if (f > 0 && amplitude > 1e-9) lines.push({ f, amplitude, n });
-  };
+  const terms = [];
   if (p.modulation === 'am') {
-    add(fc, 1, 0);
+    const m = p.amIndex;
+    terms.push([0, 1, 0]);
     if (p.messageShape === 'square') {
-      for (let k = 1; k * fm <= SPECTRUM_HALF_WIDTH + 5; k += 2) {
-        const a = (2 * p.amIndex) / (Math.PI * k);
-        add(fc - k * fm, a, -k);
-        add(fc + k * fm, a, k);
+      // Every odd k whose line can land (directly or folded) at or below f_c + SPECTRUM_HALF_WIDTH + 5 Hz.
+      const top = Math.ceil((2 * fc + SPECTRUM_HALF_WIDTH + 5) / fm);
+      for (let k = 1; k <= top; k += 2) {
+        const a = (2 * m) / (Math.PI * k);
+        terms.push([k, 0, -a], [-k, 0, a]);
       }
-    } else {
-      add(fc - fm, p.amIndex / 2, -1);
-      add(fc + fm, p.amIndex / 2, 1);
+    } else terms.push([1, 0, -m / 2], [-1, 0, m / 2]);
+    return terms;
+  }
+  if (p.messageShape === 'square') return null;
+  const beta = modulationIndex(p);
+  const top = Math.ceil(beta) + 25; // beyond n ≈ β + 25, |Jₙ(β)| < 1e-6 for β ≤ 50
+  for (let n = -top; n <= top; n++) {
+    const J = besselJ(n, beta);
+    if (p.modulation === 'pm') terms.push([n, J, 0]);
+    else {
+      const angle = beta - (n * Math.PI) / 2; // e^{iβ} (−i)ⁿ = e^{i(β − nπ/2)}
+      terms.push([n, J * Math.cos(angle), J * Math.sin(angle)]);
     }
-  } else {
-    if (p.messageShape === 'square') return null;
-    const beta = modulationIndex(p);
-    const top = Math.ceil(beta) + 12;
-    for (let n = -top; n <= top; n++) add(fc + n * fm, Math.abs(besselJ(n, beta)), n);
+  }
+  return terms;
+}
+
+/**
+ * Single-sided amplitude spectrum: { lines: [{ f, amplitude }], folded } sorted by frequency.
+ * A term at f_c + n f_m < 0 is a real cosine at |f| with its phase reversed, so it folds back onto the
+ * positive axis and adds (as a phasor) to any line already there; a term at 0 Hz is a steady (DC)
+ * offset, drawn as a line at f = 0 with height |offset|. `folded` is true when a visible part of the
+ * spectrum came from below 0 Hz. Null for FM/PM with a square message.
+ */
+export function modulationSpectrum(p) {
+  const terms = envelopeCoefficients(p);
+  if (!terms) return null;
+  const fc = p.carrierFrequency;
+  const fm = p.messageFrequency;
+  const bins = new Map();
+  let dc = 0;
+  let folded = 0;
+  for (const [n, re, im] of terms) {
+    const F = fc + n * fm;
+    if (Math.abs(F) < 1e-9) {
+      dc += re;
+      folded = Math.max(folded, Math.hypot(re, im));
+      continue;
+    }
+    const key = Math.round(Math.abs(F) * 1e6);
+    const bin = bins.get(key) ?? { f: Math.abs(F), re: 0, im: 0 };
+    bin.re += re;
+    bin.im += F > 0 ? im : -im; // Re{C e^{−i2π|F|t}} = Re{C̄ e^{i2π|F|t}}
+    if (F < 0) folded = Math.max(folded, Math.hypot(re, im));
+    bins.set(key, bin);
+  }
+  const lines = [];
+  if (Math.abs(dc) > 1e-9) lines.push({ f: 0, amplitude: Math.abs(dc) });
+  for (const bin of bins.values()) {
+    const amplitude = Math.hypot(bin.re, bin.im);
+    if (amplitude > 1e-9) lines.push({ f: bin.f, amplitude });
   }
   lines.sort((a, b) => a.f - b.f);
-  return { lines };
+  return { lines, folded: folded >= 0.005 };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -696,7 +742,7 @@ export function samples(state, setup, p) {
   }
   if (setup === 'modulation') {
     const rows = times(t - p.traceWindow, t, 1 / (20 * p.carrierFrequency)).map((tt) => [round9(tt), messageValue(tt, p), carrierValue(tt, p), modulatedValue(tt, p)]);
-    return { columns: ['t (s)', 'message (V)', 'carrier (V)', `${p.modulation.toUpperCase()} signal (V)`], rows };
+    return { columns: ['t (s)', 'message (relative)', 'carrier (relative)', `${p.modulation.toUpperCase()} signal (relative)`], rows };
   }
   if (setup === 'wave-machine') {
     if (p.waveType === 'standing') {
@@ -726,7 +772,7 @@ export function samples(state, setup, p) {
       const v = beatsValues(tt, p);
       return [round9(tt), v.y1, v.y2, v.sum, v.envelope];
     });
-    return { columns: ['t (s)', 'y₁', 'y₂', 'y₁ + y₂', 'envelope'], rows };
+    return { columns: ['t (s)', 'y₁ (relative)', 'y₂ (relative)', 'y₁ + y₂ (relative)', 'envelope (relative)'], rows };
   }
   const rows = times(0, t, 0.001).map((tt) => [round9(tt), sourceX(tt, p), observerX(tt, p), observedFrequency(tt, p)]);
   return { columns: ['t (s)', 'source x (m)', 'observer x (m)', 'heard frequency (Hz)'], rows };

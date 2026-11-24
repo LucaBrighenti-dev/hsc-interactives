@@ -79,6 +79,22 @@ test('§9.1 grating 600 lines/mm at 500 nm: first order at 17.46° (0.01°)', ()
   assert.equal(out.maxOrder, 3);
 });
 
+test('grating: no single fringe spacing (maxima are not evenly spaced on a flat screen)', () => {
+  // 600 lines/mm, 500 nm, L = 1 m: y_m = tan(asin(0.3m)) = 0.3145, 0.7500, 2.0647 m, gaps 0.31, 0.44, 1.31 m
+  const p = params('interference', { aperture: 'grating', wavelength: 500, linesPerMm: 600, screenDistance: 1 });
+  assert.equal(interferenceOutputs(p).fringeSpacing, null);
+  const ys = principalMaxima(500e-9, 1e-3 / 600)
+    .filter((o) => o.m > 0)
+    .map((o) => screenPosition(o.theta, 1));
+  close(ys[0], 0.31449, 1e-5);
+  close(ys[1], 0.75, 1e-12);
+  close(ys[2], Math.tan(Math.asin(0.9)), 1e-12);
+  assert.ok(ys[2] - ys[1] > 2 * (ys[1] - ys[0]), 'gaps grow outwards');
+  // The double slit keeps its (near-uniform) fringe spacing; the single slit has none
+  assert.ok(interferenceOutputs(params('interference', { aperture: 'double' })).fringeSpacing > 0);
+  assert.equal(interferenceOutputs(params('interference', { aperture: 'single' })).fringeSpacing, null);
+});
+
 test('§9.1 beats: 440 Hz + 444 Hz → 4 Hz', () => {
   assert.equal(beatFrequency(440, 444), 4);
   assert.equal(beatFrequency(444, 440), 4);
@@ -239,7 +255,7 @@ test('wavelength → colour: hue ordering across the spectrum, invisible outside
 // Modulation: AM sidebands, FM instantaneous frequency, Bessel spectrum, bandwidth
 // ---------------------------------------------------------------------------------------------
 
-/** Single-sided DFT amplitude at an integer frequency (Hz) over a 1 s window of N samples. */
+/** Single-sided DFT amplitude at an integer frequency (Hz) over a 1 s window of N samples (|mean| at 0 Hz). */
 function dftAmplitude(fn, f, N = 4096) {
   let re = 0;
   let im = 0;
@@ -249,7 +265,7 @@ function dftAmplitude(fn, f, N = 4096) {
     re += v * Math.cos(2 * Math.PI * f * t);
     im -= v * Math.sin(2 * Math.PI * f * t);
   }
-  return (2 * Math.hypot(re, im)) / N;
+  return ((f === 0 ? 1 : 2) * Math.hypot(re, im)) / N;
 }
 
 test('Bessel functions match tabulated values (Abramowitz & Stegun, table 9.1)', () => {
@@ -281,14 +297,37 @@ test('AM: envelope 1 + m·m(t) and sidebands of amplitude m/2 at f_c ± f_m', ()
   close(out.lowerSideband, 19, 1e-12);
 });
 
-test('AM with a square message: sidebands 2m/(πk) at f_c ± k f_m, k odd', () => {
+test('AM with a square message: sidebands 2m/(πk) at f_c ± k f_m, k odd, plus the terms folded from below 0 Hz', () => {
   const p = params('modulation', { modulation: 'am', carrierFrequency: 20, messageFrequency: 1, amIndex: 0.8, messageShape: 'square' });
-  const lines = modulationSpectrum(p).lines;
+  const { lines } = modulationSpectrum(p);
   const at = (f) => lines.find((l) => Math.abs(l.f - f) < 1e-9)?.amplitude;
-  close(at(21), (2 * 0.8) / Math.PI, 1e-12);
-  close(at(17), (2 * 0.8) / (3 * Math.PI), 1e-12);
+  // m·sq(t)·cos(2π·20t) = Σ (2m/πk)[sin 2π(k + 20)t + sin 2π(k − 20)t], k odd.
+  // 21 Hz: k = 1 (upper) and k = 41 (k − 20 = 21), same sign: (2m/π)(1 + 1/41).
+  close(at(21), ((2 * 0.8) / Math.PI) * (1 + 1 / 41), 1e-12);
+  // 17 Hz: k = 3 (k − 20 = −17, a sine with its sign reversed) and k = 37 (k − 20 = 17): (2m/π)(1/3 − 1/37).
+  close(at(17), ((2 * 0.8) / Math.PI) * (1 / 3 - 1 / 37), 1e-12);
+  close(at(20), 1, 1e-12, 'carrier');
   assert.equal(at(22), undefined, 'no even harmonics');
   assert.equal(modulationBandwidth(p), null, 'a square message has no finite bandwidth');
+});
+
+test('spectrum lines below 0 Hz fold back and combine; a line at 0 Hz is a steady offset (checked against a DFT)', () => {
+  // FM, f_c = 10 Hz, f_m = 5 Hz, Δf = 10 Hz (β = 2): n = −1 lands at 5 Hz and n = −3 folds onto it; n = −2 is at 0 Hz.
+  const fm = params('modulation', { modulation: 'fm', carrierFrequency: 10, messageFrequency: 5, fmDeviation: 10, messageShape: 'sine' });
+  const spec = modulationSpectrum(fm);
+  const at = (s, f) => s.lines.find((l) => Math.abs(l.f - f) < 1e-9)?.amplitude ?? 0;
+  assert.equal(spec.folded, true);
+  for (const f of [0, 5, 10, 15, 20, 25, 30]) close(at(spec, f), dftAmplitude((t) => modulatedValue(t, fm), f), 1e-9, `FM line at ${f} Hz`);
+  close(at(spec, 5), 0.502, 0.001);
+  close(at(spec, 0), Math.abs(besselJ(2, 2) * Math.cos(2)), 1e-12, 'DC = |J₂(2) cos β|');
+  // PM, Δφ = 2 rad: real coefficients Jₙ(2); 5 Hz gets J₋₁ + J₋₃ (both negative), 0 Hz gets J₋₂.
+  const pm = params('modulation', { modulation: 'pm', carrierFrequency: 10, messageFrequency: 5, pmDeviation: 2, messageShape: 'sine' });
+  const sp = modulationSpectrum(pm);
+  close(at(sp, 5), besselJ(1, 2) + besselJ(3, 2), 1e-12);
+  close(at(sp, 0), besselJ(2, 2), 1e-12);
+  for (const f of [0, 5, 10, 15, 20]) close(at(sp, f), dftAmplitude((t) => modulatedValue(t, pm), f), 1e-9, `PM line at ${f} Hz`);
+  // The defaults never fold
+  assert.equal(modulationSpectrum(params('modulation', { modulation: 'fm' })).folded, false);
 });
 
 test('FM: instantaneous frequency f_c + Δf·m(t), Carson bandwidth, Bessel sidebands', () => {

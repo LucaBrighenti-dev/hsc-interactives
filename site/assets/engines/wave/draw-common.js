@@ -206,6 +206,26 @@ export function traceAxes(ctx, vp, pal, { px = 18, xLabels = true, yTicks = [-1,
   ctx.restore();
 }
 
+/**
+ * Put an x-axis title in the tick-label row under the plot (never over the data): returns a formatX for
+ * drawAxes that blanks tick labels touching the title, and a draw() for the title itself.
+ */
+export function xTitleOutside(ctx, vp, pal, { px = 18, title }) {
+  const { rect } = vp;
+  const titleLeft = rect.x + rect.w - richWidth(ctx, title, { px }) - px * 0.8;
+  return {
+    formatX: (v) => {
+      const s = tickText(v);
+      ctx.save();
+      ctx.font = font('mono', px);
+      const half = ctx.measureText(s).width / 2;
+      ctx.restore();
+      return vp.toX(v) + half > titleLeft ? '' : s;
+    },
+    draw: () => rich(ctx, title, rect.x + rect.w, rect.y + rect.h + 6, { colour: pal.ink, px, align: 'right', baseline: 'top' }),
+  };
+}
+
 /** A short line sample for a legend, then its text. Returns the total width. */
 export function legendItem(ctx, x, y, { colour, width = 3, dash = null, text, px, textColour }) {
   ctx.save();

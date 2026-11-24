@@ -3,7 +3,7 @@
 import { viewport, axisMargins, drawAxes, arrow } from '../../engine-kit.js';
 import { apertureGeometry, interferenceOutputs, intensityProfile, screenHalfWidth, wavelengthToRgb, srgbEncode, principalMaxima, singleSlitMinima, isMissingOrder } from './model.js';
 import { formatNumber, formatPlain, siPrefix, MINUS } from '../../format.js';
-import { rich, richWidth, fit, stroke, dimension, rgbCss, squareMarker } from './draw-common.js';
+import { rich, richWidth, fit, stroke, dimension, rgbCss, squareMarker, xTitleOutside } from './draw-common.js';
 
 const SCREEN_BG = '#0F1012'; // a screen in a darkened room (token --c-bg); the same in both themes
 const NAMES = { single: 'Single slit', double: 'Double slit', grating: 'Diffraction grating' };
@@ -97,6 +97,10 @@ export function drawInterference(ctx, S, p, pal) {
       if (off.length) notes.push(`Beyond the screen shown: ${off.map((o) => `m = ${o.m} at ${deg(o.theta / DEG)}${isMissingOrder(o.m, g.a, g.d) ? ' (missing)' : ''}`).join(', ')}.`);
     }
   }
+  if (g.kind !== 'grating' && out.firstOrderPosition !== null && out.firstOrderPosition > half) {
+    const what = g.kind === 'single' ? 'The first dark fringe' : 'The first-order bright fringe';
+    notes.push(`${what} (y = ${len(out.firstOrderPosition)}) is beyond the screen shown: choose a wider screen.`);
+  }
   const compact = H < 420 || W < 600;
   const infoW = W - 2 * pad;
   const lines = [...flow(ctx, chunks, infoW, px), ...notes.flatMap((n) => flow(ctx, [n], infoW, px))];
@@ -131,7 +135,7 @@ export function drawInterference(ctx, S, p, pal) {
   const cw = plotW / cols;
 
   // Screen strip: linear light I × colour, encoded to sRGB, on a dark screen.
-  ctx.fillStyle = SCREEN_BG;
+  ctx.fillStyle = pal.screen ?? SCREEN_BG;
   ctx.fillRect(plotX, stripTop, plotW, sh);
   for (let i = 0; i < cols; i++) {
     const I = prof.I[i];
@@ -192,7 +196,8 @@ export function drawInterference(ctx, S, p, pal) {
     }
     if (g.N === 1) rich(ctx, 'm (dark)', plotX + plotW, labelBase, { colour: pal.muted, px, align: 'right', box: pal.bg, padding: 2 });
   }
-  if (p.showSmallAngle && first && graphH >= 60) {
+  let smallAngleDrawn = 0;
+  if (p.showSmallAngle && first && !compact) {
     const spacing = g.N >= 2 ? g.d : g.a;
     ctx.save();
     ctx.fillStyle = pal.series[2];
@@ -213,10 +218,7 @@ export function drawInterference(ctx, S, p, pal) {
       drawn += 1;
     }
     ctx.restore();
-    if (drawn && plotW > 420 && roomy) {
-      const legend = g.N >= 2 ? '▲ small-angle mλL/d' : '▲ small-angle mλL/a';
-      rich(ctx, legend, plotX + plotW - 6, vp.toY(0.86), { colour: pal.ink, px, align: 'right', box: pal.bg, padding: 3 });
-    }
+    smallAngleDrawn = drawn;
   }
   if (first) {
     const Yb = vp.toY(1.08);
@@ -241,9 +243,25 @@ export function drawInterference(ctx, S, p, pal) {
     }
   }
 
-  drawAxes(ctx, vp, pal, { px, layer: 'over', yCount: 3, xCount: plotW > 700 ? 8 : plotW > 380 ? 6 : 4, xTitle: compact ? `y (${unit})` : `y on screen (${unit})` });
-  rich(ctx, 'I/I_0', rx, graphTop - px * 0.55, { colour: pal.ink, px });
-  if (richWidth(ctx, 'relative intensity', { px }) + px * 4 < plotW) rich(ctx, 'relative intensity', rx + richWidth(ctx, 'I/I_0', { px }) + px * 0.6, graphTop - px * 0.55, { colour: pal.muted, px });
+  // Axis titles and the legend sit outside the plot, so they never cover the data.
+  const xTitle = xTitleOutside(ctx, vp, pal, { px, title: compact ? `y (${unit})` : `y on screen (${unit})` });
+  drawAxes(ctx, vp, pal, { px, layer: 'over', yCount: 3, xCount: plotW > 700 ? 8 : plotW > 380 ? 6 : 4, formatX: xTitle.formatX });
+  xTitle.draw();
+  const rowY = graphTop - px * 0.55;
+  rich(ctx, 'I/I_0', rx, rowY, { colour: pal.ink, px });
+  let rowX = rx + richWidth(ctx, 'I/I_0', { px }) + px * 0.6;
+  const legend = smallAngleDrawn ? (g.N >= 2 ? '▲ small-angle mλL/d' : '▲ small-angle mλL/a') : '';
+  const legendW = legend ? richWidth(ctx, legend, { px }) + px : 0;
+  if (richWidth(ctx, 'relative intensity', { px }) + (rowX - rx) + legendW + px < rw) {
+    rich(ctx, 'relative intensity', rowX, rowY, { colour: pal.muted, px });
+    rowX += richWidth(ctx, 'relative intensity', { px });
+  }
+  if (legend && rowX + legendW <= plotX + plotW) {
+    // The triangle in the legend is drawn in the marker colour (shape and colour together).
+    const textW = richWidth(ctx, legend.slice(2), { px });
+    rich(ctx, legend.slice(2), plotX + plotW, rowY, { colour: pal.ink, px, align: 'right' });
+    rich(ctx, '▲', plotX + plotW - textW - px * 0.4, rowY, { colour: pal.series[2], px, align: 'right' });
+  }
 }
 
 /** Schematic of the light, slits and screen. Angles and sizes are not to scale (stated on the figure). */
@@ -298,7 +316,7 @@ function drawGeometry(ctx, R, g, p, out, pal, px, lightCss) {
   // A ray to the first order (first dark fringe for a single slit), angle exaggerated when small.
   if (out.firstOrderAngle !== null) {
     const run = sx - bx;
-    const maxA = Math.atan((cy - top - px * 0.5) / run);
+    const maxA = Math.atan((cy - top - px * 1.9) / run); // keep "m = 1" clear of the "screen" label
     const drawnA = Math.min(Math.max(out.firstOrderAngle * DEG, 10 * DEG), maxA);
     const Y1 = cy - run * Math.tan(drawnA);
     ctx.save();

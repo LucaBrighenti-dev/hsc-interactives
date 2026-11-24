@@ -14,7 +14,7 @@ import {
   DT,
 } from './model.js';
 import { formatNumber, formatPlain } from '../../format.js';
-import { rich, richWidth, fit, stroke, dimension, plotFunction, traceAxes, legendItem, squareMarker, dot } from './draw-common.js';
+import { rich, richWidth, fit, stroke, dimension, plotFunction, traceAxes, legendItem, squareMarker, dot, xTitleOutside } from './draw-common.js';
 
 const TWO_PI = 2 * Math.PI;
 const MARK_X = 3; // m, the marked particle
@@ -95,10 +95,14 @@ function drawTransverse(ctx, S, p, pal, t) {
   rich(ctx, fit(ctx, ['Displacement–position graph (a snapshot of the rope)', 'Snapshot of the rope'], rect.w, { px }), rect.x, top + px * 0.6, { colour: pal.muted, px });
   const y = (x) => travellingDisplacement(x, t, wave1(p));
   plotFunction(ctx, vp, y, 0, MACHINE_LENGTH, { colour: pal.series[0], width: 3 });
-  if (p.showParticles) for (let x = 0; x <= MACHINE_LENGTH + 1e-9; x += 0.4) dot(ctx, vp.toX(x), vp.toY(y(x)), 3.5, pal.ink);
+  const lambda = p.waveSpeed / p.frequency;
+  // At least 6 particles per wavelength (fewer would alias); none if they would be under 6 px apart.
+  const spacing = Math.min(0.4, lambda / 6);
+  if (p.showParticles && spacing * vp.scaleX >= 6) {
+    for (let i = 0; i * spacing <= MACHINE_LENGTH + 1e-9; i++) dot(ctx, vp.toX(i * spacing), vp.toY(y(i * spacing)), 3.5, pal.ink);
+  }
 
   // λ and A on a crest near the left.
-  const lambda = p.waveSpeed / p.frequency;
   // Start the λ bracket clear of the y-axis title.
   const c = crests(p, t, 1.8, MACHINE_LENGTH - 0.6).find((x) => x + lambda <= MACHINE_LENGTH - 0.3);
   if (c !== undefined && lambda * vp.scaleX > px * 4) {
@@ -121,7 +125,7 @@ function drawTransverse(ctx, S, p, pal, t) {
   const scale = 0.55 / Math.max(1e-9, p.amplitude * w);
   arrow(ctx, X, Y, X, vp.toY(y(MARK_X) + vy * scale), { colour: pal.series[1], width: 3, head: 12 });
   squareMarker(ctx, X, Y, 14, pal.series[1], pal.ink);
-  drawAxes(ctx, vp, pal, { px, layer: 'over', yCount: 4, xTitle: 'x (m)', yTitle: 'y (m)' });
+  axesOver(ctx, vp, pal, px, 'x (m)', 'y (m)');
 
   if (split) {
     const r2 = { x: rect.x, y: top + avail * 0.58 + px * 1.4, w: rect.w, h: Math.max(30, avail * 0.42 - px * 1.4 - m.bottom) };
@@ -150,31 +154,45 @@ function drawLongitudinal(ctx, S, p, pal, t) {
   const vpT = viewport({ x: [0, MACHINE_LENGTH], y: [0, 1], rect });
   const xi = (x) => travellingDisplacement(x, t, wave1(p));
 
-  // C and R labels at compression (kx − ωt = π) and rarefaction (kx − ωt = 0) centres.
+  // C and R labels at compression (kx − ωt = π) and rarefaction (kx − ωt = 0) centres. When the
+  // wavelength is short on screen, only every `every`-th wavelength is labelled, so letters never merge.
   const w = TWO_PI * p.frequency;
   const lam = TWO_PI / k;
+  const lamPx = lam * vpT.scaleX;
+  const every = Math.max(1, Math.ceil((px * 3.6) / lamPx));
+  const showR = lamPx / 2 >= px * 1.6; // R sits half a wavelength from C: label it only when there is room
   const labels = [];
-  for (const [phase, text] of [[Math.PI, 'C'], [0, 'R']]) {
-    let x = (phase + w * t) / k;
-    x -= Math.floor(x / lam) * lam;
-    for (; x <= MACHINE_LENGTH; x += lam) if (x >= 0.3 && x <= MACHINE_LENGTH - 0.3) labels.push([x, text]);
+  for (const [phase, text] of showR ? [[Math.PI, 'C'], [0, 'R']] : [[Math.PI, 'C']]) {
+    const x0 = (phase + w * t) / k;
+    const j0 = Math.ceil(-x0 / lam);
+    for (let j = j0; x0 + j * lam <= MACHINE_LENGTH; j++) {
+      const x = x0 + j * lam;
+      if (j % every === 0 && x >= 0.3 && x <= MACHINE_LENGTH - 0.3) labels.push([x, text]);
+    }
   }
   for (const [x, text] of labels) rich(ctx, text, vpT.toX(x), rect.y - px * 0.5, { colour: text === 'C' ? pal.accentText : pal.series[1], px, kind: 'strong', align: 'center' });
 
-  // Rows of particles in a tube.
+  // Rows of particles in a tube: at least 8 per wavelength so the bunching is never aliased.
   stroke(ctx, pal.axis, 1.5);
   ctx.strokeRect(rect.x - 6, rect.y, rect.w + 12, rect.h);
   const rows = 6;
-  for (let r = 0; r < rows; r++) {
-    const Y = rect.y + ((r + 0.5) / rows) * rect.h;
-    for (let i = 0; i <= MACHINE_LENGTH / 0.2 + 1e-9; i++) {
-      const x0 = i * 0.2;
-      const xs = x0 + xi(x0);
-      if (xs < -0.1 || xs > MACHINE_LENGTH + 0.1) continue;
-      dot(ctx, vpT.toX(xs), Y, Math.max(2.5, px * 0.17), pal.ink);
-    }
-  }
+  const spacing = Math.min(0.2, lam / 8);
+  const spacingPx = spacing * vpT.scaleX;
   const markY = rect.y + (2.5 / rows) * rect.h; // on the third row, in place of that particle's dot
+  if (spacingPx >= 3) {
+    const r = Math.min(Math.max(2.5, px * 0.17), spacingPx * 0.4);
+    for (let row = 0; row < rows; row++) {
+      const Y = rect.y + ((row + 0.5) / rows) * rect.h;
+      for (let i = 0; i * spacing <= MACHINE_LENGTH + 1e-9; i++) {
+        const x0 = i * spacing;
+        const xs = x0 + xi(x0);
+        if (xs < -0.1 || xs > MACHINE_LENGTH + 0.1) continue;
+        dot(ctx, vpT.toX(xs), Y, r, pal.ink);
+      }
+    }
+  } else {
+    rich(ctx, 'Wavelength too short to draw the particles at this size: see the graph below.', rect.x + rect.w / 2, rect.y + rect.h * 0.75, { colour: pal.muted, px, align: 'center', box: pal.bg });
+  }
   squareMarker(ctx, vpT.toX(MARK_X + xi(MARK_X)), markY, 14, pal.series[1], pal.ink);
   // Rest position of the marked particle: a tick under the tube.
   stroke(ctx, pal.ink, 2);
@@ -199,7 +217,14 @@ function drawLongitudinal(ctx, S, p, pal, t) {
   }
   plotFunction(ctx, vp, xi, 0, MACHINE_LENGTH, { colour: pal.series[0], width: 3 });
   squareMarker(ctx, vp.toX(MARK_X), vp.toY(xi(MARK_X)), 12, pal.series[1], pal.ink);
-  drawAxes(ctx, vp, pal, { px, layer: 'over', yCount: 4, xTitle: 'rest position x (m)', yTitle: 'displacement (m)' });
+  axesOver(ctx, vp, pal, px, 'rest position x (m)', 'displacement (m)');
+}
+
+/** Ticks and titles over the data layer, with the x title in the tick row under the plot (not over the data). */
+function axesOver(ctx, vp, pal, px, xTitle, yTitle) {
+  const xt = xTitleOutside(ctx, vp, pal, { px, title: xTitle });
+  drawAxes(ctx, vp, pal, { px, layer: 'over', yCount: 4, yTitle, formatX: xt.formatX });
+  xt.draw();
 }
 
 function drawSuperposition(ctx, S, p, pal, t) {
@@ -222,10 +247,11 @@ function drawSuperposition(ctx, S, p, pal, t) {
   const s1 = { colour: pal.series[1], width: 2.5, dash: [12, 7] };
   const s2 = { colour: pal.series[2], width: 2.5, dash: [3, 4] };
   const s3 = { colour: pal.series[0], width: 3.5, dash: null };
+  // The sum first, then each wave on top, so y₁ and y₂ stay visible where the sum equals one of them.
+  plotFunction(ctx, vp, (x) => superpositionValues(x, t, p).sum, 0, MACHINE_LENGTH, s3);
   plotFunction(ctx, vp, (x) => superpositionValues(x, t, p).y1, 0, MACHINE_LENGTH, s1);
   plotFunction(ctx, vp, (x) => superpositionValues(x, t, p).y2, 0, MACHINE_LENGTH, s2);
-  plotFunction(ctx, vp, (x) => superpositionValues(x, t, p).sum, 0, MACHINE_LENGTH, s3);
-  drawAxes(ctx, vp, pal, { px, layer: 'over', yCount: 4, xTitle: 'x (m)', yTitle: 'y (m)' });
+  axesOver(ctx, vp, pal, px, 'x (m)', 'y (m)');
   let lx = rect.x;
   const ly = top + legendH * 0.55;
   const items = [

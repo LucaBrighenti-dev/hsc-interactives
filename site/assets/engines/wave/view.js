@@ -7,9 +7,15 @@ import { drawModulation } from './draw-modulation.js';
 import { drawMachine } from './draw-machine.js';
 import { drawDopplerBeats } from './draw-doppler.js';
 
+/** Stage palette plus the colour of a screen in a darkened room (--c-bg, the same in both themes). */
+function palette(stage) {
+  const screen = getComputedStyle(document.documentElement).getPropertyValue('--c-bg').trim() || '#0F1012';
+  return { ...readPalette(stage), screen };
+}
+
 export function createView(stage, setup) {
   const surface = createSurface(stage);
-  let pal = readPalette(stage);
+  let pal = palette(stage);
 
   function draw(state, params) {
     const { ctx, width: W, height: H } = surface;
@@ -26,7 +32,7 @@ export function createView(stage, setup) {
     draw,
     resize: () => surface.resize(),
     setTheme() {
-      pal = readPalette(stage);
+      pal = palette(stage);
     },
     destroy: () => surface.destroy(),
   };

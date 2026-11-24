@@ -3,7 +3,7 @@
 import { viewport, axisMargins, drawAxes } from '../../engine-kit.js';
 import { messageValue, carrierValue, modulatedValue, amEnvelope, modulationIndex, modulationBandwidth, modulationSpectrum, instantaneousFrequency, SPECTRUM_HALF_WIDTH } from './model.js';
 import { formatNumber, formatPlain } from '../../format.js';
-import { rich, richWidth, fit, stroke, dimension, plotFunction, traceAxes, legendItem, squareMarker } from './draw-common.js';
+import { rich, richWidth, fit, stroke, dimension, plotFunction, traceAxes, legendItem, squareMarker, xTitleOutside } from './draw-common.js';
 
 const TITLES = { am: 'Amplitude modulation (AM)', fm: 'Frequency modulation (FM)', pm: 'Phase modulation (PM)' };
 const FORMULAS = {
@@ -101,7 +101,7 @@ function drawSpectrum(ctx, R, p, pal, px) {
   const spec = modulationSpectrum(p);
   if (spec) {
     for (const line of spec.lines) {
-      if (line.f < lo || line.f > hi) continue;
+      if (line.f < lo || line.f > hi || line.amplitude < 0.005) continue; // too small to see: no marker
       const X = vp.toX(line.f);
       stroke(ctx, pal.series[0], 3);
       ctx.beginPath();
@@ -131,10 +131,14 @@ function drawSpectrum(ctx, R, p, pal, px) {
     const msg = ['No simple line spectrum for', 'FM or PM of a square message.', 'Choose a sine message to see it.'];
     msg.forEach((l, i) => rich(ctx, l, rect.x + rect.w / 2, rect.y + rect.h * 0.4 + i * px * 1.4, { colour: pal.muted, px, align: 'center' }));
   }
-  drawAxes(ctx, vp, pal, { px, layer: 'over', yCount: 2, xCount: 4, xTitle: 'f (Hz)' });
+  const xTitle = xTitleOutside(ctx, vp, pal, { px, title: 'f (Hz)' });
+  drawAxes(ctx, vp, pal, { px, layer: 'over', yCount: 2, xCount: 4, formatX: xTitle.formatX });
+  xTitle.draw();
   if (spec) {
-    const caption = p.modulation === 'am' ? (p.messageShape === 'square' ? 'sidebands at f_c ± f_m, ± 3f_m, …' : 'carrier and two side frequencies') : 'side frequencies at f_c ± nf_m, heights |J_n(β)|';
-    const c = fit(ctx, [caption, ''], R.w, { px });
+    let captions = [p.modulation === 'am' ? (p.messageShape === 'square' ? 'sidebands at f_c ± f_m, ± 3f_m, …' : 'carrier and two side frequencies') : 'side frequencies at f_c ± nf_m, heights |J_n(β)|', ''];
+    // Side frequencies below 0 Hz fold back onto the positive axis and add to the lines there.
+    if (spec.folded) captions = ['lines below 0 Hz fold back and add to those above (0 Hz: a steady offset)', 'lines below 0 Hz fold back onto positive f', 'lines below 0 Hz fold back', ''];
+    const c = fit(ctx, captions, R.w, { px });
     if (c) rich(ctx, c, R.x, R.y + R.h + px * 0.4, { colour: pal.muted, px });
   }
 }

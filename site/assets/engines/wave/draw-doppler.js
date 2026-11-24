@@ -159,12 +159,19 @@ function drawBeats(ctx, S, p, pal, t) {
   const fb = beatFrequency(f1, f2);
   const values = [`f_1 = ${formatPlain(f1)} Hz   f_2 = ${formatPlain(f2)} Hz   beat frequency |f_1 − f_2| = ${formatNumber(fb)} Hz`, `f_1 ${formatPlain(f1)} Hz · f_2 ${formatPlain(f2)} Hz · f_{beat} ${formatNumber(fb)} Hz`];
   const top = header(ctx, S, pal, 'Beats', values);
-  const bottom = footer(ctx, S, pal, [
-    fb > 0
-      ? [`y_1 + y_2 = 2 cos(πΔf t) cos(π(f_1 + f_2)t): the loudness rises and falls ${formatNumber(fb)} times a second (beat period ${formatNumber(1 / fb)} s).`, `Beat period ${formatNumber(1 / fb)} s`]
-      : ['Equal frequencies: no beats, the sum has a steady amplitude.', 'No beats'],
-    ['Top: the two waves over a few cycles, view locked to wave 1’s crests. Bottom: their sum, with its envelope (dashed).', 'Top: two waves · Bottom: sum and envelope'],
-  ]);
+  const slowBeats = fb > 0 && fb <= 20;
+  const lines = [
+    fb === 0
+      ? ['Equal frequencies: no beats, the sum has a steady amplitude.', 'No beats']
+      : [
+          `y_1 + y_2 = 2 cos(πΔf t) cos(π(f_1 + f_2)t): the ${slowBeats ? 'loudness' : 'amplitude'} rises and falls ${formatNumber(fb)} times a second (beat period ${formatNumber(1 / fb)} s).`,
+          `Beat period ${formatNumber(1 / fb)} s`,
+        ],
+  ];
+  // Far-apart tones: the maths is the same, but the ear no longer hears slow throbs.
+  if (fb > 20) lines.push(['This many times a second, the ear hears a rough sound or two separate notes rather than slow beats.', 'Too fast to hear as slow beats']);
+  lines.push(['Top: the two waves over a few cycles, view locked to wave 1’s crests. Bottom: their sum and its envelope.', 'Top: two waves · Bottom: sum and envelope']);
+  const bottom = footer(ctx, S, pal, lines);
   const avail = bottom - top;
   const lab = px * 1.5;
   const tickRow = px * 1.7;
@@ -203,13 +210,16 @@ function drawBeats(ctx, S, p, pal, t) {
     ctx.globalAlpha = 0.45;
     const cols = Math.ceil(r2.w);
     for (let c = 0; c < cols; c++) {
-      const tt = tw0 + ((c + 0.5) / cols) * p.beatWindow;
-      const e = beatsValues(tt, p).envelope;
+      // The largest envelope value inside the column (never one sample, which would alias).
+      let e = 0;
+      for (let k = 0; k <= 8; k++) e = Math.max(e, beatsValues(tw0 + ((c + k / 8) / cols) * p.beatWindow, p).envelope);
       ctx.fillRect(r2.x + c, vp2.toY(e), 1.2, vp2.toY(-e) - vp2.toY(e));
     }
     ctx.restore();
   } else plotFunction(ctx, vp2, (tt) => beatsValues(tt, p).sum, tw0, t, sumStyle);
-  for (const s of [1, -1]) plotFunction(ctx, vp2, (tt) => s * beatsValues(tt, p).envelope, tw0, t, { ...envStyle, samples: 2 });
+  // The envelope repeats every 1/Δf; when that is under about 4 px it cannot be drawn honestly.
+  const envDense = (fb * p.beatWindow) / r2.w > 0.25;
+  if (!envDense) for (const s of [1, -1]) plotFunction(ctx, vp2, (tt) => s * beatsValues(tt, p).envelope, tw0, t, { ...envStyle, samples: 8 });
   squareMarker(ctx, r2.x + r2.w, vp2.toY(beatsValues(t, p).sum), 10, pal.series[0], pal.ink);
   // Beat period between two envelope maxima (t = k/Δf).
   if (fb > 0) {
@@ -224,8 +234,9 @@ function drawBeats(ctx, S, p, pal, t) {
   }
   lx = r2.x;
   lx += legendItem(ctx, lx, yTop2 + lab * 0.45, { ...sumStyle, width: 3, text: 'y_1 + y_2', px, textColour: pal.ink }) + px * 1.4;
-  lx += legendItem(ctx, lx, yTop2 + lab * 0.45, { ...envStyle, text: 'envelope ±2|cos(πΔf t)|', px, textColour: pal.ink }) + px * 1.4;
-  if (cyclesPerPx > 0.25 && lx + richWidth(ctx, 'cycles too close to draw: band shows their extent', { px }) < r2.x + r2.w) {
-    rich(ctx, 'cycles too close to draw: band shows their extent', r2.x + r2.w, yTop2 + lab * 0.45, { colour: pal.muted, px, align: 'right', baseline: 'middle' });
+  if (!envDense) lx += legendItem(ctx, lx, yTop2 + lab * 0.45, { ...envStyle, text: 'envelope ±2|cos(πΔf t)|', px, textColour: pal.ink }) + px * 1.4;
+  const note = envDense ? 'beats too fast to draw at this time scale: shorten the time shown' : 'cycles too close to draw: band shows their extent';
+  if ((cyclesPerPx > 0.25 || envDense) && lx + richWidth(ctx, note, { px }) < r2.x + r2.w) {
+    rich(ctx, note, r2.x + r2.w, yTop2 + lab * 0.45, { colour: pal.muted, px, align: 'right', baseline: 'middle' });
   }
 }
