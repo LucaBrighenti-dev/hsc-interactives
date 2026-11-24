@@ -139,6 +139,7 @@ kbd {
 .btn--icon { width: var(--touch); padding: 0; }
 .btn--block { width: 100%; }
 .btn--sm { min-height: 36px; padding: 0 var(--sp-3); font-size: var(--t-14); }
+@media (pointer: coarse) { .btn--sm { min-height: var(--touch); } .btn--sm.btn--icon { width: var(--touch); } }
 .btn[aria-pressed="true"] { border-color: var(--c-accent); color: var(--c-accent); }
 .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
 .btn:disabled:hover { border-color: var(--c-line-strong); }
