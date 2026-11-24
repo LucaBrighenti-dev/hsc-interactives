@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>statics engine · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!--
+    Engine demo page (unlinked): every setup of the statics engine through the real shell.
+    Pick the setup with the hash: #truss, #beam, #concurrent, #moments, #incline.
+  -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    const { meta } = await import('/assets/engines/statics/index.js');
+    const wanted = location.hash.slice(1);
+    const setup = meta.setups.includes(wanted) ? wanted : meta.setups[0];
+    addEventListener('hashchange', () => location.reload());
+
+    const CONFIG = {
+      truss: {
+        presets: {
+          default: {},
+          pratt: { structure: 'pratt', span: 12, height: 3, panels: 4, load: 20, loadAt: 'C', probeMember: 'CF' },
+          howe: { structure: 'howe', span: 12, height: 3, panels: 6, load: 30, loadAt: 'D' },
+          equilateral: { structure: 'equilateral', span: 4, load: 10, loadAt: 'C', probeMember: 'AC' },
+          bracket: { structure: 'bracket', span: 4, height: 3, load: 9, loadAt: 'C', probeMember: 'BC' },
+          mechanism: { structure: 'mechanism', span: 4, height: 4, load: 10, loadAt: 'C' },
+          braced: { structure: 'braced', span: 4, height: 4, load: 10, loadAt: 'C' },
+          custom: { structure: 'custom', truss: 'j:0,0 3,0 6,0 9,0 1.5,2.5 4.5,3.5 7.5,2.5;m:AB BC CD AE BE BF CF CG DG EF FG;s:Ap Dr;l:F0,-8', load: 12, loadAt: 'E', probeMember: 'EF' },
+        },
+        presetLabels: { default: 'Warren (default)', pratt: 'Pratt', howe: 'Howe, 6 panels', equilateral: 'Equilateral, apex load', bracket: 'Wall bracket (3-4-5)', mechanism: 'Mechanism', braced: 'Indeterminate', custom: 'Custom roof truss' },
+        controls: ['structure', 'span', 'height', 'panels', 'truss', 'load', 'loadAt', 'loadAngle', 'editTool', 'probeMember', 'probeJoint', 'showForces'],
+        readouts: ['memberForce', 'reactionX', 'reactionY', 'maxTension', 'maxCompression', 'determinacy'],
+        assumptions: ['Pin joints: members carry axial force only', 'Loads act at the joints', 'Member self-weight ignored', 'Forces in kN; tension +, compression −'],
+      },
+      beam: {
+        presets: {
+          default: {},
+          central: { beamType: 'simple', length: 6, p1: 10, p1At: 3, p2: 0, udl: 0 },
+          udl: { beamType: 'simple', length: 6, p1: 0, p2: 0, udl: 5, udlExtent: 'full', probeX: 3 },
+          mixed: { beamType: 'simple', length: 10, p1: 10, p1At: 8, p2: 0, udl: 4, udlExtent: 'part', udlFrom: 2, udlTo: 6, probeX: 4.9 },
+          cantilever: { beamType: 'cantilever', length: 3, p1: 10, p1At: 3, p2: 0, udl: 0, probeX: 0 },
+        },
+        presetLabels: { default: 'Simply supported, P₁ at mid-span', central: 'Central load', udl: 'Full UDL', mixed: 'Part UDL and a point load', cantilever: 'Cantilever, end load' },
+        controls: ['beamType', 'length', 'p1', 'p1At', 'p2', 'p2At', 'udl', 'udlExtent', 'udlFrom', 'udlTo', 'sectionB', 'sectionD', 'probeX'],
+        readouts: ['reactionA', 'reactionB', 'fixingMoment', 'maxMoment', 'maxStress', 'momentAtX'],
+        assumptions: ['Rigid supports', 'Beam self-weight ignored', 'Linear elastic, small deflections', 'Sagging moment +; shear + when the left part is pushed up'],
+      },
+      concurrent: {
+        presets: {
+          default: {},
+          balanced: { concurrentMode: 'forces', forceCount: 3, force1: 50, angle1: 90, force2: 50, angle2: -150, force3: 50, angle3: -30 },
+          right: { concurrentMode: 'forces', forceCount: 2, force1: 30, angle1: 0, force2: 40, angle2: 90 },
+          boom: { concurrentMode: 'boom', boomLength: 4, cableHeight: 3, boomLoad: 10, boomLoadAt: 2 },
+        },
+        presetLabels: { default: 'Three forces', balanced: 'Three forces in equilibrium', right: '3-4-5 resultant', boom: 'Three-force body (boom)' },
+        controls: ['concurrentMode', 'forceCount', 'force1', 'angle1', 'force2', 'angle2', 'force3', 'angle3', 'force4', 'angle4', 'showComponents', 'boomLength', 'cableHeight', 'boomLoad', 'boomLoadAt'],
+        readouts: ['resultant', 'resultantAngle', 'sumFx', 'sumFy', 'equilibrant', 'cableTension', 'pinReaction', 'pinAngle'],
+        assumptions: ['Forces act through one point', 'Angles anticlockwise from +x', 'Light boom and cable (three-force body)'],
+      },
+      moments: {
+        presets: {
+          default: {},
+          overhang: { length: 8, supportA: 0, supportB: 5, load1: 10, load1At: 2, load2: 6, load2At: 7.5, load3: 0 },
+          acw: { momentSign: 'acw' },
+          hidden: { showReactions: false, momentsAbout: 'A' },
+        },
+        presetLabels: { default: 'Two loads, about A', overhang: 'Overhanging beam', acw: 'Anticlockwise positive', hidden: 'Find the reactions' },
+        controls: ['length', 'supportA', 'supportB', 'load1', 'load1At', 'load2', 'load2At', 'load3', 'load3At', 'momentSign', 'momentsAbout', 'pivotX', 'showReactions'],
+        readouts: ['reactionA', 'reactionB', 'loadMoment', 'sumCw', 'sumAcw', 'netMoment'],
+        assumptions: ['Rigid beam, self-weight ignored', 'Loads in kN, distances in m'],
+      },
+      incline: {
+        presets: {
+          default: {},
+          physics: { g: 9.8, angle: 30, mass: 2, muS: 0.3, muK: 0.2 },
+          'eng-horizontal': { g: 10, angle: 0, mass: 10, muS: 0.4, muK: 0.3, applied: 30, appliedAngle: 0 },
+          pull: { g: 10, angle: 20, mass: 10, muS: 0.5, muK: 0.4, applied: 80, appliedAngle: 20 },
+        },
+        presetLabels: { default: '25° slope', physics: 'Physics: g = 9.8, sliding', 'eng-horizontal': 'Horizontal plane, applied force', pull: 'Pulled up the slope' },
+        controls: ['angle', 'mass', 'muS', 'muK', 'applied', 'appliedAngle', 'g', 'showComponents'],
+        readouts: ['weight', 'normalForce', 'friction', 'frictionMax', 'acceleration', 'slipping'],
+        assumptions: ['Block treated as a particle', 'At rest: f ≤ μs N; sliding: f = μk N', 'g as set on the stage'],
+      },
+    };
+
+    const c = CONFIG[setup];
+    await mountInteractive({
+      id: 'dev-statics',
+      title: `statics · ${setup}`,
+      engine: () => import('/assets/engines/statics/index.js'),
+      setup,
+      presets: c.presets,
+      presetLabels: c.presetLabels,
+      controls: c.controls,
+      readouts: c.readouts,
+      assumptions: c.assumptions,
+      prompts: [],
+    });
+
+    // Setup switcher at the top of the side column.
+    const nav = document.createElement('nav');
+    nav.className = 'panel';
+    nav.setAttribute('aria-label', 'Engine setups');
+    const body = document.createElement('div');
+    body.className = 'panel__body cluster';
+    for (const s of meta.setups) {
+      const a = document.createElement('a');
+      a.href = `#${s}`;
+      a.textContent = s;
+      a.className = s === setup ? 'chip chip--solid' : 'chip';
+      if (s === setup) a.setAttribute('aria-current', 'page');
+      body.append(a);
+    }
+    nav.append(body);
+    document.querySelector('.hsc-side')?.prepend(nav);
+  </script>
+</body>
+</html>
