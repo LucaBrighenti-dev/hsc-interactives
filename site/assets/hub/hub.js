@@ -1,134 +1,130 @@
-// Dashboard v0 (W0-11): cards grouped by subject, coming-soon badges, search and subject filter.
-// W1-HUB owns this folder and adds saved scenarios, playlists, requests and the full filters (guide §6.5).
-import { requireSession, getProfile, signOut } from '../auth.js';
-import { SITE_NAME, SITE_CREDIT, SUBJECTS } from '../config.js';
-import { el, clear, chip, button } from '../ui/index.js';
-import { placeholderSvg } from './placeholder.js';
+// The dashboard (guide §6.5, §9.3): greeting, filters and the card grid, plus the teacher's workspace
+// (saved scenarios, playlists, requests) and the account area. Works end to end in local auth mode.
+//
+//   hub.js        this file: session, profile, header, greeting, wiring
+//   filters.js    filter logic and URL state (pure)
+//   grid.js       filter bar, result bar and cards
+//   scenarios.js  playlists.js  requests.js  account.js   the workspace panels and dialogs
+//   common.js     links, collapsible panels, confirm dialogs
+//   placeholder.js  generated card pictures
+import { requireSession, getProfile, saveProfile, signOut } from '../auth.js';
+import { SITE_NAME, SITE_CREDIT } from '../config.js';
+import { el, clear, button, toast } from '../ui/index.js';
+import { readFilters } from './filters.js';
+import { mountCatalog } from './grid.js';
+import { makeIndex } from './common.js';
+import { scenariosPanel } from './scenarios.js';
+import { playlistsPanel } from './playlists.js';
+import { requestsPanel } from './requests.js';
+import { openAccount } from './account.js';
 
 const session = await requireSession();
-const profile = await getProfile().catch(() => null);
-const catalog = await fetch('/catalog.json').then((r) => (r.ok ? r.json() : { entries: [] })).catch(() => ({ entries: [] }));
+const [profileRaw, catalog] = await Promise.all([
+  getProfile().catch(() => null),
+  fetch('/catalog.json')
+    .then((r) => (r.ok ? r.json() : { entries: [] }))
+    .catch(() => ({ entries: [] })),
+]);
+const entries = catalog.entries ?? [];
+const profile = { displayName: '', school: '', subjects: [], ...(profileRaw ?? {}) };
+let founding = Boolean(session?.founding || profileRaw?.founding);
 
 document.title = SITE_NAME;
 document.querySelector('[data-site-name]').textContent = SITE_NAME;
 document.querySelector('[data-site-credit]').textContent = SITE_CREDIT;
 
-// Header: user menu.
+const ctx = {
+  session,
+  profile,
+  get founding() {
+    return founding;
+  },
+  index: makeIndex(entries),
+  // Tablet and phone: the workspace panels start folded so the catalogue is in view.
+  compact: matchMedia('(max-width: 1199px)').matches,
+  liveEntries: () => entries.filter((e) => e.status === 'live'),
+  scenarios: () => scenarios.list,
+  defaultSubject: () => catalogView?.filters.subjects[0] ?? profile.subjects[0],
+  addToPlaylist: (item, label) => playlists.addToPlaylist(item, label),
+  onProfileSaved(saved, nowFounding) {
+    Object.assign(profile, { displayName: saved.displayName ?? '', school: saved.school ?? '', subjects: saved.subjects ?? [] });
+    founding = nowFounding;
+    renderHeader();
+    renderHero();
+    catalogView.setSubjects(profile.subjects);
+  },
+};
+
+// ---- Header: name, account, sign out ----
 const userArea = document.querySelector('[data-user]');
-const name = profile?.displayName || session?.user.name || '';
-userArea.append(
-  session?.founding ? el('span', { class: 'badge-founding', text: 'Founding Educator' }) : null,
-  name ? el('span', { class: 'hsc-user__name', text: name }) : null,
-  button({
-    label: 'Sign out',
-    variant: 'ghost',
-    size: 'sm',
-    icon: 'logout',
-    onClick: async () => {
-      await signOut();
-      location.href = '/signin.html';
-    },
-  }),
-);
-
-// Greeting.
-const hour = new Date().getHours();
-const part = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-// "Ms Rivera" stays whole; "Luca Brighenti" becomes "Luca".
-const words = name.trim().split(/\s+/).filter(Boolean);
-const greetName = /^(mr|mrs|ms|miss|mx|dr|prof)\.?$/i.test(words[0] ?? '') ? words.slice(0, 2).join(' ') : words[0];
-document.querySelector('[data-greeting]').textContent = greetName ? `${part}, ${greetName}` : part;
-const live = catalog.entries.filter((e) => e.status === 'live').length;
-document.querySelector('[data-summary]').textContent =
-  `${catalog.entries.length} interactives on the map. ${live ? `${live} ready to use` : 'The first ones arrive soon'}; the rest show here as they are built.`;
-
-// Filters: ?subject= wins, otherwise the subjects from the profile, otherwise all.
-const url = new URL(location.href);
-const fromUrl = url.searchParams.get('subject');
-const selected = new Set(fromUrl && SUBJECTS.some((s) => s.id === fromUrl) ? [fromUrl] : profile?.subjects ?? []);
-const search = document.getElementById('hub-search');
-search.value = url.searchParams.get('q') ?? '';
-
-const subjectBar = document.querySelector('[data-subjects]');
-for (const s of SUBJECTS) {
-  subjectBar.append(
-    chip({
-      label: s.short,
-      pressed: selected.has(s.id),
-      onToggle: (on) => {
-        if (on) selected.add(s.id);
-        else selected.delete(s.id);
-        render();
+function renderHeader() {
+  const name = profile.displayName || session?.user?.name || (session?.user?.kind === 'code' ? 'Class session' : 'Signed in');
+  clear(userArea).append(
+    el('span', { class: 'hsc-user__name', text: name }),
+    button({ label: 'Account', icon: 'user', onClick: () => openAccount(ctx) }),
+    button({
+      label: 'Sign out',
+      icon: 'logout',
+      variant: 'ghost',
+      onClick: async () => {
+        await signOut();
+        location.href = '/signin.html';
       },
     }),
   );
 }
-search.addEventListener('input', () => render());
 
-function tagLine(entry) {
-  return entry.syllabus
-    .map((t) => {
-      const name = t.version === '2017' ? t.area.replace(/^Module (\d+):.*$/, 'M$1') : t.focusArea || t.area;
-      return `${t.version} ${name}`;
-    })
-    .join(' · ');
+// ---- Greeting ----
+/** "Ms Rivera" stays whole; "Luca Brighenti" becomes "Luca". */
+function greetName(name) {
+  const words = String(name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return '';
+  return /^(mr|mrs|ms|miss|mx|dr|prof)\.?$/i.test(words[0]) ? words.slice(0, 2).join(' ') : words[0];
 }
 
-function haystack(entry) {
-  const subject = SUBJECTS.find((s) => s.id === entry.subject);
-  return [entry.title, entry.summary, subject?.label, ...entry.syllabus.flatMap((t) => [t.area, t.focusArea, t.subtopic])]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
-}
-
-function card(entry) {
-  const isLive = entry.status === 'live';
-  const subject = SUBJECTS.find((s) => s.id === entry.subject);
-  const thumb = el('div', { class: 'hub-card__thumb', 'aria-hidden': 'true' });
-  if (isLive && entry.thumbnail) {
-    const img = el('img', { src: entry.thumbnail, alt: '', loading: 'lazy' });
-    img.addEventListener('error', () => img.replaceWith(placeholderSvg(entry.id)));
-    thumb.append(img);
-  } else thumb.append(placeholderSvg(entry.id));
-  const body = el(
-    'div',
-    { class: 'hub-card__body' },
-    el('p', { class: 'eyebrow', text: subject?.label ?? entry.subject }),
-    el('h3', { class: 'hub-card__title', text: entry.title }),
-    el('p', { class: 'hub-card__summary', text: entry.summary }),
-    el('p', { class: 'hub-card__tags', text: tagLine(entry) }),
+function renderHero() {
+  const now = new Date();
+  const hour = now.getHours();
+  const part = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const who = greetName(profile.displayName || session?.user?.name);
+  document.querySelector('[data-greeting]').textContent = who ? `${part}, ${who}` : part;
+  clear(document.querySelector('[data-hero-eyebrow]')).append(
+    el('span', { text: now.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' }) }),
+    founding ? el('span', { class: 'badge-founding', text: 'Founding Educator' }) : null,
   );
-  const badge = chip({ label: isLive ? 'Live' : 'Coming soon', variant: isLive ? 'live' : undefined });
-  badge.classList.add('hub-card__badge');
-  return isLive
-    ? el('a', { class: 'hub-card', href: entry.path }, thumb, badge, body)
-    : el('article', { class: 'hub-card is-soon', aria: { label: `${entry.title}, coming soon` } }, thumb, badge, body);
+  const live = entries.filter((e) => e.status === 'live').length;
+  const soon = entries.length - live;
+  // The second sentence is hidden on phones to keep the catalogue near the top.
+  const [first, second] = live
+    ? [`${live} ready to use, ${soon} more on the way.`, 'New ones appear here the moment they’re ready.']
+    : [`${entries.length} interactives on the map for Extension Maths, Physics and Engineering Studies.`, 'The first ones open soon, and each appears here the moment it’s ready.'];
+  clear(document.querySelector('[data-summary]')).append(first, ' ', el('span', { class: 'hub-sub__more', text: second }));
 }
 
-function render() {
-  const grid = document.querySelector('[data-grid]');
-  clear(grid);
-  const words = search.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const shown = catalog.entries.filter((e) => (selected.size === 0 || selected.has(e.subject)) && words.every((w) => haystack(e).includes(w)));
-  for (const subject of SUBJECTS) {
-    const items = shown.filter((e) => e.subject === subject.id).sort((a, b) => (b.status === 'live') - (a.status === 'live'));
-    if (!items.length) continue;
-    grid.append(
-      el(
-        'section',
-        { class: 'hub-section', aria: { label: subject.label } },
-        el('div', { class: 'hub-section__head' }, el('h2', { class: 'hub-section__title', text: subject.label }), el('span', { class: 'eyebrow', text: `${items.length}` })),
-        el('div', { class: 'hub-grid' }, items.map(card)),
-      ),
-    );
-  }
-  if (!shown.length) grid.append(el('p', { class: 'hub-empty', text: 'Nothing matches that yet. Try a different word, or clear the subject filters.' }));
-  const q = new URL(location.href);
-  if (search.value.trim()) q.searchParams.set('q', search.value.trim());
-  else q.searchParams.delete('q');
-  q.searchParams.delete('subject');
-  history.replaceState(null, '', q.pathname + q.search);
-}
+renderHeader();
+renderHero();
 
-render();
+// ---- Catalogue ----
+let saveChain = Promise.resolve();
+const catalogView = mountCatalog({
+  filtersEl: document.querySelector('[data-filters]'),
+  resultsEl: document.querySelector('[data-results]'),
+  gridEl: document.querySelector('[data-grid]'),
+  entries,
+  filters: readFilters(location.search, profile.subjects),
+  onSubjectsChange: (ids) => {
+    profile.subjects = ids;
+    const next = { displayName: profile.displayName, school: profile.school, subjects: ids };
+    saveChain = saveChain.then(() => saveProfile(next)).catch((err) => toast(err.message, { kind: 'error' }));
+  },
+  onAddToPlaylist: (entry) => playlists.addToPlaylist({ interactiveId: entry.id }, entry.title),
+  onRequest: (draft) => requests.openForm(draft),
+});
+
+// ---- Workspace ----
+const scenarios = scenariosPanel(ctx);
+const playlists = playlistsPanel(ctx);
+const requests = requestsPanel(ctx);
+document.querySelector('[data-side]').append(scenarios.el, playlists.el, requests.el);
+await Promise.all([scenarios.reload(), playlists.reload(), requests.reload()]);
+document.body.dataset.ready = 'true';
