@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>particle2d engine · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+  <style>
+    .dev-setups { display: flex; flex-wrap: wrap; gap: var(--sp-2); padding: var(--sp-4) var(--sp-6) var(--sp-8); border-top: var(--border); background: var(--c-bg); }
+    .dev-setups span { font-family: var(--f-mono); font-size: var(--t-12); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--c-muted); align-self: center; margin-right: var(--sp-2); }
+    .dev-setups a { font-family: var(--f-mono); font-size: var(--t-14); color: var(--c-text); text-decoration: none; padding: 6px 10px; border: 1px solid var(--c-line); }
+    .dev-setups a:hover { border-color: var(--c-text); }
+    .dev-setups a[aria-current] { border-color: var(--c-accent); color: var(--c-accent); }
+  </style>
+</head>
+<body>
+  <!-- Engine demo page (guide §9.1): every particle2d setup through the real shell. Unlinked; not a catalogue page. -->
+  <nav class="dev-setups" aria-label="particle2d setups"><span>Setups</span></nav>
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+
+    const { meta } = await import('/assets/engines/particle2d/index.js');
+    const wanted = decodeURIComponent(location.hash.slice(1));
+    const setup = meta.setups.includes(wanted) ? wanted : meta.setups[0];
+    addEventListener('hashchange', () => location.reload());
+
+    const nav = document.querySelector('.dev-setups');
+    for (const s of meta.setups) {
+      const a = document.createElement('a');
+      a.href = `${location.pathname}#${s}`; // no query: each setup starts from its own defaults
+      a.textContent = s;
+      if (s === setup) a.setAttribute('aria-current', 'page');
+      nav.append(a);
+    }
+
+    // Page configs a real interactive would use (controls, readouts and assumptions true for the setup).
+    const PAGES = {
+      projectile: {
+        controls: ['speed', 'angle', 'height', 'g', 'drag', 'k', 'mass', 'showVelocity', 'showComponents', 'showNoDrag', 'trail', 'timeScale'],
+        readouts: ['range', 'maxHeight', 'flightTime', 'impactSpeed', 'x', 'y', 't'],
+        assumptions: ['Point mass', 'Flat, level ground', 'Uniform g', 'No air resistance unless chosen'],
+        presets: {
+          default: { speed: 20, angle: 45, drag: 'none', g: 9.8 },
+          'me1-vectors': { speed: 20, angle: 30, drag: 'none', g: 9.8, showComponents: true },
+          'me2-drag': { speed: 30, angle: 45, drag: 'quadratic', k: 0.02, g: 9.8 },
+          cliff: { speed: 15, angle: 30, height: 20, drag: 'none', g: 9.8 },
+        },
+        presetLabels: { default: 'Standard launch', 'me1-vectors': 'Velocity components', 'me2-drag': 'Quadratic air resistance', cliff: 'From a 20 m cliff' },
+      },
+      braking: {
+        controls: ['approachSpeed', 'reactionTime', 'mu', 'g', 'carMass', 'rotorMass', 'rotorHeat', 'timeScale'],
+        readouts: ['reactionDistance', 'brakingDistance', 'stoppingDistance', 'stoppingTime', 'kineticEnergy', 'frictionWork', 'rotorTempRise', 'v'],
+        assumptions: ['g = 10 m/s²', 'Level road', 'Constant deceleration μg once braking starts', 'All kinetic energy becomes heat in the rotors'],
+        presets: { default: { approachSpeed: 20, mu: 0.7, g: 10, reactionTime: 1 }, wet: { approachSpeed: 20, mu: 0.4, g: 10, reactionTime: 1 } },
+      },
+      'orbit-gps': {
+        controls: ['gpsView', 'altitude', 'receiverAngle', 'clockError', 'timeScale'],
+        readouts: ['leoPeriodMinutes', 'gpsPeriodHours', 'geoPeriodHours', 'geoAltitudeKm', 'positionError', 'tHours'],
+        assumptions: ['Circular orbits around a spherical Earth', 'Altitudes above the equatorial radius, 6378.137 km', 'All orbits drawn in one plane (GPS orbits are really tilted at 55°)', 'Signals travel in straight lines at c'],
+        presets: { default: { gpsView: 'orbits' }, gps: { gpsView: 'gps', clockError: 100 } },
+      },
+      'resisted-1d': {
+        controls: ['direction', 'drag', 'k', 'mass', 'v0', 'g', 'duration', 'graph', 'showNoDrag', 'showForces', 'timeScale'],
+        readouts: ['v', 'x', 'acc', 'terminalSpeed', 'maxHeight', 'timeToTop', 't'],
+        assumptions: ['Point mass', 'Resistance kv or kv² opposes the motion', 'Upward positive', 'Uniform g'],
+        presets: {
+          default: { direction: 'vertical', drag: 'linear', k: 0.5, mass: 1, v0: 0, duration: 10, graph: 'xt' },
+          'up-kv2': { direction: 'vertical', drag: 'quadratic', k: 0.1, mass: 1, v0: 20, duration: 5, graph: 'xt' },
+          coast: { direction: 'horizontal', drag: 'linear', k: 0.5, mass: 2, v0: 10, duration: 20, graph: 'vt' },
+          none: { direction: 'vertical', drag: 'none', v0: 19.6, duration: 4 },
+        },
+      },
+      shm: {
+        controls: ['shmForm', 'amplitude', 'springK', 'mass', 'phase', 'n', 'centre', 'x0', 'v0', 'graph', 'showCircle', 'showArrows', 'duration', 'timeScale'],
+        readouts: ['period', 'amplitude', 'alpha', 'x', 'v', 'acc', 't'],
+        assumptions: ['No friction or damping', 'Ideal spring obeying Hooke’s law'],
+        presets: {
+          default: { shmForm: 'spring', graph: 'v2x' },
+          maths: { shmForm: 'maths', n: 2, centre: 0, x0: 3, v0: 8, duration: 20, graph: 'v2x' },
+          shifted: { shmForm: 'maths', n: 3, centre: -1, x0: 2, v0: -6, duration: 20, graph: 'vx' },
+        },
+      },
+      charged: {
+        controls: ['particle', 'field', 'entrySpeed', 'voltage', 'plateGap', 'plateLength', 'bField', 'bDirection', 'trail', 'timeScale'],
+        readouts: ['fieldE', 'radius', 'selectorSpeed', 'deflection', 'timeInField', 'exitSeparation', 'kineticEnergyEv'],
+        assumptions: ['Uniform fields with sharp edges', 'Gravity ignored', 'Non-relativistic (v ≤ 0.1c)', 'Particle data: CODATA 2018'],
+        presets: { default: {}, magnetic: { field: 'magnetic', bField: 2 }, selector: { field: 'selector', bField: 0.25 } },
+      },
+      circular: {
+        controls: ['circularMode', 'radius', 'circleSpeed', 'bankAngle', 'mu', 'carMass', 'mass', 'releaseAfter', 'force', 'leverArm', 'forceAngle', 'g', 'showVectors', 'duration', 'timeScale'],
+        readouts: ['period', 'centripetalForce', 'designSpeed', 'frictionForce', 'muRequired', 'maxCurveSpeed', 'torque'],
+        assumptions: ['Constant speed', 'The car stays on its circle (forces shown are what that needs)', 'Point mass'],
+        presets: { default: {}, string: { circularMode: 'string', radius: 1.5, circleSpeed: 3, mass: 0.5, releaseAfter: 2.5 }, torque: { circularMode: 'torque' } },
+      },
+      collisions: {
+        controls: ['dimension', 'm1', 'm2', 'u1', 'u2', 'restitution', 'offset', 'showBars', 'trail', 'timeScale'],
+        readouts: ['vA', 'vB', 'pTotal', 'keTotal', 'keLost', 'angleA', 'angleB'],
+        assumptions: ['Frictionless surface', 'Pucks of radius 0.25 m', 'Instant collision along the line of centres'],
+        presets: { default: {}, sticky: { m1: 2, m2: 1, u1: 3, u2: -1, restitution: 0 }, glancing: { dimension: '2d', offset: 0.25 } },
+      },
+      cart: {
+        controls: ['cartMode', 'x0', 'u', 'accel', 'challenge', 'duration', 'timeScale'],
+        readouts: ['x', 'v', 'a', 'displacement', 'distance', 'matchError', 't'],
+        assumptions: ['Straight, level track', 'Acceleration changes only when you change it'],
+        presets: { default: { cartMode: 'uniform', x0: -8, u: 4, accel: -1, duration: 8 }, drive: { cartMode: 'drive' }, match: { cartMode: 'match', challenge: 'turn-back' } },
+      },
+      orbit: {
+        controls: ['altitude', 'orbitSpeed', 'launchAngle', 'satMass', 'showAreas', 'showVectors', 'trail', 'timeScale'],
+        readouts: ['altitudeKm', 'speed', 'periodMinutes', 'eccentricity', 'circularSpeed', 'escapeSpeed', 'totalEnergy'],
+        assumptions: ['Spherical, non-rotating Earth (GM = 3.986 × 10¹⁴ m³/s², mean radius 6371 km)', 'No air resistance', 'Earth fixed; only gravity acts'],
+        presets: { default: {}, ellipse: { orbitSpeed: 8.6, showAreas: true }, escape: { orbitSpeed: 11.2 } },
+      },
+      'relative-velocity': {
+        controls: ['scenario', 'boatSpeed', 'heading', 'current', 'riverWidth', 'airspeed', 'bearing', 'windSpeed', 'windBearing', 'flightTime', 'showTriangle', 'trail', 'timeScale'],
+        readouts: ['groundSpeed', 'groundDirection', 'trackBearing', 'crossingTime', 'drift', 'headingForStraight', 't'],
+        assumptions: ['Steady current or wind', 'Constant speed and heading'],
+        presets: { default: {}, upstream: { heading: 30 }, plane: { scenario: 'plane' } },
+      },
+      track: {
+        controls: ['shape', 'trackHeight', 'friction', 'mass', 'startSpeed', 'g', 'duration', 'timeScale'],
+        readouts: ['v', 'kineticEnergy', 'potentialEnergy', 'frictionWork', 'totalEnergy', 't'],
+        assumptions: ['Cart held on the rail', 'Friction μN with one coefficient for starting and sliding', 'Point mass'],
+        presets: { default: {}, ramp: { shape: 'ramp', friction: 0.1 }, hills: { shape: 'hills', friction: 0 } },
+      },
+    };
+
+    const page = PAGES[setup];
+    mountInteractive({
+      id: 'dev-particle2d',
+      title: `particle2d · ${setup}`,
+      engine: () => import('/assets/engines/particle2d/index.js'),
+      setup,
+      presets: page.presets,
+      presetLabels: page.presetLabels,
+      controls: page.controls,
+      readouts: page.readouts,
+      assumptions: page.assumptions,
+      prompts: [],
+    });
+  </script>
+</body>
+</html>
