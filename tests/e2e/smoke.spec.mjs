@@ -5,7 +5,7 @@ import { watchConsole, signInLocal, hscReady, overflowsX } from './helpers.mjs';
 
 const desktopOnly = (testInfo) => test.skip(testInfo.project.name !== 'desktop', 'interaction flow runs on desktop');
 
-test('sign in with an access code lands on the dashboard with every entry coming soon', async ({ page }, testInfo) => {
+test('sign in with an access code lands on the dashboard with live and coming-soon entries', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   const problems = watchConsole(page);
   await page.goto('/');
@@ -15,9 +15,11 @@ test('sign in with an access code lands on the dashboard with every entry coming
   await expect(page).toHaveURL(/\/(\?.*)?$/);
   await expect(page.locator('[data-greeting]')).toHaveText(/^Good (morning|afternoon|evening)$/);
   await expect(page.locator('.badge-founding')).toBeVisible();
-  const total = await page.evaluate(() => fetch('/catalog.json').then((r) => r.json()).then((c) => c.count));
-  expect(total).toBe(76);
-  await expect(page.locator('.hub-card.is-soon')).toHaveCount(76);
+  const catalog = await page.evaluate(() => fetch('/catalog.json').then((r) => r.json()));
+  expect(catalog.count).toBe(76);
+  const live = catalog.entries.filter((e) => e.status === 'live').length;
+  await expect(page.locator('.hub-card')).toHaveCount(76);
+  await expect(page.locator('.hub-card.is-soon')).toHaveCount(76 - live);
   await expect(page.locator('.hub-section')).toHaveCount(4);
 
   await page.getByLabel('Search interactives').fill('projectile');
