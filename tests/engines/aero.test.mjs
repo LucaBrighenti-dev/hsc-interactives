@@ -458,3 +458,109 @@ test('deterministic: same inputs, same outputs', () => {
   const p = { altitude: 2345, airspeed: 61, seaLevelPressure: 1007, altimeterSetting: 1019 };
   assert.deepEqual(pitotStatic(p), pitotStatic(p));
 });
+
+// ---------------------------------------------------------------- Stage labels (regression)
+//
+// The view places its labels with a collision-aware placer (view.js createPlacer). Its promise: a
+// label never covers another label or a solid (an arrowhead, a marker, the wing, a legend, fixed
+// text), and always stays inside its area. This drives the real view through a minimal fake canvas
+// (text widths approximated from the font size) over the demo presets and the edge states, at
+// desktop, tablet and phone stage sizes, and checks that promise on every label it drew.
+
+function fakeCanvasDom() {
+  const state = { font: '10px sans-serif' };
+  const ctx = new Proxy(state, {
+    get(target, key) {
+      if (key === 'measureText') {
+        return (text) => {
+          const size = Number(/(\d+(?:\.\d+)?)px/.exec(target.font)?.[1] ?? 10);
+          const perChar = /Mono|monospace/.test(target.font) ? 0.6 : 0.56;
+          return { width: String(text).length * size * perChar, actualBoundingBoxAscent: size * 0.75, actualBoundingBoxDescent: size * 0.2 };
+        };
+      }
+      if (key in target) return target[key];
+      return () => {};
+    },
+    set(target, key, value) {
+      target[key] = value;
+      return true;
+    },
+  });
+  globalThis.window = { devicePixelRatio: 1 };
+  globalThis.document = { createElement: () => ({ getContext: () => ctx, setAttribute() {}, remove() {}, style: {} }) };
+  globalThis.getComputedStyle = () => ({ getPropertyValue: () => '' });
+}
+
+const SIZES = { desktop: [1500, 760], tablet: [1150, 500], phone: [366, 300] };
+const FF_STATES = {
+  default: {},
+  climb: { gamma: 5 },
+  descent: { gamma: -4, airspeed: 45 },
+  slowFlight: { airspeed: 25 },
+  stallByHand: { alphaMode: 'manual', alpha: 18 },
+  stallByHandClimb: { alphaMode: 'manual', alpha: 18, gamma: 5 },
+  trimStall: { airspeed: 20 },
+  negativeLift: { alphaMode: 'manual', alpha: -5 },
+  steepClimbFast: { gamma: 15, airspeed: 70 },
+  steepDescentFast: { gamma: -15, airspeed: 100 },
+  zoomClimb: { gamma: 10, zoomThrustDrag: true },
+  thrustAt100: { graph: 'thrust-speed', airspeed: 100 },
+  thrustAt100Climb5: { graph: 'thrust-speed', airspeed: 100, gamma: 5 },
+  thrustAt100Climb15: { graph: 'thrust-speed', airspeed: 100, gamma: 15 },
+  thrustDescent15: { graph: 'thrust-speed', gamma: -15 },
+  polarPastStall: { graph: 'polar', cl0: 0, alphaStall: 8, cd0: 0.05, k: 0.05 },
+  thrustPastStall: { graph: 'thrust-speed', cl0: 0, alphaStall: 8, cd0: 0.05, k: 0.05 },
+  polarCd01: { graph: 'polar', cd0: 0.1, k: 0.01 },
+  manual25: { alphaMode: 'manual', alpha: 25 },
+  heavyHigh: { mass: 5000, wingArea: 2, altitude: 11000, airspeed: 100, graph: 'thrust-speed' },
+};
+const PS_STATES = {
+  standardDay: {},
+  flyingIntoLow: { seaLevelPressure: 1003.25 },
+  top: { altitude: 11000 },
+  readsLow: { altitude: 0, seaLevelPressure: 1050, altimeterSetting: 950 },
+  readsHigh: { altitude: 11000, seaLevelPressure: 950, altimeterSetting: 1050 },
+  seaLevel: { altitude: 0 },
+  fastSeaLevel: { altitude: 0, airspeed: 100 },
+};
+
+test('stage labels never cover each other, an arrowhead, a marker or a legend (all states, three sizes)', async () => {
+  fakeCanvasDom();
+  const { createView } = await import('../../site/assets/engines/aero/view.js');
+  const { meta } = await import('../../site/assets/engines/aero/index.js');
+  const { defaultsFor } = await import('../../site/assets/state.js');
+  const runs = [
+    ...Object.entries(FF_STATES).map(([name, over]) => ['flight-forces', name, over]),
+    ...Object.entries(PS_STATES).map(([name, over]) => ['pitot-static', name, { altitude: 1500, airspeed: 50, ...over }]),
+  ];
+  const problems = [];
+  const requiredDropped = [];
+  let labelCount = 0;
+  for (const [size, [w, h]] of Object.entries(SIZES)) {
+    for (const [setup, name, over] of runs) {
+      const params = { ...defaultsFor(meta.params, setup), ...over };
+      const sol = setup === 'flight-forces' ? flightForces(params) : pitotStatic(params);
+      const view = createView({ append() {}, getBoundingClientRect: () => ({ width: w, height: h }) });
+      view.resize();
+      view.draw(setup, sol, params);
+      for (const rec of view.layout()) {
+        const b = rec.bounds;
+        rec.labels.forEach((l, i) => {
+          labelCount += 1;
+          const where = `${size} ${setup}/${name} "${l.text}"`;
+          if (l.x < b.x - 0.5 || l.y < b.y - 0.5 || l.x + l.w > b.x + b.w + 0.5 || l.y + l.h > b.y + b.h + 0.5) problems.push(`${where} is outside its area`);
+          if (rec.solids.some((o) => l.x < o.x + o.w && o.x < l.x + l.w && l.y < o.y + o.h && o.y < l.y + l.h)) problems.push(`${where} covers a solid`);
+          for (const o of rec.labels.slice(i + 1)) {
+            if (l.x < o.x + o.w && o.x < l.x + l.w && l.y < o.y + o.h && o.y < l.y + l.h) problems.push(`${where} overlaps "${o.text}"`);
+          }
+        });
+        for (const d of rec.dropped) if (d.required && size !== 'phone') requiredDropped.push(`${size} ${setup}/${name} "${d.text}"`);
+      }
+    }
+  }
+  assert.ok(labelCount > 500, `expected many labels, checked ${labelCount}`);
+  assert.deepEqual(problems, []);
+  // On desktop and tablet every required label finds a free spot. On a phone a label may be left
+  // out (never overlapped); its value is also in the balance equations and the readouts.
+  assert.deepEqual(requiredDropped, []);
+});

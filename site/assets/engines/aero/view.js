@@ -112,109 +112,161 @@ function overlap(a, b) {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 }
 
-function overlapArea(a, b) {
-  const w = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
-  const h = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
-  return w > 0 && h > 0 ? w * h : 0;
+/**
+ * Candidate label spots around an anchor: the eight compass directions (E, W, N, S, then the
+ * diagonals) at each radius in turn. Spots beyond the first radius carry a leader line back to the
+ * anchor. `first` puts some directions ahead of the rest (e.g. ['NW', 'NE']).
+ */
+function ring(x, y, px, { radii = [0.7, 2.2, 3.6], first = [], leaderFrom = 1 } = {}) {
+  const dirs = ['E', 'W', 'N', 'S', 'NE', 'NW', 'SE', 'SW'];
+  const order = [...first, ...dirs.filter((d) => !first.includes(d))];
+  const out = [];
+  radii.forEach((k, i) => {
+    const r = k * px;
+    const d = r * 0.72;
+    const spot = {
+      E: { x: x + r, y: y + px * 0.35, align: 'left' },
+      W: { x: x - r, y: y + px * 0.35, align: 'right' },
+      N: { x, y: y - r - px * 0.45, align: 'center' },
+      S: { x, y: y + r + px * 1.0, align: 'center' },
+      NE: { x: x + d, y: y - d - px * 0.45, align: 'left' },
+      NW: { x: x - d, y: y - d - px * 0.45, align: 'right' },
+      SE: { x: x + d, y: y + d + px * 1.0, align: 'left' },
+      SW: { x: x - d, y: y + d + px * 1.0, align: 'right' },
+    };
+    for (const dir of order) out.push(i >= leaderFrom ? { ...spot[dir], leader: [x, y] } : spot[dir]);
+  });
+  return out;
 }
 
 /**
- * Places labels without collisions. Each label goes to the first candidate spot that lies inside
- * `bounds` and clear of everything blocked (arrows, curves, markers) and of the labels already
- * placed; failing that, a spot that only crosses lines (labels have their own background box);
- * failing that, if required, the spot that overlaps other labels least. Optional labels with no
- * free spot are left out. layout() also tries a few orders, so a label that would otherwise collide
- * gets first choice.
+ * Places labels so that no label ever covers another label or a solid: an arrowhead, a marker,
+ * the wing, a legend or fixed text. Three kinds of obstacle:
+ *   lines  (arrow shafts, curves, guide lines): avoided if possible, may be crossed (labels have
+ *          their own background box);
+ *   solids (block()): never covered;
+ *   labels already placed: never covered.
+ * A label takes the first candidate spot that is inside `bounds` and clear of lines and solids;
+ * failing that, the first clear of solids; failing that it is left out (its value is always also
+ * shown elsewhere: the balance equations, the readouts). Spots far from the anchor get a thin
+ * leader line. layout() tries several orders and keeps the one that leaves out least.
+ * Each placer records what it placed in `log` (for tests and overlap checks).
  */
-function createPlacer(ctx, bounds) {
-  const obstacles = []; // arrows, curves, markers, fixed text
-  const labels = []; // labels drawn so far
+function createPlacer(ctx, bounds, { leader = '#4A4D53', log = null } = {}) {
+  const lines = [];
+  const solids = [];
+  const labels = [];
+  const record = { bounds, solids, labels, dropped: [] };
+  log?.push(record);
   const within = (b) => b.x >= bounds.x && b.y >= bounds.y && b.x + b.w <= bounds.x + bounds.w && b.y + b.h <= bounds.y + bounds.h;
   const clearOf = (b, list) => !list.some((t) => overlap(b, t));
   const boxOf = (text, c, style) => textBox(ctx, text, c.x, c.y, style.px, c.align ?? 'left', style.kind, style.padding ?? 2);
 
-  /** Choose a text and spot for one label, given the labels placed before it. */
-  function choose(texts, candidates, style, required, placed) {
-    const strict = (b) => within(b) && clearOf(b, obstacles) && clearOf(b, placed);
-    const soft = (b) => within(b) && clearOf(b, placed);
-    for (const test of [strict, soft]) {
+  function choose(texts, candidates, style, placed) {
+    const passes = [(b) => within(b) && clearOf(b, solids) && clearOf(b, placed) && clearOf(b, lines), (b) => within(b) && clearOf(b, solids) && clearOf(b, placed)];
+    for (const test of passes) {
       for (const t of texts) {
         for (const c of candidates) {
           const b = boxOf(t, c, style);
-          if (test(b)) return { t, c, b, style, cost: 0 };
+          if (test(b)) return { t, c, b, style };
         }
       }
     }
-    if (!required || !candidates.length) return null;
-    const t = texts[texts.length - 1];
-    let best = null;
-    for (const c of candidates) {
-      const b = boxOf(t, c, style);
-      const cost = placed.reduce((sum, p) => sum + overlapArea(b, p), 0) + (within(b) ? 0 : 1e4) + 1;
-      if (!best || cost < best.cost) best = { t, c, b, style, cost };
-    }
-    return best;
+    return null;
   }
 
   function draw(r) {
+    if (r.c.leader) {
+      // Thin leader from the anchor to the nearest point of the label's box.
+      const [ax, ay] = r.c.leader;
+      const nx = Math.max(r.b.x, Math.min(ax, r.b.x + r.b.w));
+      const ny = Math.max(r.b.y, Math.min(ay, r.b.y + r.b.h));
+      if (Math.hypot(nx - ax, ny - ay) > r.style.px * 0.6) {
+        const len = Math.hypot(nx - ax, ny - ay);
+        const sx = ax + ((nx - ax) / len) * Math.min(6, len / 3);
+        const sy = ay + ((ny - ay) / len) * Math.min(6, len / 3);
+        ctx.save();
+        ctx.strokeStyle = leader;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(nx, ny);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
     rich(ctx, r.t, r.c.x, r.c.y, { ...r.style, align: r.c.align ?? 'left' });
-    labels.push(r.b);
+    labels.push({ ...r.b, text: r.t });
   }
 
-  return {
+  const api = {
+    /** A solid: never covered by a label. */
     block(rect) {
-      obstacles.push(rect);
+      solids.push(rect);
     },
-    /** Block a line as a chain of small squares (half-width `half` px). */
-    blockSegment(x0, y0, x1, y1, half = 3) {
+    /** A line (chain of squares of half-width `half` px): avoided where possible. */
+    blockSegment(x0, y0, x1, y1, half = 3, { solid = false } = {}) {
       const steps = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 6));
       for (let i = 0; i <= steps; i++) {
         const x = x0 + ((x1 - x0) * i) / steps;
         const y = y0 + ((y1 - y0) * i) / steps;
-        obstacles.push({ x: x - half, y: y - half, w: 2 * half, h: 2 * half });
+        (solid ? solids : lines).push({ x: x - half, y: y - half, w: 2 * half, h: 2 * half });
       }
+    },
+    /** How many line squares a rectangle would cover (to choose between legend positions). */
+    lineHits(rect) {
+      return lines.filter((l) => overlap(rect, l)).length;
     },
     /**
      * Place and draw one label now. `texts` may be a list, longest first.
-     * @returns {boolean} whether the label was drawn
+     * @returns {boolean} whether it was drawn (false: no free spot, left out)
      */
     place(texts, candidates, style, required = true) {
-      const r = choose(Array.isArray(texts) ? texts : [texts], candidates, style, required, labels);
-      if (!r) return false;
+      const list = Array.isArray(texts) ? texts : [texts];
+      const r = choose(list, candidates, style, labels);
+      if (!r) {
+        record.dropped.push({ text: list[0], required });
+        return false;
+      }
       draw(r);
       return true;
     },
     /**
-     * Place a set of labels together, trying up to five orders (each time moving the label that
-     * collided most to the front) and drawing the order with the least overlap.
-     * @param {{ texts: string|string[], candidates: object[], style: object, required?: boolean }[]} items
+     * Place a set of labels together. Tries up to six orders (moving a label that was left out to
+     * the front) and draws the order that leaves out least (required labels count most).
+     * @param {{ texts: string|string[], candidates: object[], style: object, required?: boolean, onDrawn?: () => void }[]} items
      */
     layout(items) {
       let order = items.slice();
       let best = null;
-      for (let attempt = 0; attempt < 5; attempt++) {
+      for (let attempt = 0; attempt < 6; attempt++) {
         const placed = labels.slice();
         const result = [];
+        const missing = [];
         let cost = 0;
-        let worst = null;
         for (const it of order) {
-          const r = choose(Array.isArray(it.texts) ? it.texts : [it.texts], it.candidates, it.style, it.required ?? true, placed);
+          const r = choose(Array.isArray(it.texts) ? it.texts : [it.texts], it.candidates, it.style, placed);
           if (!r) {
-            cost += 0.5; // an optional label left out
+            missing.push(it);
+            cost += it.required === false ? 1 : 10;
             continue;
           }
           placed.push(r.b);
-          result.push(r);
-          cost += r.cost;
-          if (r.cost > 0 && (!worst || r.cost > worst.cost)) worst = { it, cost: r.cost };
+          result.push({ r, it });
+          cost += r.c.leader ? 0.1 : 0;
         }
-        if (!best || cost < best.cost) best = { cost, result };
-        if (!worst) break;
-        order = [worst.it, ...order.filter((x) => x !== worst.it)];
+        if (!best || cost < best.cost) best = { cost, result, missing };
+        const firstRequired = missing.find((m) => m.required !== false) ?? missing[0];
+        if (!firstRequired) break;
+        order = [firstRequired, ...order.filter((x) => x !== firstRequired)];
       }
-      for (const r of best.result) draw(r);
+      // Drawings that depend on their label (onDrawn) go first, so every label sits on top.
+      for (const { it } of best.result) it.onDrawn?.();
+      for (const { r } of best.result) draw(r);
+      for (const m of best.missing) record.dropped.push({ text: Array.isArray(m.texts) ? m.texts[0] : m.texts, required: m.required !== false });
     },
   };
+  return api;
 }
 // ---------------------------------------------------------------- Shapes
 
@@ -287,8 +339,15 @@ export function createView(stage) {
     return { ...p, onAccent: onAccent || '#0F1012', lift: p.series[1], thrust: p.series[0], drag: p.series[2], weight: p.ink };
   }
 
+  // Every label placer of the last frame, with what it placed, its solids and what it left out.
+  // Read by tests/engines/aero.test.mjs (overlap check) and kept on the canvas for browser checks.
+  let layoutLog = [];
+  const newPlacer = (ctx, bounds) => createPlacer(ctx, bounds, { leader: pal.muted, log: layoutLog });
+
   function draw(setup, sol, params) {
     const { ctx, width: W, height: H } = surface;
+    layoutLog = [];
+    surface.canvas.__aeroLabels = layoutLog;
     surface.begin(pal.bg);
     const px = stageFontPx(W);
     if (setup === 'pitot-static') drawPitot(ctx, W, H, px, sol, params);
@@ -330,19 +389,18 @@ export function createView(stage) {
 
   /** Title of a graph and the plot rectangle under it (leaving axisMargins for tick labels). */
   function graphFrame(ctx, r, px, pad, title) {
-    const m = axisMargins(px);
+    // Axis titles go outside the plot (as drawAxes' titles: 'outside'), so they never cover data.
+    const m = axisMargins(px, { titles: 'outside' });
     richFit(ctx, title, r.x + pad, r.y + pad + px + 4, r.w - 2 * pad, { colour: pal.ink, px: px + 2, kind: 'strong' });
-    const top = r.y + pad + px * 2.9 + m.top;
+    const top = r.y + pad + px * 2.4 + m.top;
     return { x: r.x + pad + m.left, y: top, w: Math.max(60, r.w - 2 * pad - m.left - m.right), h: Math.max(60, r.y + r.h - top - m.bottom - pad * 0.5) };
   }
 
-  /** Axis titles drawn with rich text, placed as drawAxes places its own. */
+  /** Axis titles outside the plot, placed as drawAxes places them with titles: 'outside' (rich text for subscripts). */
   function axisTitles(ctx, vp, px, xTitle, yTitle) {
     const { rect } = vp;
-    const axisY = vp.y[0] <= 0 && vp.y[1] >= 0 ? vp.toY(0) : rect.y + rect.h;
-    const axisX = vp.x[0] <= 0 && vp.x[1] >= 0 ? vp.toX(0) : rect.x;
-    if (xTitle) rich(ctx, xTitle, rect.x + rect.w - 4, axisY - 10 - px * 0.3, { colour: pal.ink, px, align: 'right', box: pal.bg });
-    if (yTitle) rich(ctx, yTitle, axisX + 12, rect.y + 4 + px * 0.95, { colour: pal.ink, px, box: pal.bg });
+    if (xTitle) rich(ctx, xTitle, rect.x + rect.w / 2, rect.y + rect.h + px * 2.45 + 8, { colour: pal.ink, px, align: 'center' });
+    if (yTitle) rich(ctx, yTitle, rect.x, rect.y - px * 0.85, { colour: pal.ink, px });
   }
 
   function marker(ctx, x, y, size, { fill = pal.ink, ring = pal.bg, square = false } = {}) {
@@ -363,22 +421,6 @@ export function createView(stage) {
       ctx.fill();
     }
     ctx.restore();
-  }
-
-  /** Label next to a point, flipped to stay inside the rectangle. */
-  function pointLabel(ctx, text, x, y, rect, px, { colour = pal.ink, above = true } = {}) {
-    const w = richWidth(ctx, text, px);
-    const gap = px * 0.7;
-    let lx = x + gap;
-    let align = 'left';
-    if (lx + w > rect.x + rect.w - 4) {
-      lx = x - gap;
-      align = 'right';
-    }
-    let ly = above ? y - gap : y + gap + px * 0.8;
-    if (ly - px < rect.y) ly = y + gap + px * 0.8;
-    if (ly > rect.y + rect.h - 4) ly = y - gap;
-    rich(ctx, text, lx, ly, { colour, px, align, box: pal.bg, padding: 3 });
   }
 
   // ============================================================== flight-forces
@@ -534,9 +576,10 @@ export function createView(stage) {
     const roomBack = cx - fx0 - 0.75 * c - px;
     if (hmax > 0) scale = Math.min(scale, Math.max(1, Math.min(roomFwd, roomBack)) / hmax);
 
-    // Labels are placed last: each goes to the first of its candidate spots that is inside the
-    // diagram and clear of every arrow, the wing and the labels already placed.
-    const placer = createPlacer(ctx, { x: r.x + 4, y: fy0 - px * 0.4, w: r.w - 8, h: fy1 - fy0 + px * 0.8 });
+    // Labels are placed last (see createPlacer): never on an arrowhead, the wing, the CG symbol or
+    // another label; arrow shafts and guide lines are avoided where possible.
+    const placer = newPlacer(ctx, { x: r.x + 4, y: fy0 - px * 0.4, w: r.w - 8, h: fy1 - fy0 + px * 0.8 });
+    const noLeader = { radii: [1.2, 2.2], leaderFrom: 9 };
     const labels = [];
     const strong = { colour: pal.ink, px, kind: 'strong', box: pal.bg, padding: 2 };
     const quiet = { colour: pal.muted, px, box: pal.bg, padding: 2 };
@@ -556,8 +599,10 @@ export function createView(stage) {
     }
     const [pbx, pby] = at(-reach, t);
     const [pfx, pfy] = at(reach, t);
-    arrow(ctx, pbx, pby, pfx, pfy, { colour: pal.axis, width: 1.5, head: Math.max(10, px * 0.6), dashed: true });
+    const pathHead = Math.max(10, px * 0.6);
+    arrow(ctx, pbx, pby, pfx, pfy, { colour: pal.axis, width: 1.5, head: pathHead, dashed: true });
     placer.blockSegment(pbx, pby, pfx, pfy, 1.5);
+    placer.block({ x: pfx - pathHead * 1.1, y: pfy - pathHead * 0.7, w: pathHead * 1.4, h: pathHead * 1.4 });
     // Right-aligned at the front end, so the path's slope across the text pushes it further out.
     const fpSlope = richWidth(ctx, 'flight path', px) * Math.abs(Math.tan(gm));
     labels.push({
@@ -568,18 +613,32 @@ export function createView(stage) {
       candidates: [
         { x: pfx - n[0] * (px * 1.45 + (g > 0 ? fpSlope : 0)), y: pfy - n[1] * (px * 1.45 + (g > 0 ? fpSlope : 0)), align: 'right' },
         { x: pfx + n[0] * (px * 0.7 + (g < 0 ? fpSlope : 0)), y: pfy + n[1] * (px * 0.7 + (g < 0 ? fpSlope : 0)), align: 'right' },
+        ...ring(pfx - pathHead * 3, pfy, px, { ...noLeader, first: ['SW', 'NW'] }),
       ],
     });
 
-    // Relative airflow (ahead of the wing, opposite to the motion).
+    // Relative airflow (ahead of the wing, opposite to the motion). The arrow is drawn only if its
+    // label finds room, so it never appears unexplained.
     if (!narrow) {
       const [a0x, a0y] = at(1.45 * c, t, 0.62 * c, n);
       const [a1x, a1y] = at(0.95 * c, t, 0.62 * c, n);
-      arrow(ctx, a0x, a0y, a1x, a1y, { colour: pal.muted, width: 2, head: Math.max(9, px * 0.5) });
+      const airHead = Math.max(9, px * 0.5);
       placer.blockSegment(a0x, a0y, a1x, a1y, 2);
+      placer.block({ x: a1x - airHead, y: a1y - airHead, w: airHead * 2, h: airHead * 2 });
       const rise = (richWidth(ctx, 'relative airflow', px) / 2) * Math.abs(Math.tan(gm));
       const [lax, lay] = at(1.2 * c, t, 0.62 * c + px * 0.7 + rise, n);
-      labels.push({ order: 8, text: 'relative airflow', style: quiet, required: false, candidates: [{ x: lax, y: lay, align: 'center' }] });
+      const [lbx, lby] = at(1.2 * c, t, 0.62 * c - px * 0.7 - rise, n);
+      labels.push({
+        order: 8,
+        text: 'relative airflow',
+        style: quiet,
+        required: false,
+        candidates: [
+          { x: lax, y: lay, align: 'center' },
+          { x: lbx, y: lby + px * 0.9, align: 'center' },
+        ],
+        onDrawn: () => arrow(ctx, a0x, a0y, a1x, a1y, { colour: pal.muted, width: 2, head: airHead }),
+      });
     }
 
     // γ arc behind the aircraft, between the horizontal and the path, labelled inside the wedge.
@@ -603,6 +662,7 @@ export function createView(stage) {
         candidates: [
           { x: cx + lr * Math.cos(mid), y: cy + lr * Math.sin(mid) + px * 0.3, align: 'center' },
           { x: cx + lr2 * Math.cos(mid), y: cy + lr2 * Math.sin(mid) + px * 0.3, align: 'center' },
+          ...ring(cx + rg * Math.cos(mid), cy + rg * Math.sin(mid), px, { radii: [1.1, 2.0, 3.0] }),
         ],
       });
     }
@@ -632,7 +692,7 @@ export function createView(stage) {
     ctx.restore();
     // Keep labels off the wing.
     const [teX, teY] = toScreen([1, 0]);
-    placer.blockSegment(le[0], le[1], teX, teY, Math.max(4, 0.07 * c));
+    placer.blockSegment(le[0], le[1], teX, teY, Math.max(4, 0.07 * c), { solid: true });
 
     // Chord line extended ahead, and the α arc between the path and the chord.
     const [ce1x, ce1y] = at(1.08 * c, ch);
@@ -661,6 +721,7 @@ export function createView(stage) {
         { x: ce1x - px * 0.4, y: ce1y + (up ? -px * 0.9 : px * 1.6), align: 'right' },
         { x: ce1x + px * 0.4, y: ce1y + out * px * 1.6 + (up ? 0 : px * 0.75) },
         { x: ce1x, y: ce1y + out * px * 2.6 + (up ? 0 : px * 0.75), align: 'center' },
+        ...ring(ce1x, ce1y, px, { radii: [1.0, 2.2, 3.4], first: up ? ['NE', 'N', 'NW'] : ['SE', 'S', 'SW'] }),
       ],
     });
 
@@ -678,18 +739,23 @@ export function createView(stage) {
         ctx.beginPath();
         ctx.arc(X, Y, rr, start, start + Math.PI * 1.6);
         ctx.stroke();
-        placer.block({ x: X - rr, y: Y - rr, w: 2 * rr, h: 2 * rr });
+        placer.blockSegment(X - rr, Y, X + rr, Y, rr); // a drawing, not text: may be crossed
       }
       ctx.restore();
+      // On narrow stages the caption is optional: the vortices and the STALL banner already say it.
+      const [scx, scy] = toScreen([0.8, 0.3]);
       labels.push({
         order: 7,
         text: 'separated flow',
         style: { colour: pal.accentText, px, box: pal.bg, padding: 2 },
-        required: true,
-        candidates: [[0.8, 0.45], [0.75, 0.7], [1.15, 0.5], [0.55, 0.8], [1.3, 0.2]].map((pt) => {
-          const [X, Y] = toScreen(pt);
-          return { x: X, y: Y, align: 'center' };
-        }),
+        required: !narrow,
+        candidates: [
+          ...[[0.8, 0.45], [0.75, 0.7], [1.15, 0.5], [0.55, 0.8], [1.3, 0.2]].map((pt) => {
+            const [X, Y] = toScreen(pt);
+            return { x: X, y: Y, align: 'center' };
+          }),
+          ...ring(scx, scy, px, { radii: [1.6, 2.8, 4.0] }),
+        ],
       });
     }
 
@@ -714,9 +780,12 @@ export function createView(stage) {
       text: lText,
       style: strong,
       required: true,
-      candidates: negLift
-        ? [side(lEnd[0], lEnd[1] + px * 0.35, -sideGap, 'right'), { x: lEnd[0], y: lEnd[1] + px * 1.5, align: 'center' }, side(lEnd[0], lEnd[1] + px * 0.35, sideGap, 'left')]
-        : [side(lEnd[0], lEnd[1] + px * 0.35, sideGap, 'left'), side(lEnd[0], lEnd[1] + px * 0.35, -sideGap, 'right'), { x: lEnd[0], y: lEnd[1] - px * 0.6 - head * 0.5, align: 'center' }],
+      candidates: [
+        ...(negLift
+          ? [side(lEnd[0], lEnd[1] + px * 0.35, -sideGap, 'right'), { x: lEnd[0], y: lEnd[1] + px * 1.5, align: 'center' }, side(lEnd[0], lEnd[1] + px * 0.35, sideGap, 'left')]
+          : [side(lEnd[0], lEnd[1] + px * 0.35, sideGap, 'left'), side(lEnd[0], lEnd[1] + px * 0.35, -sideGap, 'right'), { x: lEnd[0], y: lEnd[1] - px * 0.6 - head * 0.5, align: 'center' }]),
+        ...ring(lEnd[0], lEnd[1], px, { radii: [1.2, 2.2, 3.6] }),
+      ],
     });
 
     // Weight, straight down, with its components along and across the path.
@@ -737,7 +806,15 @@ export function createView(stage) {
       const away = g > 0 ? 1 : -1;
       const mx = (wStart[0] + cEnd[0]) / 2 + away * t[0] * px * 0.7;
       const my = (wStart[1] + cEnd[1]) / 2 + away * t[1] * px * 0.7;
-      labels.push({ order: 6, text: 'W cos γ', style: quiet, required: false, candidates: [{ x: mx, y: my + px * 0.35, align: g > 0 ? 'left' : 'right' }] });
+      placer.block({ x: cEnd[0] - head * 0.45, y: cEnd[1] - head * 0.45, w: head * 0.9, h: head * 0.9 });
+      placer.block({ x: sEnd[0] - head * 0.45, y: sEnd[1] - head * 0.45, w: head * 0.9, h: head * 0.9 });
+      labels.push({
+        order: 6,
+        text: 'W cos γ',
+        style: quiet,
+        required: false,
+        candidates: [{ x: mx, y: my + px * 0.35, align: g > 0 ? 'left' : 'right' }, ...ring((wStart[0] + cEnd[0]) / 2, (wStart[1] + cEnd[1]) / 2, px, noLeader)],
+      });
       labels.push({
         order: 6,
         text: 'W sin γ',
@@ -746,6 +823,7 @@ export function createView(stage) {
         candidates: [
           { x: sEnd[0] + (g > 0 ? -1 : 1) * px * 0.5, y: sEnd[1] + px * 0.35, align: g > 0 ? 'right' : 'left' },
           { x: sEnd[0], y: sEnd[1] - px * 0.6, align: 'center' },
+          ...ring(sEnd[0], sEnd[1], px, noLeader),
         ],
       });
     }
@@ -764,6 +842,7 @@ export function createView(stage) {
         { x: wEnd[0], y: wEnd[1] + px * 1.5, align: 'center' },
         side(wEnd[0], wMid, sideGap, 'left'),
         side(wEnd[0], wMid, -sideGap, 'right'),
+        ...ring(wEnd[0], wEnd[1], px, { radii: [1.2, 2.2, 3.6] }),
       ],
     });
 
@@ -790,6 +869,7 @@ export function createView(stage) {
           { x: above[0], y: above[1] },
           side(tEnd[0], tEnd[1] + px * 0.35, head * 0.6 + px * 0.3, 'left'),
           { x: belowFar[0], y: belowFar[1] },
+          ...ring(tEnd[0], tEnd[1], px, { radii: [1.2, 2.2, 3.6] }),
         ],
       });
     }
@@ -812,6 +892,7 @@ export function createView(stage) {
         { x: (g >= 0 ? dBelow : dAbove)[0], y: (g >= 0 ? dBelow : dAbove)[1], align: 'right' },
         { x: (g >= 0 ? dAbove : dBelow)[0], y: (g >= 0 ? dAbove : dBelow)[1], align: 'right' },
         side(dEnd[0], dEnd[1] + px * 0.35, -(head * 0.6 + px * 0.3), 'right'),
+        ...ring(dEnd[0], dEnd[1], px, { radii: [1.2, 2.2, 3.6] }),
       ],
     });
 
@@ -838,14 +919,15 @@ export function createView(stage) {
 
     // Force labels first, then angles, then the descriptive captions.
     labels.sort((a, b) => a.order - b.order);
-    placer.layout(labels.map((l) => ({ texts: l.text, candidates: l.candidates, style: l.style, required: l.required })));
+    placer.layout(labels.map((l) => ({ texts: l.text, candidates: l.candidates, style: l.style, required: l.required, onDrawn: l.onDrawn })));
   }
 
   // --- Graphs -------------------------------------------------------------------------------
 
   function clRange(s, p, xmin) {
     const lo = Math.min(0, liftCoefficient(xmin, p));
-    return [Math.floor((lo - 0.05) / 0.5) * 0.5, Math.ceil((s.clMax + 0.25) / 0.5) * 0.5];
+    // A little room below the lowest tick, so its label never meets the first x tick in the corner.
+    return [Math.floor((lo - 0.05) / 0.5) * 0.5 - 0.15, Math.ceil((s.clMax + 0.25) / 0.5) * 0.5];
   }
 
   function drawLiftCurve(ctx, r, px, pad, s, p) {
@@ -854,6 +936,7 @@ export function createView(stage) {
     const xmin = Math.min(ALPHA_MIN, Math.floor(s.alpha));
     const vp = viewport({ x: [xmin, ALPHA_MAX], y: clRange(s, p, xmin), rect });
     drawAxes(ctx, vp, pal, { px, layer: 'under', xCount: 6 });
+    const placer = plotPlacer(ctx, vp);
 
     // Stalled region: flat shade plus a word.
     const xs = vp.toX(p.alphaStall);
@@ -862,73 +945,75 @@ export function createView(stage) {
     ctx.fillStyle = pal.grid;
     ctx.fillRect(xs, rect.y, rect.x + rect.w - xs, rect.h);
     ctx.restore();
-    rich(ctx, 'stalled', (xs + rect.x + rect.w) / 2, rect.y + px * 1.2, { colour: pal.accentText, px, kind: 'strong', align: 'center' });
+    const wx = (xs + rect.x + rect.w) / 2;
+    const wy = rect.y + px * 1.2;
+    rich(ctx, 'stalled', wx, wy, { colour: pal.accentText, px, kind: 'strong', align: 'center' });
+    placer.block(textBox(ctx, 'stalled', wx, wy, px, 'center', 'strong', 3));
 
     // Curve.
+    const pts = [];
+    for (let a = xmin; a <= ALPHA_MAX + 1e-9; a += 0.05) pts.push([vp.toX(a), vp.toY(liftCoefficient(a, p))]);
     ctx.save();
     ctx.beginPath();
-    for (let a = xmin, i = 0; a <= ALPHA_MAX + 1e-9; a += 0.05, i++) {
-      const X = vp.toX(a);
-      const Y = vp.toY(liftCoefficient(a, p));
-      if (i === 0) ctx.moveTo(X, Y);
-      else ctx.lineTo(X, Y);
-    }
+    pts.forEach(([X, Y], i) => (i === 0 ? ctx.moveTo(X, Y) : ctx.lineTo(X, Y)));
     ctx.strokeStyle = pal.series[0];
     ctx.lineWidth = 3;
     ctx.lineJoin = 'round';
     ctx.stroke();
     ctx.restore();
+    blockPolyline(placer, pts);
 
-    // Stall point.
+    // Stall point and current operating point.
     const sx = vp.toX(p.alphaStall);
     const sy = vp.toY(s.clMax);
     marker(ctx, sx, sy, 6, { fill: pal.ink, square: true });
-    rich(ctx, `stall: C_{L max} = ${fmt(s.clMax)}`, sx - px * 0.6, sy - px * 0.7, { colour: pal.ink, px, align: 'right', box: pal.bg, padding: 3 });
-
-    // Current operating point.
+    placer.block({ x: sx - 9, y: sy - 9, w: 18, h: 18 });
     const X = vp.toX(s.alpha);
     const Y = vp.toY(s.cl);
     const axisY = vp.toY(0);
     dashedLine(ctx, X, axisY, X, Y, pal.muted);
+    placer.blockSegment(X, axisY, X, Y, 1.5);
     marker(ctx, X, Y, 7, { fill: s.stalled ? pal.accent : pal.ink });
-    pointLabel(ctx, `α = ${deg(s.alpha)}, C_L = ${fmt(s.cl)}`, X, Y, rect, px, { above: false });
+    placer.block({ x: X - 10, y: Y - 10, w: 20, h: 20 });
+
+    const style = { colour: pal.ink, px, box: pal.bg, padding: 3 };
+    placer.layout([
+      { texts: [`α = ${deg(s.alpha)}, C_L = ${fmt(s.cl)}`, `C_L = ${fmt(s.cl)}`], candidates: ring(X, Y, px, { first: ['SE', 'E', 'NW'] }), style },
+      { texts: [`stall: C_{L max} = ${fmt(s.clMax)}`, `C_{L max} = ${fmt(s.clMax)}`], candidates: ring(sx, sy, px, { first: ['NW', 'W', 'N'] }), style },
+    ]);
 
     drawAxes(ctx, vp, pal, { px, layer: 'over', xCount: 6 });
     axisTitles(ctx, vp, px, 'α (°)', 'C_L');
   }
 
-  /** A placer for labels inside a plot: clear of the axis titles and of anything blocked later. */
-  function plotPlacer(ctx, vp, px, xTitle, yTitle) {
+  /** A placer for labels inside a plot (the axis titles are outside it). */
+  function plotPlacer(ctx, vp) {
     const { rect } = vp;
-    const placer = createPlacer(ctx, { x: rect.x + 2, y: rect.y + 2, w: rect.w - 4, h: rect.h - 4 });
-    const axisY = vp.y[0] <= 0 && vp.y[1] >= 0 ? vp.toY(0) : rect.y + rect.h;
-    const axisX = vp.x[0] <= 0 && vp.x[1] >= 0 ? vp.toX(0) : rect.x;
-    if (xTitle) placer.block(textBox(ctx, xTitle, rect.x + rect.w - 4, axisY - 10 - px * 0.3, px, 'right', 'label', 6));
-    if (yTitle) placer.block(textBox(ctx, yTitle, axisX + 12, rect.y + 4 + px * 0.95, px, 'left', 'label', 6));
-    return placer;
+    return newPlacer(ctx, { x: rect.x + 2, y: rect.y + 2, w: rect.w - 4, h: rect.h - 4 });
   }
 
-  /** Block a polyline of screen points. */
+  /** Spots along the inside edges of a plot, corners first, for notes and captions. */
+  function corners(rect, px) {
+    const l = rect.x + px * 0.4;
+    const rr = rect.x + rect.w - px * 0.4;
+    const t = rect.y + px * 1.3;
+    const b = rect.y + rect.h - px * 0.6;
+    const out = [
+      { x: rr, y: b, align: 'right' },
+      { x: rr, y: t, align: 'right' },
+      { x: l, y: t },
+      { x: l, y: b },
+    ];
+    for (const f of [0.25, 0.5, 0.75]) {
+      out.push({ x: rr, y: t + (b - t) * f, align: 'right' }, { x: l, y: t + (b - t) * f });
+    }
+    out.push({ x: rect.x + rect.w / 2, y: t, align: 'center' }, { x: rect.x + rect.w / 2, y: b, align: 'center' });
+    return out;
+  }
+
+  /** Block a polyline of screen points (as a line: labels avoid it where they can). */
   function blockPolyline(placer, pts, half = 2.5) {
     for (let i = 1; i < pts.length; i++) placer.blockSegment(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], half);
-  }
-
-  /** Candidate spots around a point: beside it (below, then above), then centred, then further out. */
-  function around(x, y, px, gap = 0.7) {
-    const g = px * gap;
-    const far = px * 2.4;
-    return [
-      { x: x + g, y: y + g + px * 0.8 },
-      { x: x - g, y: y + g + px * 0.8, align: 'right' },
-      { x: x + g, y: y - g },
-      { x: x - g, y: y - g, align: 'right' },
-      { x, y: y + g + px * 1.2, align: 'center' },
-      { x, y: y - g - px * 0.2, align: 'center' },
-      { x: x + g, y: y + far + px * 0.8 },
-      { x: x - g, y: y + far + px * 0.8, align: 'right' },
-      { x: x + g, y: y - far },
-      { x: x - g, y: y - far, align: 'right' },
-    ];
   }
 
   function drawPolar(ctx, r, px, pad, s, p) {
@@ -938,7 +1023,7 @@ export function createView(stage) {
     const xmax = Math.ceil((Math.max(cdStall, s.cd) * 1.5) / 0.05) * 0.05;
     const vp = viewport({ x: [0, xmax], y: clRange(s, p, xmin), rect });
     drawAxes(ctx, vp, pal, { px, layer: 'under', xCount: 5 });
-    const placer = plotPlacer(ctx, vp, px, 'C_D', 'C_L');
+    const placer = plotPlacer(ctx, vp);
 
     ctx.save();
     ctx.beginPath();
@@ -985,23 +1070,24 @@ export function createView(stage) {
 
     const style = { colour: pal.ink, px, box: pal.bg, padding: 3 };
     const best = s.maxLDBeyondStall ? [`best reachable L/D = ${fmt(s.maxLiftToDrag)}, at the stall`, `best L/D = ${fmt(s.maxLiftToDrag)}`] : [`(L/D)_{max} = ${fmt(s.maxLiftToDrag)}`];
-    placer.place(best, around(tx, ty, px), style, true);
-    placer.place(`now: L/D = ${fmt(s.liftToDrag)}`, around(X, Y, px), style, true);
+    const items = [
+      { texts: best, candidates: ring(tx, ty, px, { first: ['E', 'SE', 'NW'] }), style },
+      { texts: [`now: L/D = ${fmt(s.liftToDrag)}`, `L/D = ${fmt(s.liftToDrag)}`], candidates: ring(X, Y, px, { first: ['SE', 'E'] }), style },
+    ];
     if (s.maxLDBeyondStall) {
       // Say why the formula's optimum isn't marked: it needs more lift than the wing can make.
-      const note = [
-        `1/(2√(k·C_{D0})) = ${fmt(s.polarMaxLiftToDrag)} needs C_L = ${fmt(s.polarClAtMaxLD)}, past the stall`,
-        `(L/D)_{max} ${fmt(s.polarMaxLiftToDrag)} needs C_L = ${fmt(s.polarClAtMaxLD)}`,
-        `formula optimum is past the stall`,
-      ];
-      const spots = [
-        { x: rect.x + rect.w - px * 0.4, y: rect.y + rect.h - px * 2.1, align: 'right' },
-        { x: rect.x + rect.w - px * 0.4, y: rect.y + px * 3.4, align: 'right' },
-        { x: rect.x + rect.w - px * 0.4, y: vp.toY(0) + px * 1.6, align: 'right' },
-      ];
-      placer.place(note, spots, { ...style, colour: pal.accentText }, true);
+      items.push({
+        texts: [
+          `1/(2√(k·C_{D0})) = ${fmt(s.polarMaxLiftToDrag)} needs C_L = ${fmt(s.polarClAtMaxLD)}, past the stall`,
+          `(L/D)_{max} ${fmt(s.polarMaxLiftToDrag)} needs C_L = ${fmt(s.polarClAtMaxLD)}`,
+          `formula optimum is past the stall`,
+        ],
+        candidates: corners(rect, px),
+        style: { ...style, colour: pal.accentText },
+      });
     }
-    placer.place('dashed: past the stall', [{ x: rect.x + rect.w - px * 0.4, y: rect.y + rect.h - px * 0.6, align: 'right' }, { x: rect.x + rect.w - px * 0.4, y: rect.y + px * 1.4, align: 'right' }], { ...style, colour: pal.muted }, false);
+    items.push({ texts: 'dashed: past the stall', candidates: corners(rect, px), style: { ...style, colour: pal.muted }, required: false });
+    placer.layout(items);
 
     drawAxes(ctx, vp, pal, { px, layer: 'over', xCount: 5 });
     axisTitles(ctx, vp, px, 'C_D', 'C_L');
@@ -1026,10 +1112,10 @@ export function createView(stage) {
     const kilo = Math.max(hi, -lo) >= 2000;
     const f = kilo ? 1e-3 : 1;
     const span = hi - lo;
-    const vp = viewport({ x: [0, SPEED_MAX], y: [(lo < 0 ? lo - 0.15 * span : 0) * f, (hi + 0.12 * span) * f], rect });
+    const vp = viewport({ x: [0, SPEED_MAX], y: [(lo < 0 ? lo - 0.15 * span : 0) * f, (hi + 0.2 * span) * f], rect });
     drawAxes(ctx, vp, pal, { px, layer: 'under', xCount: 5 });
     const yTitle = `T, D (${kilo ? 'kN' : 'N'})`;
-    const placer = plotPlacer(ctx, vp, px, 'V (m/s)', yTitle);
+    const placer = plotPlacer(ctx, vp);
 
     const vs = s.stallSpeedOnPath;
     const xs = vp.toX(Math.min(vs, SPEED_MAX));
@@ -1066,11 +1152,12 @@ export function createView(stage) {
     series.push({ col: 1, colour: pal.series[0], width: 3.5, dash: [], name: level ? 'thrust needed, T = D' : 'thrust needed, T' });
     for (const sr of series) curve(sr.col, sr.colour, sr.width, sr.dash);
 
-    // Legend (top right, inside the plot).
+    // Legend: in whichever top corner the curves leave emptiest (a solid: labels never cover it).
     const legW = Math.max(...series.map((sr) => richWidth(ctx, sr.name, px))) + px * 3.2;
+    const legH = series.length * px * 1.4 + px * 0.2;
+    const spots = [rect.x + rect.w - legW - px * 0.4, rect.x + px * 0.6].map((lx) => ({ lx, rect: { x: lx - 6, y: rect.y + px * 0.1, w: legW + 6, h: legH } }));
+    const { lx, rect: legend } = spots.reduce((bestSpot, sp) => (placer.lineHits(sp.rect) < placer.lineHits(bestSpot.rect) ? sp : bestSpot));
     let ly = rect.y + px * 1.2;
-    const lx = rect.x + rect.w - legW - px * 0.4;
-    const legend = { x: lx - 6, y: ly - px * 1.1, w: legW + 6, h: series.length * px * 1.4 + px * 0.2 };
     ctx.save();
     ctx.fillStyle = pal.bg;
     ctx.fillRect(legend.x, legend.y, legend.w, legend.h);
@@ -1094,42 +1181,33 @@ export function createView(stage) {
     const V = p.airspeed;
     const X = vp.toX(V);
     const style = { colour: pal.ink, px, box: pal.bg, padding: 3 };
-    let current = null;
+    const items = [];
     if (s.trimThrust !== null && V <= SPEED_MAX) {
       const Y = vp.toY(s.trimThrust * f);
       dashedLine(ctx, X, vp.toY(Math.max(vp.y[0], 0)), X, Y, pal.muted);
       placer.blockSegment(X, vp.toY(Math.max(vp.y[0], 0)), X, Y, 1.5);
-      current = { Y, text: `V = ${fmt(V)} m/s, T = ${N(s.trimThrust)}` };
       marker(ctx, X, Y, 7, { fill: pal.ink });
       placer.block({ x: X - 10, y: Y - 10, w: 20, h: 20 });
+      // Prefers the upper left, off the rising right-hand branch.
+      items.push({ texts: [`V = ${fmt(V)} m/s, T = ${N(s.trimThrust)}`, `T = ${N(s.trimThrust)}`], candidates: ring(X, Y, px, { first: ['NW', 'W', 'SE'] }), style });
     } else {
       dashedLine(ctx, X, rect.y, X, rect.y + rect.h, pal.accent, 2);
       placer.blockSegment(X, rect.y, X, rect.y + rect.h, 2);
+      items.push({ texts: [`V = ${fmt(V)} m/s: stalled`, 'stalled'], candidates: ring(X, rect.y + rect.h * 0.55, px, { first: ['E', 'W'] }), style: { ...style, colour: pal.accentText } });
     }
-    let minAt = null;
-    if (minShown) {
+    if (s.minThrustSpeed <= SPEED_MAX) {
       const mx = vp.toX(s.minThrustSpeed);
       const my = vp.toY(s.minThrust * f);
       marker(ctx, mx, my, 6, { fill: pal.series[1], square: true });
       placer.block({ x: mx - 9, y: my - 9, w: 18, h: 18 });
-      minAt = [mx, my];
-    }
-    if (minAt) {
       const text = s.maxLDBeyondStall
         ? [`least T at the stall speed, ${fmt(s.minThrustSpeed)} m/s`, `least T at ${fmt(s.minThrustSpeed)} m/s`]
         : [`least T = ${N(s.minThrust)} at ${fmt(s.minThrustSpeed)} m/s`, `least T at ${fmt(s.minThrustSpeed)} m/s`];
-      placer.place(text, around(minAt[0], minAt[1], px), style, true);
+      items.unshift({ texts: text, candidates: ring(mx, my, px, { first: ['S', 'SE', 'SW'] }), style });
     } else {
-      placer.place(`least T is above ${SPEED_MAX} m/s`, [{ x: rect.x + rect.w - px * 0.4, y: rect.y + rect.h - px * 0.6, align: 'right' }], style, false);
+      items.push({ texts: `least T is above ${SPEED_MAX} m/s`, candidates: corners(rect, px), style, required: false });
     }
-    // The current point's label prefers the upper left, off the rising right-hand branch.
-    const a = (yy) => around(X, yy, px);
-    const upperFirst = (yy) => {
-      const c = a(yy);
-      return [c[3], c[2], c[1], c[0], ...c.slice(4)];
-    };
-    if (current) placer.place(current.text, upperFirst(current.Y), style, true);
-    else placer.place(`V = ${fmt(V)} m/s: stalled`, upperFirst(rect.y + rect.h * 0.55), { ...style, colour: pal.accentText }, true);
+    placer.layout(items);
 
     drawAxes(ctx, vp, pal, { px, layer: 'over', xCount: 5 });
     axisTitles(ctx, vp, px, 'V (m/s)', yTitle);
@@ -1415,7 +1493,7 @@ export function createView(stage) {
     const yMax = Math.max(12000, Math.ceil((Math.max(s.altitude, hInd) + 1500) / 1000) * 1000);
     const vp = viewport({ x: [0, 120], y: [yMin, yMax], rect });
     drawAxes(ctx, vp, pal, { px, layer: 'under', xCount: 6, yCount: 6 });
-    const placer = plotPlacer(ctx, vp, px, 'p (kPa)', 'h (m)');
+    const placer = plotPlacer(ctx, vp);
 
     const curve = (shift, colour, width, dash) => {
       const pts = [];
@@ -1502,32 +1580,23 @@ export function createView(stage) {
       legend("altimeter's ISA (QNH)", pal.series[1], 2.5, [10, 6]);
     }
 
-    // Labels: inside the plot, clear of the axis titles, the curves and each other.
+    // Labels: inside the plot, never on a marker, the formula, the legend or each other.
     const lx = axisX + px * 0.5;
     const strong = { colour: pal.ink, px, kind: 'strong', box: pal.bg, padding: 2 };
-    // Beside the guide line near the axis, or beside the point, above the line or below it.
-    const near = (y) => [
-      { x: lx, y: y - px * 0.5 },
-      { x: lx, y: y + px * 1.4 },
-      { x: X + px * 0.7, y: y - px * 0.5 },
-      { x: X + px * 0.7, y: y + px * 1.4 },
-      { x: X - px * 0.7, y: y - px * 0.5, align: 'right' },
-      { x: X - px * 0.7, y: y + px * 1.4, align: 'right' },
-    ];
-    placer.place([`true altitude ${whole(s.altitude)} m`, `true ${whole(s.altitude)} m`], near(Yt), strong, true);
-    if (differs) placer.place([`altimeter ${whole(hInd)} m`, `reads ${whole(hInd)} m`], near(Yi), strong, true);
-    const psText = `p_s = ${siPrefix(s.staticPressure, 'Pa', { sigfigs: 4 })}`;
-    placer.place(
-      psText,
-      [
+    // Beside the guide line near the axis, then all around the point (with a leader further out).
+    const near = (y) => [{ x: lx, y: y - px * 0.5 }, { x: lx, y: y + px * 1.4 }, ...ring(X, y, px, { first: ['E', 'NE', 'SE', 'W'] })];
+    const items = [{ texts: [`true altitude ${whole(s.altitude)} m`, `true ${whole(s.altitude)} m`], candidates: near(Yt), style: strong }];
+    if (differs) items.push({ texts: [`altimeter ${whole(hInd)} m`, `reads ${whole(hInd)} m`], candidates: near(Yi), style: strong });
+    items.push({
+      texts: [`p_s = ${siPrefix(s.staticPressure, 'Pa', { sigfigs: 4 })}`],
+      candidates: [
         { x: X - px * 0.5, y: base - px * 0.6, align: 'right' },
         { x: X + px * 0.5, y: base - px * 0.6 },
-        { x: X - px * 0.5, y: base - px * 2.1, align: 'right' },
-        { x: X + px * 0.5, y: base - px * 2.1 },
+        ...ring(X, base - px * 1.2, px, { radii: [0.7, 2.2, 3.6, 5.0], first: ['W', 'E', 'NW', 'NE'] }),
       ],
-      { colour: pal.ink, px, box: pal.bg, padding: 2 },
-      true,
-    );
+      style: { colour: pal.ink, px, box: pal.bg, padding: 2 },
+    });
+    placer.layout(items);
 
     drawAxes(ctx, vp, pal, { px, layer: 'over', xCount: 6, yCount: 6 });
     axisTitles(ctx, vp, px, 'p (kPa)', 'h (m)');
@@ -1535,6 +1604,8 @@ export function createView(stage) {
 
   return {
     draw,
+    /** Label layout of the last frame (see createPlacer): for overlap tests. */
+    layout: () => layoutLog,
     resize: () => surface.resize(),
     setTheme() {
       pal = palette();

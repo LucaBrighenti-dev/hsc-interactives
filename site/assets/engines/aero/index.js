@@ -5,7 +5,7 @@ import { flightForces, pitotStatic, alphaSweep, speedSweep, isaTable } from './m
 import { createView } from './view.js';
 import { createEmitter } from '../../engine-kit.js';
 import { defaultsFor, clampParams } from '../../state.js';
-import { formatNumber, siPrefix } from '../../format.js';
+import { formatNumber, formatInteger, siPrefix } from '../../format.js';
 
 const FF = ['flight-forces'];
 const PS = ['pitot-static'];
@@ -68,11 +68,11 @@ export const meta = {
     liftToDrag: { label: 'Lift-to-drag ratio L/D', unit: '', sigfigs: 3, setups: FF },
     stallSpeed: { label: 'Stall speed, level', unit: 'm/s', sigfigs: 3, setups: FF },
     // Best reachable L/D: 1/(2√(k·CD0)) unless that optimum lies past the stall, then the value at CLmax.
-    maxLiftToDrag: { label: 'Best L/D the wing can reach', unit: '', sigfigs: 3, setups: FF },
+    maxLiftToDrag: { label: 'Best reachable L/D', unit: '', sigfigs: 3, setups: FF },
     clAtMaxLD: { label: 'CL at best L/D', unit: '', sigfigs: 3, setups: FF },
     minDragSpeed: { label: 'Speed for best L/D, level', unit: 'm/s', sigfigs: 3, setups: FF },
-    minThrustSpeed: { label: 'Speed for least thrust on this path', unit: 'm/s', sigfigs: 3, setups: FF },
-    minThrust: { label: 'Least thrust needed on this path', unit: 'N', sigfigs: 3, siPrefix: true, setups: FF },
+    minThrustSpeed: { label: 'Least-thrust speed', unit: 'm/s', sigfigs: 3, setups: FF },
+    minThrust: { label: 'Least thrust', unit: 'N', sigfigs: 3, siPrefix: true, setups: FF },
     bestGlideAngle: { label: 'Best glide angle', unit: '°', sigfigs: 3, setups: FF },
     liftSurplus: { label: 'Unbalanced lift L − W cos γ', unit: 'N', sigfigs: 3, siPrefix: true, setups: FF },
     loadFactor: { label: 'Load factor n = L/W', unit: '', sigfigs: 3, setups: FF },
@@ -168,10 +168,10 @@ export function create(stage, opts = {}) {
       const s = solution;
       if (setup === 'pitot-static') {
         return (
-          `Pitot-static probe at ${Math.round(s.altitude)} metres and ${formatNumber(s.airspeed)} metres per second. ` +
+          `Pitot-static probe at ${formatInteger(s.altitude)} metres and ${formatNumber(s.airspeed)} metres per second. ` +
           `Static pressure ${siPrefix(s.staticPressure, 'Pa', { sigfigs: 4 })}, total pressure ${siPrefix(s.totalPressure, 'Pa', { sigfigs: 4 })}, ` +
           `difference ${siPrefix(s.pressureDifference, 'Pa')}. Airspeed from the difference ${formatNumber(s.trueAirspeed)} metres per second; ` +
-          `the altimeter reads ${Math.round(s.indicatedAltitude)} metres.`
+          `the altimeter reads ${formatInteger(s.indicatedAltitude)} metres.`
         );
       }
       const path = s.gamma > 0 ? `climbing at ${formatNumber(s.gamma)} degrees` : s.gamma < 0 ? `descending at ${formatNumber(-s.gamma)} degrees` : 'in level flight';
