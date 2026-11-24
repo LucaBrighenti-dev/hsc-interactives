@@ -4,11 +4,13 @@ import { formatNumber, formatQuantity, siPrefix } from '../../../format.js';
 
 export { label, arrow, font, viewport, axisMargins, drawAxes };
 
+/** A label never receives a number near underflow (|v| < 1e-200 is shown as 0). */
+const safe = (v) => (typeof v === 'number' && v !== 0 && Math.abs(v) < 1e-200 ? 0 : v);
 /** "40.8 m": a computed value, 3 significant figures. */
-export const q = (v, unit = '', sf = 3) => formatQuantity(v, unit, { sigfigs: sf });
+export const q = (v, unit = '', sf = 3) => formatQuantity(safe(v), unit, { sigfigs: sf });
 /** SI-prefixed value: 3.00 × 10⁵ J → "300 kJ". */
-export const si = (v, unit) => siPrefix(v, unit);
-export const num = (v, sf = 3) => formatNumber(v, { sigfigs: sf });
+export const si = (v, unit) => siPrefix(safe(v), unit);
+export const num = (v, sf = 3) => formatNumber(safe(v), { sigfigs: sf });
 
 export function textWidth(ctx, text, px, kind = 'label') {
   ctx.font = font(kind, px);
@@ -28,6 +30,9 @@ export function rich(ctx, parts, x, y, { px = 18, colour = '#121316', kind = 'la
     total += it.w;
   }
   let left = align === 'center' ? x - total / 2 : align === 'right' ? x - total : x;
+  // Keep the text inside the stage (labels at arrow tips near an edge would otherwise be cut off).
+  const cw = ctx.canvas?.clientWidth || 0;
+  if (cw > 0) left = Math.max(4, Math.min(left, cw - total - 4));
   ctx.save();
   ctx.textBaseline = baseline;
   if (box) {
@@ -201,9 +206,12 @@ export function vector(ctx, pal, x0, y0, dx, dy, parts, { colour, px = 18, width
  */
 export function graph(ctx, rect, pal, px, opts, plot) {
   const vp = viewport({ x: opts.x, y: opts.y, rect });
-  drawAxes(ctx, vp, pal, { px, layer: 'under', xCount: opts.xCount ?? 6, yCount: opts.yCount ?? 4, formatX: opts.formatX, formatY: opts.formatY });
+  // Fewer ticks on narrow graphs so the tick labels never run together.
+  const xCount = opts.xCount ?? Math.max(2, Math.min(6, Math.floor(rect.w / (px * 4.5))));
+  const yCount = opts.yCount ?? Math.max(2, Math.min(4, Math.floor(rect.h / (px * 2.4))));
+  drawAxes(ctx, vp, pal, { px, layer: 'under', xCount, yCount, formatX: opts.formatX, formatY: opts.formatY });
   clipTo(ctx, { x: rect.x - 2, y: rect.y - 2, w: rect.w + 4, h: rect.h + 4 }, () => plot(vp));
-  drawAxes(ctx, vp, pal, { px, layer: 'over', xTitle: opts.xTitle, yTitle: opts.yTitle, xCount: opts.xCount ?? 6, yCount: opts.yCount ?? 4, formatX: opts.formatX, formatY: opts.formatY });
+  drawAxes(ctx, vp, pal, { px, layer: 'over', xTitle: opts.xTitle, yTitle: opts.yTitle, xCount, yCount, formatX: opts.formatX, formatY: opts.formatY });
   return vp;
 }
 

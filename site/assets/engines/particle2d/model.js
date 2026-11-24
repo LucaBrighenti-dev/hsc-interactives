@@ -19,6 +19,8 @@ export const DT = 1 / 240; // s of animation time per fixed step
 const DEG = Math.PI / 180;
 const TAU = 2 * Math.PI;
 const REC = 4; // a data row every 4 steps (60 rows per second of animation), plus every event
+/** Longest projectile flight simulated (s); only extreme drag from a height needs longer. */
+export const PROJECTILE_MAX_TIME = 300;
 
 /** cos and sin of an angle in degrees, exact at multiples of 90° (so a 90° launch has vx = 0, not 1e-15). */
 export function cosDeg(d) {
@@ -46,9 +48,11 @@ export const PARTICLES = {
 };
 /**
  * Earth. GM: IERS Conventions (2010) and WGS 84, 3.986004418 × 10¹⁴ m³/s².
- * Mean radius: IUGG mean radius R₁ = 6371.0 km. Sidereal day: 86 164.0905 s (IERS).
+ * Mean radius: IUGG mean radius R₁ = 6371.0 km. Equatorial radius: WGS 84 semi-major axis 6378.137 km (orbit
+ * altitudes are quoted above the equator, so geostationary comes out at the standard 35 786 km).
+ * Sidereal day: 86 164.0905 s (IERS).
  */
-export const EARTH = { GM: 3.986004418e14, radius: 6.371e6, siderealDay: 86164.0905 };
+export const EARTH = { GM: 3.986004418e14, radius: 6.371e6, equatorialRadius: 6.378137e6, siderealDay: 86164.0905 };
 /** GPS satellites orbit in half a sidereal day (GPS SPS Performance Standard, 5th ed., 2020). */
 export const GPS_PERIOD_FRACTION = 0.5;
 
@@ -480,8 +484,9 @@ const DEFS = {};
 DEFS.projectile = {
   columns: ['t (s)', 'x (m)', 'y (m)', 'vx (m/s)', 'vy (m/s)'],
   config(p, ov) {
-    const b = { speed: p.speed, angleDeg: p.angle, angle: p.angle * DEG, height: p.height, g: p.g, drag: p.drag, k: p.k, mass: p.mass, h: DT, ...ov };
+    const b = { speed: p.speed, angleDeg: p.angle, angle: p.angle * DEG, height: p.height, g: p.g, drag: p.drag, k: p.k, mass: p.mass, h: DT, tCap: PROJECTILE_MAX_TIME, ...ov };
     b.kOverM = b.drag === 'none' ? 0 : b.k / b.mass;
+    b.vScale = Math.max(b.speed, 1);
     return b;
   },
   init(st) {
@@ -530,10 +535,17 @@ DEFS.projectile = {
       on(st, y, t) {
         y[1] = 0;
         st.ev.land = { t, x: y[0], vx: y[2], vy: y[3] };
+        st.ev.end = 'land';
         return 'stop';
       },
     },
+    // Very strong drag from a height can take thousands of seconds to come down: stop the run calmly.
+    { when: (st) => !st.ev.land, ...endAt('tCap') },
   ],
+  after(st) {
+    // A velocity component that has decayed to 1e-12 of the launch speed is zero (no drift to underflow).
+    for (const i of [2, 3]) if (st.y[i] !== 0 && Math.abs(st.y[i]) < 1e-12 * st.cfg.vScale) st.y[i] = 0;
+  },
   row: (y, t) => [t, y[0], y[1], y[2], y[3]],
   outputs(st) {
     const [x, y, vx, vy] = st.y;
@@ -559,7 +571,7 @@ DEFS.projectile = {
 DEFS.braking = {
   columns: ['t (s)', 'x (m)', 'v (m/s)', 'a (m/s²)'],
   config(p, ov) {
-    const b = { v0: p.speed, tr: p.reactionTime, mu: p.mu, g: p.g, m: p.carMass, rotorMass: p.rotorMass, rotorHeat: p.rotorHeat, h: DT, ...ov };
+    const b = { v0: p.approachSpeed, tr: p.reactionTime, mu: p.mu, g: p.g, m: p.carMass, rotorMass: p.rotorMass, rotorHeat: p.rotorHeat, h: DT, ...ov };
     b.decel = b.mu * b.g;
     return b;
   },
@@ -626,21 +638,26 @@ DEFS.braking = {
 };
 
 // Resisted motion in one dimension: horizontal (resistance only) or vertical (up positive, with gravity).
+// Resistance none, kv or kv|v| always opposes the velocity. A velocity that has decayed below 1e-12 of its
+// scale is set to exactly zero (the body is at rest), so values never drift towards underflow.
 DEFS['resisted-1d'] = {
   columns: ['t (s)', 'x (m)', 'v (m/s)', 'a (m/s²)'],
   config(p, ov) {
-    const b = { vertical: p.direction === 'vertical', law: p.resistance, k: p.resistK, m: p.mass, g: p.g, v0: p.v0, duration: p.duration, h: DT, ...ov };
-    b.kOverM = b.k / b.m;
+    const b = { vertical: p.direction === 'vertical', law: p.drag, k: p.k, m: p.mass, g: p.g, v0: p.v0, duration: p.duration, h: DT, ...ov };
+    b.kOverM = b.law === 'none' ? 0 : b.k / b.m;
     b.gEff = b.vertical ? b.g : 0;
+    b.vScale = Math.max(Math.abs(b.v0), 1);
     return b;
   },
   init(st) {
     const c = st.cfg;
     st.y = [0, c.v0];
+    st.top = 0;
     if (c.vertical && c.v0 <= 0) st.ev.apex = { t: 0, x: 0 };
   },
   stiffness: (st) => dragRate(st.cfg.law, st.cfg.kOverM, Math.abs(st.y[1]), st.cfg.gEff),
   accel(c, v) {
+    if (c.kOverM === 0) return -c.gEff;
     return -c.gEff - c.kOverM * (c.law === 'linear' ? v : Math.abs(v) * v);
   },
   deriv(st) {
@@ -652,51 +669,73 @@ DEFS['resisted-1d'] = {
       when: (st) => st.cfg.vertical && !st.ev.apex,
       g: (y) => y[1],
       on(st, y, t) {
+        y[1] = 0;
         st.ev.apex = { t, x: y[0] };
+        st.top = Math.max(st.top, y[0]);
         pushRow(st, y, t);
         return 'mark';
       },
     },
     endAt('duration'),
   ],
+  after(st) {
+    if (st.cfg.gEff === 0 && st.y[1] !== 0 && Math.abs(st.y[1]) < 1e-12 * st.cfg.vScale) st.y[1] = 0;
+    if (st.y[0] > st.top) st.top = st.y[0];
+  },
   row: (y, t, st) => [t, y[0], y[1], DEFS['resisted-1d'].accel(st.cfg, y[1])],
   outputs(st) {
     const c = st.cfg;
     const [x, v] = st.y;
+    const resisted = c.kOverM > 0;
     return {
       x,
       v,
-      a: this.accel(c, v),
+      acc: this.accel(c, v),
       t: st.t,
-      terminalSpeed: c.vertical ? terminalSpeed({ law: c.law, k: c.k, mass: c.m, g: c.g }) : null,
-      maxHeight: c.vertical && st.ev.apex ? st.ev.apex.x : null,
-      timeToMax: c.vertical && st.ev.apex ? st.ev.apex.t : null,
-      limitDistance: !c.vertical && c.law === 'linear' ? c.v0 / c.kOverM : null,
+      terminalSpeed: c.vertical && resisted ? terminalSpeed({ law: c.law, k: c.k, mass: c.m, g: c.g }) : null,
+      maxHeight: c.vertical ? st.top : null,
+      timeToTop: c.vertical && st.ev.apex && c.v0 > 0 ? st.ev.apex.t : null,
+      limitDistance: !c.vertical && resisted && c.law === 'linear' ? c.v0 / c.kOverM : null,
     };
   },
 };
 
-// Simple harmonic motion: a mass on a spring, x'' = −(k/m)x, started at x = a cos α, v = −an sin α.
+// Simple harmonic motion, ẍ = −n²(x − c), in two forms:
+//   spring: a mass m on a spring k (n = √(k/m), centre 0), started at x = a cos α, v = −an sin α;
+//   maths:  n, centre c and the initial conditions x₀, v₀ (Ext 2), so a = √((x₀ − c)² + (v₀/n)²) and α in
+//           (−π, π] with a cos α = x₀ − c, a sin α = −v₀/n, giving x = c + a cos(nt + α).
 DEFS.shm = {
   columns: ['t (s)', 'x (m)', 'v (m/s)', 'a (m/s²)'],
   config(p, ov) {
-    const b = { a: p.amplitude, k: p.springK, m: p.mass, alpha: p.phase * DEG, duration: p.duration, h: DT, ...ov };
-    b.n = Math.sqrt(b.k / b.m);
+    const maths = p.shmForm === 'maths';
+    const b = maths
+      ? { maths, n: p.n, c: p.centre, x0: p.x0, v0: p.v0, k: null, m: null, duration: p.duration, h: DT, ...ov }
+      : { maths, k: p.springK, m: p.mass, c: 0, a: p.amplitude, alpha: p.phase * DEG, duration: p.duration, h: DT, ...ov };
+    if (!maths) {
+      b.n = Math.sqrt(b.k / b.m);
+      b.x0 = b.a * cosDeg(p.phase ?? 0);
+      b.v0 = -b.a * b.n * sinDeg(p.phase ?? 0);
+    } else {
+      b.a = Math.hypot(b.x0 - b.c, b.v0 / b.n);
+      b.alpha = b.a > 0 ? Math.atan2(-b.v0 / b.n, b.x0 - b.c) + 0 : 0;
+    }
     return b;
   },
   init(st) {
     const c = st.cfg;
-    st.y = [c.a * Math.cos(c.alpha), -c.a * c.n * Math.sin(c.alpha)];
+    st.y = [c.x0, c.v0];
     st.ev.crossings = [];
   },
   deriv(st) {
-    const n2 = st.cfg.n * st.cfg.n;
-    return (t, y) => [y[1], -n2 * y[0]];
+    const { n, c } = st.cfg;
+    const n2 = n * n;
+    return (t, y) => [y[1], -n2 * (y[0] - c)];
   },
   events: [
     {
-      // upward zero crossings (x from negative to positive) measure the period
-      g: (y) => -y[0],
+      // upward crossings of the centre (x − c from negative to positive) measure the period
+      when: (st) => st.cfg.a > 0,
+      g: (y, t, st) => st.cfg.c - y[0],
       on(st, y, t) {
         st.ev.crossings.push(t);
         return 'mark';
@@ -704,7 +743,7 @@ DEFS.shm = {
     },
     endAt('duration'),
   ],
-  row: (y, t, st) => [t, y[0], y[1], -st.cfg.n * st.cfg.n * y[0]],
+  row: (y, t, st) => [t, y[0], y[1], -st.cfg.n * st.cfg.n * (y[0] - st.cfg.c)],
   outputs(st) {
     const c = st.cfg;
     const [x, v] = st.y;
@@ -713,13 +752,15 @@ DEFS.shm = {
       period: TAU / c.n,
       omega: c.n,
       frequency: c.n / TAU,
-      vMax: c.a * c.n,
-      aMax: c.a * c.n * c.n,
-      energy: 0.5 * c.k * c.a * c.a,
+      amplitude: c.a,
+      alpha: c.alpha,
+      maxSpeed: c.a * c.n,
+      maxAcc: c.a * c.n * c.n,
+      energy: c.maths ? null : 0.5 * c.k * c.a * c.a,
       measuredPeriod: cr.length >= 2 ? cr[cr.length - 1] - cr[cr.length - 2] : null,
       x,
       v,
-      a: -c.n * c.n * x,
+      acc: -c.n * c.n * (x - c.c),
       t: st.t,
     };
   },
@@ -796,9 +837,10 @@ DEFS.charged = {
       exitAngle: end ? Math.atan2(vy, vx) / DEG : null,
       timeInField: end && end !== 'view' && end !== 'time' ? st.t : null,
       exitSeparation: end === 'left' ? Math.abs(y) : null,
-      entrySpeed: c.v,
-      kineticEnergy: 0.5 * c.m * (vx * vx + vy * vy),
+      kineticEnergyEv: (0.5 * c.m * (vx * vx + vy * vy)) / E_CHARGE,
       workDone: 0.5 * c.m * (vx * vx + vy * vy - c.v * c.v),
+      workDoneEv: (0.5 * c.m * (vx * vx + vy * vy - c.v * c.v)) / E_CHARGE,
+      tNs: st.t * 1e9,
       x,
       y,
       vx,
@@ -817,7 +859,7 @@ DEFS.circular = {
     return {
       mode: p.circularMode,
       r: p.radius,
-      v: p.speed,
+      v: p.circleSpeed,
       mass: p.mass,
       carMass: p.carMass,
       bank: p.bankAngle * DEG,
@@ -879,8 +921,8 @@ DEFS.circular = {
       normalForce: bank ? bank.N : null,
       frictionForce: bank ? bank.f : null,
       muRequired: bank && Number.isFinite(bank.muRequired) ? bank.muRequired : null,
-      maxSpeed: bank && Number.isFinite(bank.vMax) ? bank.vMax : null,
-      minSpeed: bank ? bank.vMin : null,
+      maxCurveSpeed: bank && Number.isFinite(bank.vMax) ? bank.vMax : null,
+      minCurveSpeed: bank ? bank.vMin : null,
       torque: torque ? c.arm * c.F * c.sinPhi : null,
       perpForce: torque ? c.F * c.sinPhi : null,
       momentArm: torque ? c.arm * c.sinPhi : null,
@@ -974,8 +1016,8 @@ DEFS.collisions = {
     const angle = (vx, vy) => (col && Math.hypot(vx, vy) > 1e-12 ? Math.atan2(vy, vx) / DEG : null);
     const pScale = Math.abs(c.mA * c.uA) + Math.abs(c.mB * c.uB);
     return {
-      vA: y[2],
-      vB: y[6],
+      vA: snap(y[2], Math.abs(c.uA) + Math.abs(c.uB)),
+      vB: snap(y[6], Math.abs(c.uA) + Math.abs(c.uB)),
       vAy: snap(y[3], Math.abs(c.uA) + Math.abs(c.uB)),
       vBy: snap(y[7], Math.abs(c.uA) + Math.abs(c.uB)),
       pTotal: c.mA * y[2] + c.mB * y[6],
@@ -1003,6 +1045,7 @@ DEFS.cart = {
     st.throttle = 0;
     st.errSum = 0;
     st.errN = 0;
+    st.dist = 0;
   },
   accel: (st) => (st.cfg.mode === 'uniform' ? st.cfg.a : Math.max(-2, Math.min(2, Number(st.throttle) || 0))),
   deriv(st) {
@@ -1010,7 +1053,18 @@ DEFS.cart = {
     return (t, y) => [y[1], a];
   },
   events: [endAt('duration')],
-  after(st) {
+  after(st, prevY, prevT) {
+    // Rounding noise at a turning point is rest, not 1e-15 m/s.
+    if (st.y[1] !== 0 && Math.abs(st.y[1]) < 1e-12) st.y[1] = 0;
+    // Distance travelled ∫|v| dt, exact for the step's constant acceleration (v is linear in t).
+    const v0 = prevY[1];
+    const v1 = st.y[1];
+    const dt = st.t - prevT;
+    if (v0 * v1 >= 0) st.dist += (Math.abs(v0 + v1) / 2) * dt;
+    else {
+      const tau = (dt * v0) / (v0 - v1);
+      st.dist += 0.5 * Math.abs(v0) * tau + 0.5 * Math.abs(v1) * (dt - tau);
+    }
     if (st.cfg.mode !== 'match') return;
     const d = st.y[0] - cartTarget(st.cfg.challenge, st.t).x;
     st.errSum += d * d;
@@ -1025,6 +1079,8 @@ DEFS.cart = {
       v,
       a: this.accel(st),
       t: st.t,
+      displacement: x - st.cfg.x0,
+      distance: st.dist,
       matchError: match ? (st.errN ? Math.sqrt(st.errSum / st.errN) : 0) : null,
       targetX: match ? cartTarget(st.cfg.challenge, st.t).x : null,
     };
@@ -1063,7 +1119,15 @@ DEFS.orbit = {
   events: [
     { g: (y, t, st) => Math.hypot(y[0], y[1]) - st.cfg.R, on: (st, y) => DEFS.orbit.end(st, y, 'crash') },
     { g: (y) => TAU - y[4], on: (st, y) => DEFS.orbit.end(st, y, 'orbit') },
-    { g: (y, t, st) => st.cfg.rOut - Math.hypot(y[0], y[1]), on: (st, y) => DEFS.orbit.end(st, y, 'escape') },
+    // Leaving the view is an escape only if the orbit is unbound: specific energy ε = v²/2 − GM/r ≥ 0 (a
+    // parabola within rounding counts as escape). A bound orbit that leaves the view will come back.
+    {
+      g: (y, t, st) => st.cfg.rOut - Math.hypot(y[0], y[1]),
+      on(st, y) {
+        const eps = 0.5 * (y[2] * y[2] + y[3] * y[3]) - st.cfg.GM / Math.hypot(y[0], y[1]);
+        return DEFS.orbit.end(st, y, eps >= -1e-9 * (st.cfg.GM / st.cfg.r0) ? 'escape' : 'view');
+      },
+    },
     endAt('tCap'),
   ],
   end(st, y, how) {
@@ -1081,7 +1145,6 @@ DEFS.orbit = {
     const pe = (-c.GM * c.m) / r;
     return {
       r,
-      altitude: r - c.R,
       altitudeKm: (r - c.R) / 1000,
       speed: v,
       t: st.t,
@@ -1110,7 +1173,7 @@ DEFS.orbit = {
 DEFS['orbit-gps'] = {
   columns: ['t (s)', 'LEO x (m)', 'LEO y (m)', 'GPS x (m)', 'GPS y (m)', 'GEO x (m)', 'GEO y (m)'],
   config(p, ov) {
-    const b = { GM: EARTH.GM, R: EARTH.radius, day: EARTH.siderealDay, altitude: p.altitude * 1000, psi0: p.receiverAngle * DEG, clock: p.clockError * 1e-9, timeUnit: 3600, gpsCount: 8, gpsPhase0: 10 * DEG, ...ov };
+    const b = { GM: EARTH.GM, R: EARTH.equatorialRadius, day: EARTH.siderealDay, altitude: p.altitude * 1000, psi0: p.receiverAngle * DEG, clock: p.clockError * 1e-9, timeUnit: 3600, gpsCount: 8, gpsPhase0: 10 * DEG, ...ov };
     b.rLeo = b.R + b.altitude;
     b.rGps = radiusForPeriod(b.GM, b.day * GPS_PERIOD_FRACTION);
     b.rGeo = radiusForPeriod(b.GM, b.day);
@@ -1203,7 +1266,8 @@ export function gpsFix(st) {
     const dx = s[0] - p[0];
     const dy = s[1] - p[1];
     const range = Math.hypot(dx, dy);
-    return { i, pos: s, range, elevation: Math.asin((dx * up[0] + dy * up[1]) / range), travel: range / C_LIGHT, pseudo: range + C_LIGHT * c.clock };
+    // Clamped: a satellite exactly overhead gives (d·up)/|d| = 1 + 2e-16 by rounding, and asin of that is NaN.
+    return { i, pos: s, range, elevation: Math.asin(Math.max(-1, Math.min(1, (dx * up[0] + dy * up[1]) / range))), travel: range / C_LIGHT, pseudo: range + C_LIGHT * c.clock };
   });
   const used = sats.filter((s) => s.elevation > 0).sort((a, b) => b.elevation - a.elevation).slice(0, 3);
   let solution = null;
@@ -1221,7 +1285,8 @@ DEFS['relative-velocity'] = {
       Object.assign(b, { vb: p.boatSpeed, heading: p.heading * DEG, u: p.current, W: p.riverWidth }, ov);
       b.rel = [-b.vb * sinDeg(p.heading), b.vb * cosDeg(p.heading)];
       b.medium = [b.u, 0];
-      b.ground = [b.u + b.rel[0], b.rel[1]];
+      // Heading straight for the opposite bank (sin θ = u/v) cancels the drift exactly, not to 1e-15.
+      b.ground = [snap(b.u + b.rel[0], b.u + b.vb), b.rel[1]];
       const cross = b.ground[1] > 1e-12 ? b.W / b.ground[1] : Infinity;
       b.timeUnit = Number.isFinite(cross) ? Math.max(1, cross / 8) : 1;
       b.tCap = Number.isFinite(cross) ? Infinity : 30;
@@ -1229,7 +1294,7 @@ DEFS['relative-velocity'] = {
       Object.assign(b, { va: p.airspeed / 3.6, bearing: p.bearing * DEG, w: p.windSpeed / 3.6, windBearing: p.windBearing * DEG, T: p.flightTime * 3600 }, ov);
       b.rel = [b.va * sinDeg(p.bearing), b.va * cosDeg(p.bearing)];
       b.medium = [b.w * sinDeg(p.windBearing), b.w * cosDeg(p.windBearing)];
-      b.ground = [b.rel[0] + b.medium[0], b.rel[1] + b.medium[1]];
+      b.ground = [snap(b.rel[0] + b.medium[0], b.va + b.w), snap(b.rel[1] + b.medium[1], b.va + b.w)];
       b.timeUnit = b.T / 8;
       b.tCap = b.T;
     }
@@ -1262,12 +1327,14 @@ DEFS['relative-velocity'] = {
     return {
       groundSpeed: gs,
       groundSpeedKmh: gs * 3.6,
-      groundDirection: c.boat ? Math.atan2(vx, vy) / DEG : track,
+      // Boat: degrees from straight across, upstream positive (the same convention as the heading).
+      groundDirection: c.boat ? Math.atan2(-vx, vy) / DEG + 0 : null,
+      trackBearing: c.boat ? null : track,
       crossingTime: c.boat && landed ? st.t : null,
       drift: c.boat && landed ? x : null,
       headingForStraight: c.boat && c.u < c.vb ? Math.asin(c.u / c.vb) / DEG : null,
       distance: Math.hypot(x, y),
-      driftAngle: c.boat ? null : ((((track - c.bearing / DEG) % 360) + 540) % 360) - 180,
+      driftAngle: c.boat ? null : snap(((((track - c.bearing / DEG) % 360) + 540) % 360) - 180, 360),
       x,
       y,
       t: st.t,
@@ -1405,6 +1472,8 @@ export function advance(st, params, steps = 1) {
   const def = DEFS[st.setup];
   const n = Math.max(0, Math.floor(steps));
   for (let i = 0; i < n && !st.done; i++) {
+    const prevY = st.y;
+    const prevT = st.t;
     if (def.step) def.step(st);
     else integrate(st, def);
     if (!st.y.every(Number.isFinite)) {
@@ -1412,7 +1481,7 @@ export function advance(st, params, steps = 1) {
       throw new Error('These values make the numbers too large to simulate. Try a smaller speed or coefficient.');
     }
     st.n += 1;
-    def.after?.(st);
+    def.after?.(st, prevY, prevT);
     if (st.done || st.n % REC === 0) pushRow(st, st.y, st.t);
   }
   return st;
@@ -1425,7 +1494,10 @@ export function isComplete(st) {
 /** Outputs in SI units, unrounded (null where a value does not exist yet, e.g. range before landing). */
 export function outputs(st) {
   const def = DEFS[st.setup];
-  return def.outputs.call(def, st);
+  const out = def.outputs.call(def, st);
+  // Guard against underflow: no readout or label ever receives a subnormal number.
+  for (const [k, v] of Object.entries(out)) if (typeof v === 'number' && v !== 0 && Math.abs(v) < 1e-200) out[k] = 0;
+  return out;
 }
 
 export function dataColumns(setup) {

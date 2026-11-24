@@ -103,37 +103,78 @@ export function drawProjectile(ctx, S, st, p, ahead, pal) {
       arrow(ctx, (X0 + lx) / 2, dy, lx, dy, { colour: pal.ink, width: 1.5, head: 10 });
       line(ctx, lx, ground, lx, dy - px * 0.5, pal.ink, 1.5);
       if (c.height === 0) line(ctx, X0, ground, X0, dy - px * 0.5, pal.ink, 1.5);
-      label(ctx, `R = ${q(land.x, 'm')}`, (X0 + lx) / 2, dy - px * 0.35, { colour: pal.ink, px, kind: 'strong', align: 'center', baseline: 'bottom', box: pal.bg });
+      // Phones: at the left end, clear of the impact velocity label near the landing point.
+      label(ctx, `R = ${q(land.x, 'm')}`, S.narrow ? X0 + 4 : X0 + (lx - X0) * 0.38, dy - px * 0.35, { colour: pal.ink, px, kind: 'strong', align: S.narrow ? 'left' : 'center', baseline: 'bottom', box: pal.bg });
     }
   });
 
-  // The ball and its velocity (drawn last, over everything, and allowed past the plot edge).
+  // The ball and its velocity (drawn last, over everything). Normally the arrows start at the ball. When
+  // they would point into the ground (landing, and the last moments before it) they are drawn arriving at
+  // the ball instead, so the head and the label stay above the ground and inside the stage.
   const X = vp.toX(st.y[0]);
   const Y = vp.toY(st.y[1]);
   const [vx, vy] = [st.y[2], st.y[3]];
   let vRef = Math.max(c.speed, 1);
   if (ahead?.ev.land) vRef = Math.max(vRef, Math.hypot(ahead.ev.land.vx, ahead.ev.land.vy));
   const vs = (0.2 * Math.min(plot.w, plot.h)) / vRef;
+  const rBall = Math.max(6, px * 0.5);
+  const dx = vx * vs;
+  const dy = -vy * vs;
+  const len = Math.hypot(dx, dy);
+  const arriving = Boolean(st.ev.land) || Y + dy > ground - 2;
+  const sx = Math.sign(dx);
+  const sy = Math.sign(dy);
   if (p.showComponents) {
-    const dx = vx * vs;
-    const dy = -vy * vs;
-    line(ctx, X + dx, Y, X + dx, Y + dy, pal.muted, 1, [3, 4]);
-    line(ctx, X, Y + dy, X + dx, Y + dy, pal.muted, 1, [3, 4]);
-    if (vector(ctx, pal, X, Y, dx, 0, null, { colour: pal.series[1], width: 2.5, dashed: true, px })) {
-      rich(ctx, ['v', { sub: 'x' }, ` = ${q(vx, 'm/s')}`], X + dx / 2, Y + (dy > 0 ? -px * 0.6 : px * 0.7), {
+    // Rectangle corners: the arrows' far ends.
+    const cx = arriving ? X - dx : X + dx;
+    const cy = arriving ? Y - dy : Y + dy;
+    line(ctx, cx, Y, cx, cy, pal.muted, 1, [3, 4]);
+    line(ctx, X, cy, cx, cy, pal.muted, 1, [3, 4]);
+    const hx = arriving ? [X - dx, Y, dx - sx * rBall, 0] : [X, Y, dx, 0];
+    if (Math.abs(dx) > 2 && vector(ctx, pal, hx[0], hx[1], hx[2], hx[3], null, { colour: pal.series[1], width: 2.5, dashed: true, px })) {
+      const above = arriving || dy > 0;
+      // Arriving: left of the arrow's tail, clear of the v arrow; otherwise centred above or below it.
+      rich(ctx, ['v', { sub: 'x' }, ` = ${q(vx, 'm/s')}`], arriving ? X - dx - sx * px * 0.5 : X + dx / 2, arriving ? Y : Y + (above ? -px * 0.6 : px * 0.7), {
         px,
         colour: pal.ink,
-        align: 'center',
-        baseline: dy > 0 ? 'bottom' : 'top',
+        align: arriving ? (dx > 0 ? 'right' : 'left') : 'center',
+        baseline: arriving ? 'middle' : above ? 'bottom' : 'top',
         box: pal.bg,
       });
     }
-    if (vector(ctx, pal, X, Y, 0, dy, null, { colour: pal.series[2], width: 2.5, dashed: true, px })) {
-      rich(ctx, ['v', { sub: 'y' }, ` = ${q(vy, 'm/s')}`], X - px * 0.6, Y + dy / 2, { px, colour: pal.ink, align: 'right', baseline: 'middle', box: pal.bg });
+    const hy = arriving ? [X, Y - dy, 0, dy - sy * rBall] : [X, Y, 0, dy];
+    if (Math.abs(dy) > 2 && vector(ctx, pal, hy[0], hy[1], hy[2], hy[3], null, { colour: pal.series[2], width: 2.5, dashed: true, px })) {
+      const vyText = `v_y = ${q(vy, 'm/s')}`;
+      const right = arriving && dx > 0 && X + px * 0.6 + textWidth(ctx, vyText, px) < S.W - 4;
+      rich(ctx, ['v', { sub: 'y' }, ` = ${q(vy, 'm/s')}`], X + (right ? px * 0.6 : -px * 0.6), Y + (arriving ? -dy / 2 : dy / 2), {
+        px,
+        colour: pal.ink,
+        align: right ? 'left' : 'right',
+        baseline: 'middle',
+        box: pal.bg,
+      });
     }
   }
-  if (p.showVelocity) vector(ctx, pal, X, Y, vx * vs, -vy * vs, `v = ${q(Math.hypot(vx, vy), 'm/s')}`, { colour: pal.ink, width: 3, px });
-  disc(ctx, X, Y, Math.max(6, px * 0.5), pal.series[0], pal.ink, 1.5);
+  if (p.showVelocity && len > 2) {
+    const text = `v = ${q(Math.hypot(vx, vy), 'm/s')}`;
+    if (!arriving) vector(ctx, pal, X, Y, dx, dy, text, { colour: pal.ink, width: 3, px });
+    else {
+      const ux = dx / len;
+      const uy = dy / len;
+      const tx = X - dx;
+      const ty = Y - dy;
+      arrow(ctx, tx, ty, X - ux * (rBall + 2), Y - uy * (rBall + 2), { colour: pal.ink, width: 3, head: Math.max(10, px * 0.7) });
+      // Label beyond the tail, on the side away from the ball.
+      label(ctx, text, tx - ux * px * 0.5, ty - uy * px * 0.5, {
+        colour: pal.ink,
+        px,
+        align: ux > 0.35 ? 'right' : ux < -0.35 ? 'left' : 'center',
+        baseline: uy > 0.35 ? 'bottom' : uy < -0.35 ? 'top' : 'middle',
+        box: pal.bg,
+      });
+    }
+  }
+  disc(ctx, X, Y, rBall, pal.series[0], pal.ink, 1.5);
 
   drawAxes(ctx, vp, pal, { px, layer: 'over', xTitle: 'x (m)', yTitle: 'y (m)', xCount: 8, yCount: 5 });
 
@@ -141,6 +182,7 @@ export function drawProjectile(ctx, S, st, p, ahead, pal) {
   const lines = [];
   if (st.ev.apex && st.ev.apex.t > 0) lines.push(`Top: ${q(st.ev.apex.y, 'm')} high at t = ${q(st.ev.apex.t, 's')}`);
   if (st.ev.land) lines.push(`Landed: ${q(st.ev.land.x, 'm')} away at t = ${q(st.ev.land.t, 's')}`);
+  if (st.ev.end === 'time') lines.push(`Stopped after ${q(st.t, 's')}: still falling slowly at terminal speed`);
   if (lines.length && !S.narrow) {
     const w = Math.max(...lines.map((l) => textWidth(ctx, l, px))) + px;
     const x0 = plot.x + plot.w - w;

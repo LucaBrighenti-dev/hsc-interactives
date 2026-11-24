@@ -12,45 +12,62 @@ const E = (label, options, dflt, setups, extra = {}) => ({ type: 'enum', label, 
 const B = (label, dflt, setups, extra = {}) => ({ type: 'boolean', label, default: dflt, setups, ...extra });
 const O = (label, unit, setups, extra = {}) => ({ label, unit, sigfigs: 3, setups, ...extra });
 
+// visibleWhen on a shared key lists `undefined` among the wanted values, so the control stays visible in
+// setups that do not have the governing param (e.g. `mass` hides on the projectile page when there is no
+// drag, but always shows for SHM and the track). isVisible compares params[key] with each listed value.
+const ON_DRAG = ['linear', 'quadratic', undefined];
+
 export const meta = {
   name: 'particle2d',
-  version: '1.0.0',
+  version: '1.1.0',
   setups: ALL,
   staticSetups: [],
   stepSize: 24, // 24 × 1/240 s = 0.1 s of animation per press of Step
   params: {
     // projectile
-    speed: P('Launch speed v', 'm/s', 0, 60, 0.5, 20, ['projectile', 'braking', 'circular'], { help: 'Projectile: launch speed. Braking: speed before the hazard. Circular: speed around the curve.' }),
+    speed: P('Launch speed v', 'm/s', 0, 60, 0.5, 20, ['projectile']),
     angle: P('Launch angle θ', '°', -90, 90, 1, 45, ['projectile'], { help: 'Measured from the horizontal; negative launches downward.' }),
     height: P('Launch height', 'm', 0, 100, 0.5, 0, ['projectile']),
-    g: P('Gravitational field g', 'm/s²', 1, 25, 0.1, 9.8, ['projectile', 'braking', 'resisted-1d', 'circular', 'track']),
-    drag: E('Air resistance', [['none', 'None'], ['linear', 'kv'], ['quadratic', 'kv²']], 'none', ['projectile']),
-    k: P('Drag coefficient k', '', 0.001, 2, 0.001, 0.1, ['projectile'], { visibleWhen: { drag: ['linear', 'quadratic'] }, help: 'Drag force kv (k in kg/s) or kv² (k in kg/m).' }),
-    mass: P('Mass m', 'kg', 0.1, 10, 0.1, 1, ['projectile', 'resisted-1d', 'shm', 'circular', 'track']),
+    g: P('Gravitational field g', 'm/s²', 1, 25, 0.1, 9.8, ['projectile', 'braking', 'resisted-1d', 'circular', 'track'], {
+      visibleWhen: { direction: ['vertical', undefined], circularMode: ['track', undefined] },
+    }),
+    drag: E('Resistance', [['none', 'None'], ['linear', 'kv'], ['quadratic', 'kv²']], 'none', ['projectile', 'resisted-1d']),
+    k: P('Resistance coefficient k', '', 0, 2, 0.001, 0.1, ['projectile', 'resisted-1d'], {
+      visibleWhen: { drag: ['linear', 'quadratic'] },
+      help: 'Resistance force kv (k in kg/s) or kv² (k in kg/m), always against the motion.',
+    }),
+    mass: P('Mass m', 'kg', 0.1, 10, 0.1, 1, ['projectile', 'resisted-1d', 'shm', 'circular', 'track'], {
+      visibleWhen: { drag: ON_DRAG, circularMode: ['string', undefined], shmForm: ['spring', undefined] },
+    }),
     showVelocity: B('Velocity vector', true, ['projectile']),
     showComponents: B('Velocity components', false, ['projectile']),
-    showNoDrag: B('Compare with no air resistance', true, ['projectile'], { visibleWhen: { drag: ['linear', 'quadratic'] } }),
+    showNoDrag: B('Compare with no resistance', true, ['projectile', 'resisted-1d'], { visibleWhen: { drag: ['linear', 'quadratic'] } }),
     trail: B('Show trail', true, ['projectile', 'charged', 'circular', 'collisions', 'orbit', 'relative-velocity']),
 
     // braking
+    approachSpeed: P('Speed before the hazard v₀', 'm/s', 0, 60, 0.5, 20, ['braking'], { help: '20 m/s = 72 km/h.' }),
     reactionTime: P('Reaction time', 's', 0, 3, 0.1, 1, ['braking']),
-    mu: P('Tyre–road friction μ', '', 0.1, 1.2, 0.01, 0.7, ['braking', 'circular']),
-    carMass: P('Car mass', 'kg', 500, 3000, 50, 1500, ['braking', 'circular']),
+    mu: P('Tyre–road friction μ', '', 0.1, 1.2, 0.01, 0.7, ['braking', 'circular'], { visibleWhen: { circularMode: ['track', undefined] } }),
+    carMass: P('Car mass', 'kg', 500, 3000, 50, 1500, ['braking', 'circular'], { visibleWhen: { circularMode: ['track', undefined] } }),
     rotorMass: P('Brake rotor mass (all)', 'kg', 2, 60, 1, 30, ['braking']),
     rotorHeat: P('Rotor specific heat c', 'J/(kg·K)', 100, 1000, 1, 449, ['braking'], { help: 'Default: iron at 25 °C, 449 J/(kg·K) (CRC Handbook of Chemistry and Physics).' }),
 
-    // resisted motion
+    // resisted motion and SHM
     direction: E('Motion', [['vertical', 'Vertical'], ['horizontal', 'Horizontal']], 'vertical', ['resisted-1d']),
-    resistance: E('Resistance', [['linear', 'kv'], ['quadratic', 'kv²']], 'linear', ['resisted-1d']),
-    resistK: P('Resistance coefficient k', '', 0.01, 2, 0.01, 0.5, ['resisted-1d'], { help: 'Resistance force kv (k in kg/s) or kv² (k in kg/m).' }),
-    v0: P('Initial velocity v₀', 'm/s', -50, 50, 0.5, 20, ['resisted-1d'], { help: 'Positive is up (vertical) or forward (horizontal).' }),
-
-    // SHM
-    amplitude: P('Amplitude a', 'm', 0.1, 5, 0.1, 1, ['shm']),
-    springK: P('Spring constant k', 'N/m', 0.5, 50, 0.5, 4, ['shm']),
-    phase: P('Phase α', '°', -180, 180, 5, 0, ['shm'], { help: 'x = a cos(nt + α)' }),
-    plot: E('Second graph', [['v2', 'v² against x'], ['phase', 'v against x']], 'v2', ['shm']),
+    v0: P('Initial velocity v₀', 'm/s', -60, 60, 0.1, 0, ['resisted-1d', 'shm'], {
+      visibleWhen: { shmForm: ['maths', undefined] },
+      help: 'Up (vertical motion) or to the right is positive.',
+    }),
+    shmForm: E('Describe the motion by', [['spring', 'Mass on a spring'], ['maths', 'n, c, x₀ and v₀']], 'spring', ['shm']),
+    amplitude: P('Amplitude a', 'm', 0.1, 5, 0.1, 1, ['shm'], { visibleWhen: { shmForm: 'spring' } }),
+    springK: P('Spring constant k', 'N/m', 0.5, 50, 0.5, 4, ['shm'], { visibleWhen: { shmForm: 'spring' } }),
+    phase: P('Phase α', '°', -180, 180, 5, 0, ['shm'], { visibleWhen: { shmForm: 'spring' }, help: 'x = a cos(nt + α)' }),
+    n: P('Angular frequency n', 'rad/s', 0.5, 5, 0.1, 2, ['shm'], { visibleWhen: { shmForm: 'maths' }, help: 'ẍ = −n²(x − c); period 2π/n.' }),
+    centre: P('Centre of motion c', 'm', -3, 3, 0.1, 0, ['shm'], { visibleWhen: { shmForm: 'maths' } }),
+    graph: E('Graph', [['xt', 'x–t'], ['vt', 'v–t'], ['at', 'a–t'], ['vx', 'v against x'], ['v2x', 'v² against x']], 'xt', ['resisted-1d', 'shm'], { widget: 'select' }),
     showCircle: B('Reference circle', true, ['shm']),
+    showArrows: B('Velocity and acceleration arrows', true, ['shm']),
+    showForces: B('Force arrows', true, ['resisted-1d']),
 
     // charged particles
     particle: E('Particle', [['electron', 'Electron'], ['proton', 'Proton'], ['alpha', 'Alpha']], 'electron', ['charged']),
@@ -65,12 +82,13 @@ export const meta = {
     // circular motion
     circularMode: E('Situation', [['track', 'Car on a curve'], ['string', 'Mass on a string'], ['torque', 'Torque']], 'track', ['circular']),
     radius: P('Radius r', 'm', 0.5, 200, 0.5, 50, ['circular'], { visibleWhen: { circularMode: ['track', 'string'] } }),
+    circleSpeed: P('Speed v', 'm/s', 0, 60, 0.5, 20, ['circular'], { visibleWhen: { circularMode: ['track', 'string'] } }),
     bankAngle: P('Bank angle θ', '°', 0, 45, 1, 15, ['circular'], { visibleWhen: { circularMode: 'track' } }),
     releaseAfter: P('Cut the string after', 's', 0, 20, 0.5, 0, ['circular'], { visibleWhen: { circularMode: 'string' }, help: '0 keeps the string attached.' }),
     force: P('Force F', 'N', 0, 500, 5, 100, ['circular'], { visibleWhen: { circularMode: 'torque' } }),
     leverArm: P('Distance from pivot r', 'm', 0.05, 2, 0.05, 0.3, ['circular'], { visibleWhen: { circularMode: 'torque' } }),
     forceAngle: P('Angle between r and F', '°', 0, 180, 5, 90, ['circular'], { visibleWhen: { circularMode: 'torque' } }),
-    showVectors: B('Force and velocity vectors', true, ['circular', 'orbit']),
+    showVectors: B('Force and velocity vectors', true, ['circular', 'orbit'], { visibleWhen: { circularMode: ['track', 'string', undefined] } }),
 
     // collisions
     dimension: E('Collision', [['1d', '1D'], ['2d', '2D']], '1d', ['collisions']),
@@ -78,13 +96,13 @@ export const meta = {
     m2: P('Mass of B', 'kg', 0.1, 10, 0.1, 1, ['collisions']),
     u1: P('Initial velocity of A', 'm/s', -5, 5, 0.1, 2, ['collisions']),
     u2: P('Initial velocity of B', 'm/s', -5, 5, 0.1, 0, ['collisions']),
-    restitution: P('Coefficient of restitution e', '', 0, 1, 0.05, 1, ['collisions'], { help: '1 is elastic; 0 means the pucks stick together.' }),
+    restitution: P('Coefficient of restitution e', '', 0, 1, 0.05, 1, ['collisions'], { help: 'e = 1 is perfectly elastic; e = 0 means no bounce along the line of centres (in 1D the pucks move together).' }),
     offset: P('Offset b', 'm', -0.6, 0.6, 0.05, 0.2, ['collisions'], { visibleWhen: { dimension: '2d' }, help: 'Sideways distance between the centres. The pucks miss when it is 0.5 m or more.' }),
     showBars: B('Momentum and energy bars', true, ['collisions']),
 
-    // cart
+    // cart (x0 is shared with the SHM maths form)
     cartMode: E('Mode', [['uniform', 'Constant a'], ['drive', 'Drive'], ['match', 'Match a graph']], 'uniform', ['cart']),
-    x0: P('Starting position', 'm', -10, 10, 0.5, 0, ['cart'], { visibleWhen: { cartMode: ['uniform', 'drive'] } }),
+    x0: P('Starting position x₀', 'm', -10, 10, 0.1, 0, ['cart', 'shm'], { visibleWhen: { cartMode: ['uniform', 'drive', undefined], shmForm: ['maths', undefined] } }),
     u: P('Initial velocity u', 'm/s', -5, 5, 0.1, 0, ['cart'], { visibleWhen: { cartMode: ['uniform', 'drive'] } }),
     accel: P('Acceleration a', 'm/s²', -2, 2, 0.1, 0.5, ['cart'], { visibleWhen: { cartMode: 'uniform' } }),
     challenge: E('Target graph', [['steady', 'Steady walk'], ['speed-up', 'Speeding up'], ['turn-back', 'Turn back'], ['stop-start', 'Stop and start']], 'turn-back', ['cart'], { visibleWhen: { cartMode: 'match' }, widget: 'select' }),
@@ -119,7 +137,7 @@ export const meta = {
     startSpeed: P('Starting speed', 'm/s', 0, 15, 0.5, 0, ['track']),
 
     // shared
-    duration: P('Run time', 's', 1, 60, 1, 10, ['resisted-1d', 'shm', 'circular', 'cart', 'track']),
+    duration: P('Run time', 's', 1, 60, 1, 10, ['resisted-1d', 'shm', 'circular', 'cart', 'track'], { visibleWhen: { circularMode: ['track', 'string', undefined] } }),
     timeScale: P('Playback speed', '×', 0.25, 2, 0.25, 1, ALL),
   },
   outputs: {
@@ -136,7 +154,8 @@ export const meta = {
     vy: O('Velocity vy', 'm/s', ['projectile', 'charged']),
     speed: O('Speed', 'm/s', ['projectile', 'charged', 'circular', 'orbit']),
     v: O('Velocity v', 'm/s', ['braking', 'resisted-1d', 'shm', 'cart', 'track']),
-    a: O('Acceleration a', 'm/s²', ['braking', 'resisted-1d', 'shm', 'cart']),
+    a: O('Acceleration a', 'm/s²', ['braking', 'cart']),
+    acc: O('Acceleration ẍ', 'm/s²', ['resisted-1d', 'shm']),
     t: O('Time t', 's', ALL),
     // braking
     reactionDistance: O('Reaction distance', 'm', ['braking']),
@@ -144,44 +163,48 @@ export const meta = {
     stoppingDistance: O('Stopping distance', 'm', ['braking']),
     stoppingTime: O('Stopping time', 's', ['braking']),
     deceleration: O('Deceleration', 'm/s²', ['braking']),
-    brakingForce: O('Friction force', 'N', ['braking']),
-    kineticEnergy: O('Kinetic energy', 'J', ['braking', 'charged', 'orbit', 'track']),
-    frictionWork: O('Work done by friction', 'J', ['braking', 'track']),
+    brakingForce: O('Friction force', 'N', ['braking'], { siPrefix: true }),
+    kineticEnergy: O('Kinetic energy', 'J', ['braking', 'orbit', 'track'], { siPrefix: true }),
+    frictionWork: O('Work done against friction', 'J', ['braking', 'track'], { siPrefix: true }),
     rotorTempRise: O('Rotor temperature rise', 'K', ['braking']),
     // resisted motion
     terminalSpeed: O('Terminal speed', 'm/s', ['resisted-1d']),
-    timeToMax: O('Time to maximum height', 's', ['resisted-1d']),
-    limitDistance: O('Limiting distance', 'm', ['resisted-1d']),
+    timeToTop: O('Time to greatest height', 's', ['resisted-1d']),
+    limitDistance: O('Limiting distance mv₀/k', 'm', ['resisted-1d']),
     // SHM
     period: O('Period T', 's', ['shm', 'circular', 'orbit']),
     measuredPeriod: O('Measured period', 's', ['shm']),
     omega: O('Angular frequency', 'rad/s', ['shm', 'circular']),
     frequency: O('Frequency f', 'Hz', ['shm']),
-    vMax: O('Maximum speed', 'm/s', ['shm']),
-    aMax: O('Maximum acceleration', 'm/s²', ['shm']),
-    energy: O('Total energy', 'J', ['shm']),
+    amplitude: O('Amplitude a', 'm', ['shm']),
+    alpha: O('Phase α', 'rad', ['shm']),
+    maxSpeed: O('Greatest speed na', 'm/s', ['shm']),
+    maxAcc: O('Greatest acceleration n²a', 'm/s²', ['shm']),
+    energy: O('Total energy ½ka²', 'J', ['shm'], { siPrefix: true }),
     // charged
-    fieldE: O('Electric field E', 'V/m', ['charged']),
+    fieldE: O('Electric field E', 'V/m', ['charged'], { siPrefix: true }),
     force: O('Force on the particle', 'N', ['charged']),
     acceleration: O('Acceleration', 'm/s²', ['charged']),
-    radius: O('Radius r = mv/qB', 'm', ['charged']),
-    cyclotronPeriod: O('Period 2πm/qB', 's', ['charged']),
+    radius: O('Radius r = mv/qB', 'm', ['charged'], { siPrefix: true }),
+    cyclotronPeriod: O('Period 2πm/qB', 's', ['charged'], { siPrefix: true }),
     selectorSpeed: O('Selected speed E/B', 'm/s', ['charged']),
-    deflection: O('Deflection at exit', 'm', ['charged']),
+    deflection: O('Deflection at exit', 'm', ['charged'], { siPrefix: true }),
     exitAngle: O('Exit angle', '°', ['charged']),
-    timeInField: O('Time in field', 's', ['charged']),
-    exitSeparation: O('Entry to exit distance', 'm', ['charged']),
-    entrySpeed: O('Entry speed', 'm/s', ['charged']),
+    timeInField: O('Time in field', 's', ['charged'], { siPrefix: true }),
+    exitSeparation: O('Entry to exit distance', 'm', ['charged'], { siPrefix: true }),
+    kineticEnergyEv: O('Kinetic energy', 'eV', ['charged'], { siPrefix: true }),
     workDone: O('Work done by the field', 'J', ['charged']),
+    workDoneEv: O('Work done by the field', 'eV', ['charged'], { siPrefix: true }),
+    tNs: O('Time t', 'ns', ['charged']),
     // circular
     centripetalAccel: O('Centripetal acceleration', 'm/s²', ['circular']),
-    centripetalForce: O('Centripetal force', 'N', ['circular']),
+    centripetalForce: O('Centripetal force', 'N', ['circular'], { siPrefix: true }),
     designSpeed: O('Design speed √(rg tan θ)', 'm/s', ['circular']),
-    normalForce: O('Normal force', 'N', ['circular', 'track']),
-    frictionForce: O('Friction needed (down the slope +)', 'N', ['circular']),
+    normalForce: O('Normal force', 'N', ['circular', 'track'], { siPrefix: true }),
+    frictionForce: O('Friction needed (down the slope +)', 'N', ['circular'], { siPrefix: true }),
     muRequired: O('Friction coefficient needed', '', ['circular']),
-    maxSpeed: O('Maximum speed before sliding', 'm/s', ['circular']),
-    minSpeed: O('Minimum speed before sliding', 'm/s', ['circular']),
+    maxCurveSpeed: O('Maximum speed before sliding', 'm/s', ['circular']),
+    minCurveSpeed: O('Minimum speed before sliding', 'm/s', ['circular']),
     torque: O('Torque τ = rF sin θ', 'N·m', ['circular']),
     perpForce: O('Perpendicular force F sin θ', 'N', ['circular']),
     momentArm: O('Moment arm r sin θ', 'm', ['circular']),
@@ -192,58 +215,59 @@ export const meta = {
     vBy: O('Velocity of B (y)', 'm/s', ['collisions']),
     pTotal: O('Total momentum', 'kg·m/s', ['collisions']),
     pTotalY: O('Total momentum (y)', 'kg·m/s', ['collisions']),
-    keTotal: O('Total kinetic energy', 'J', ['collisions']),
-    keLost: O('Kinetic energy lost', 'J', ['collisions']),
+    keTotal: O('Total kinetic energy', 'J', ['collisions'], { siPrefix: true }),
+    keLost: O('Kinetic energy lost', 'J', ['collisions'], { siPrefix: true }),
     angleA: O('Direction of A', '°', ['collisions']),
     angleB: O('Direction of B', '°', ['collisions']),
-    impulse: O('Impulse', 'N·s', ['collisions']),
+    impulse: O('Impulse (magnitude)', 'N·s', ['collisions']),
     collisionTime: O('Collision at', 's', ['collisions']),
     // cart
+    displacement: O('Displacement', 'm', ['cart']),
+    distance: O('Distance travelled', 'm', ['cart', 'relative-velocity'], { siPrefix: true }),
     matchError: O('Match error (RMS)', 'm', ['cart']),
     targetX: O('Target position', 'm', ['cart']),
     // orbit
     r: O('Distance from Earth’s centre', 'm', ['orbit']),
-    altitude: O('Altitude', 'm', ['orbit']),
     altitudeKm: O('Altitude', 'km', ['orbit']),
     tMinutes: O('Time', 'min', ['orbit']),
     periodMinutes: O('Period', 'min', ['orbit']),
     semiMajorAxis: O('Semi-major axis a', 'm', ['orbit']),
     eccentricity: O('Eccentricity e', '', ['orbit']),
-    perigeeAltitude: O('Lowest altitude', 'm', ['orbit']),
-    apogeeAltitude: O('Highest altitude', 'm', ['orbit']),
-    circularSpeed: O('Circular orbit speed', 'm/s', ['orbit']),
-    escapeSpeed: O('Escape speed', 'm/s', ['orbit']),
-    potentialEnergy: O('Gravitational potential energy', 'J', ['orbit', 'track']),
-    totalEnergy: O('Total energy', 'J', ['orbit', 'track']),
+    perigeeAltitude: O('Lowest altitude', 'm', ['orbit'], { siPrefix: true }),
+    apogeeAltitude: O('Highest altitude', 'm', ['orbit'], { siPrefix: true }),
+    circularSpeed: O('Circular orbit speed', 'm/s', ['orbit'], { siPrefix: true }),
+    escapeSpeed: O('Escape speed', 'm/s', ['orbit'], { siPrefix: true }),
+    potentialEnergy: O('Gravitational potential energy', 'J', ['orbit', 'track'], { siPrefix: true }),
+    totalEnergy: O('Total energy', 'J', ['orbit', 'track'], { siPrefix: true }),
     arealVelocity: O('Area swept per second', 'm²/s', ['orbit']),
     sweptArea: O('Area swept', 'm²', ['orbit']),
     keplerRatio: O('T² / a³', 's²/m³', ['orbit']),
     // orbit-gps
     leoPeriod: O('Low orbit period', 's', ['orbit-gps']),
     leoPeriodMinutes: O('Low orbit period', 'min', ['orbit-gps']),
-    leoSpeed: O('Low orbit speed', 'm/s', ['orbit-gps']),
+    leoSpeed: O('Low orbit speed', 'm/s', ['orbit-gps'], { siPrefix: true }),
     gpsPeriod: O('GPS period', 's', ['orbit-gps']),
     gpsPeriodHours: O('GPS period', 'h', ['orbit-gps']),
-    gpsSpeed: O('GPS speed', 'm/s', ['orbit-gps']),
+    gpsSpeed: O('GPS speed', 'm/s', ['orbit-gps'], { siPrefix: true }),
     gpsAltitude: O('GPS altitude', 'm', ['orbit-gps']),
     gpsAltitudeKm: O('GPS altitude', 'km', ['orbit-gps']),
     geoPeriod: O('Geostationary period', 's', ['orbit-gps']),
     geoPeriodHours: O('Geostationary period', 'h', ['orbit-gps']),
-    geoSpeed: O('Geostationary speed', 'm/s', ['orbit-gps']),
+    geoSpeed: O('Geostationary speed', 'm/s', ['orbit-gps'], { siPrefix: true }),
     geoAltitude: O('Geostationary altitude', 'm', ['orbit-gps']),
     geoAltitudeKm: O('Geostationary altitude', 'km', ['orbit-gps']),
     rangeError: O('Range error c × Δt', 'm', ['orbit-gps']),
     positionError: O('Position error', 'm', ['orbit-gps']),
-    signalTime: O('Signal travel time (highest satellite)', 's', ['orbit-gps']),
+    signalTime: O('Signal travel time (highest satellite)', 's', ['orbit-gps'], { siPrefix: true }),
     tHours: O('Time', 'h', ['orbit-gps', 'relative-velocity']),
     // relative velocity
     groundSpeed: O('Speed over the ground', 'm/s', ['relative-velocity']),
     groundSpeedKmh: O('Speed over the ground', 'km/h', ['relative-velocity']),
-    groundDirection: O('Direction over the ground', '°', ['relative-velocity']),
+    groundDirection: O('Direction over the ground (upstream +)', '°', ['relative-velocity']),
+    trackBearing: O('Track over the ground (bearing)', '°', ['relative-velocity']),
     crossingTime: O('Crossing time', 's', ['relative-velocity']),
     drift: O('Distance downstream', 'm', ['relative-velocity']),
     headingForStraight: O('Heading to go straight across', '°', ['relative-velocity']),
-    distance: O('Distance from start', 'm', ['relative-velocity']),
     driftAngle: O('Drift angle', '°', ['relative-velocity']),
     // track
     height: O('Height', 'm', ['track']),
@@ -251,7 +275,7 @@ export const meta = {
 };
 
 /** Params that only change the drawing; any other change restarts the run from t = 0. */
-const DISPLAY_KEYS = new Set(['timeScale', 'trail', 'showVelocity', 'showComponents', 'showNoDrag', 'plot', 'showCircle', 'showVectors', 'showBars', 'showAreas', 'gpsView', 'showTriangle']);
+const DISPLAY_KEYS = new Set(['timeScale', 'trail', 'showVelocity', 'showComponents', 'showNoDrag', 'graph', 'showCircle', 'showArrows', 'showForces', 'showVectors', 'showBars', 'showAreas', 'gpsView', 'showTriangle']);
 /** Setups whose end can be computed ahead (the view uses the whole run to fit its axes). */
 const PREVIEW = new Set(['projectile', 'braking', 'resisted-1d', 'shm', 'charged', 'collisions', 'orbit', 'relative-velocity', 'cart']);
 
@@ -378,20 +402,22 @@ function describe(setup, p) {
   const n = (v) => formatPlain(v);
   switch (setup) {
     case 'projectile':
-      return `A projectile launched at ${n(p.speed)} metres per second, ${n(p.angle)} degrees above the horizontal, from ${n(p.height)} metres, with g = ${n(p.g)} metres per second squared and ${p.drag === 'none' ? 'no air resistance' : `${p.drag} air resistance`}.`;
+      return `A projectile launched at ${n(p.speed)} metres per second, ${n(Math.abs(p.angle))} degrees ${p.angle < 0 ? 'below' : 'above'} the horizontal, from ${n(p.height)} metres, with g = ${n(p.g)} metres per second squared and ${p.drag === 'none' ? 'no air resistance' : `${p.drag} air resistance`}.`;
     case 'braking':
-      return `A ${n(p.carMass)} kilogram car braking from ${n(p.speed)} metres per second with friction coefficient ${n(p.mu)} after a ${n(p.reactionTime)} second reaction time, with a velocity–time graph and energy bars.`;
+      return `A ${n(p.carMass)} kilogram car braking from ${n(p.approachSpeed)} metres per second with friction coefficient ${n(p.mu)} after a ${n(p.reactionTime)} second reaction time, with a velocity–time graph and energy bars.`;
     case 'resisted-1d':
-      return `${p.direction === 'vertical' ? 'Vertical' : 'Horizontal'} motion with ${p.resistance === 'linear' ? 'resistance kv' : 'resistance kv squared'}, k = ${n(p.resistK)}, mass ${n(p.mass)} kilograms, starting at ${n(p.v0)} metres per second, with velocity–time and displacement–time graphs.`;
+      return `${p.direction === 'vertical' ? 'Vertical' : 'Horizontal'} motion with ${p.drag === 'none' ? 'no resistance' : p.drag === 'linear' ? `resistance kv, k = ${n(p.k)}` : `resistance kv squared, k = ${n(p.k)}`}, mass ${n(p.mass)} kilograms, starting at ${n(p.v0)} metres per second, with velocity–time and displacement–time graphs.`;
     case 'shm':
-      return `Simple harmonic motion with amplitude ${n(p.amplitude)} metres and period ${formatNumber(2 * Math.PI * Math.sqrt(p.mass / p.springK))} seconds, driven by a point on a rotating circle, with graphs of x against t and ${p.plot === 'v2' ? 'v squared' : 'v'} against x.`;
+      return p.shmForm === 'maths'
+        ? `Simple harmonic motion with n = ${n(p.n)} radians per second about the centre ${n(p.centre)} metres, starting at x = ${n(p.x0)} metres with velocity ${n(p.v0)} metres per second, driven by a point on a rotating circle, with an x–t graph.`
+        : `Simple harmonic motion of a mass on a spring with amplitude ${n(p.amplitude)} metres and period ${formatNumber(2 * Math.PI * Math.sqrt(p.mass / p.springK))} seconds, driven by a point on a rotating circle, with an x–t graph.`;
     case 'charged':
       return `${PARTICLES[p.particle]?.label ?? 'A particle'} entering ${p.field === 'electric' ? 'an electric field between parallel plates' : p.field === 'magnetic' ? 'a uniform magnetic field' : 'crossed electric and magnetic fields'} at ${n(p.entrySpeed)} million metres per second.`;
     case 'circular':
       if (p.circularMode === 'torque') return `A spanner with a ${n(p.force)} newton force applied ${n(p.leverArm)} metres from the pivot at ${n(p.forceAngle)} degrees.`;
       return p.circularMode === 'track'
-        ? `A car at ${n(p.speed)} metres per second on a curve of radius ${n(p.radius)} metres banked at ${n(p.bankAngle)} degrees, seen from above and in cross-section with its forces.`
-        : `A mass on a string moving in a horizontal circle of radius ${n(p.radius)} metres at ${n(p.speed)} metres per second.`;
+        ? `A car at ${n(p.circleSpeed)} metres per second on a curve of radius ${n(p.radius)} metres banked at ${n(p.bankAngle)} degrees, seen from above and in cross-section with its forces.`
+        : `A mass on a string moving in a horizontal circle of radius ${n(p.radius)} metres at ${n(p.circleSpeed)} metres per second.`;
     case 'collisions':
       return `A ${p.dimension === '2d' ? 'two-dimensional' : 'one-dimensional'} collision between a ${n(p.m1)} kilogram puck at ${n(p.u1)} metres per second and a ${n(p.m2)} kilogram puck at ${n(p.u2)} metres per second, coefficient of restitution ${n(p.restitution)}, with momentum and kinetic energy bars.`;
     case 'cart':

@@ -36,7 +36,7 @@ export function drawCircular(ctx, S, st, p, ahead, pal) {
   ctx.restore();
   line(ctx, O[0] - 8, O[1], O[0] + 8, O[1], pal.ink, 1.5);
   line(ctx, O[0], O[1] - 8, O[0], O[1] + 8, pal.ink, 1.5);
-  label(ctx, 'centre', O[0] + px * 0.5, O[1] + px * 0.4, { colour: pal.muted, px, baseline: 'top' });
+  label(ctx, 'centre', O[0] - px * 0.5, O[1] + px * 0.4, { colour: pal.muted, px, align: 'right', baseline: 'top' });
   clipTo(ctx, panel, () => {
     if (p.trail) polyline(ctx, vp, st.hist, (r) => r[1], (r) => r[2], { colour: pal.series[0], width: 3, extra: [st.y[0], st.y[1]] });
   });
@@ -357,7 +357,7 @@ export function drawRelative(ctx, S, st, p, ahead, pal) {
         arrow(ctx, (O[0] + lx) / 2, ly - px * 1.2, O[0], ly - px * 1.2, { colour: pal.ink, width: 1.5, head: 9 });
         arrow(ctx, (O[0] + lx) / 2, ly - px * 1.2, lx, ly - px * 1.2, { colour: pal.ink, width: 1.5, head: 9 });
         label(ctx, `drift ${q(Math.abs(x), 'm')} ${x > 0 ? 'downstream' : 'upstream'}`, (O[0] + lx) / 2, ly - px * 1.6, { colour: pal.ink, px, kind: 'strong', align: 'center', baseline: 'bottom', box: pal.bg });
-      } else label(ctx, 'lands directly opposite', lx + px, ly - px * 1.2, { colour: pal.ink, px, kind: 'strong', baseline: 'bottom', box: pal.bg });
+      } else rich(ctx, ['lands directly opposite'], lx + px, ly - px * 1.2, { colour: pal.ink, px, kind: 'strong', baseline: 'bottom', box: pal.bg });
     }
   });
   // Vector triangle at the start: relative velocity + velocity of the water/air = ground velocity.
@@ -472,6 +472,8 @@ export function drawTrack(ctx, S, st, p, ahead, pal) {
     ctx.strokeStyle = pal.ink;
     ctx.lineWidth = 1;
     if (hgt > 1) ctx.strokeRect(bx + 0.5, yb - hgt + 0.5, barW - 1, hgt - 1);
+    // Name each segment on the bar itself (a second cue besides colour). Dark text reads on all three fills.
+    if (hgt > px * 1.3) label(ctx, part.name, bx + barW / 2, yb - hgt / 2, { colour: '#121316', px, kind: 'strong', align: 'center', baseline: 'middle' });
     yb -= hgt;
   }
   const e0y = by + bh - E0 * k;

@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as M from '../../site/assets/engines/particle2d/model.js';
 import { meta } from '../../site/assets/engines/particle2d/index.js';
-import { defaultsFor } from '../../site/assets/state.js';
+import { defaultsFor, clampParams } from '../../site/assets/state.js';
 
 const { DT, createState, advance, outputs, isComplete, dataRows, dataColumns, EARTH, PARTICLES, C_LIGHT } = M;
 const DEG = Math.PI / 180;
@@ -148,43 +148,43 @@ test('SHM follows x = a cos(nt + α) and v² = n²(a² − x²)', () => {
     close(v * v, n * n * (a * a - x * x), 1e-8, 'v² = n²(a² − x²)');
   }
   const o = outputs(st);
-  rel(o.vMax, a * n, 1e-12, 'v max = an');
-  rel(o.aMax, a * n * n, 1e-12, 'a max = an²');
+  rel(o.maxSpeed, a * n, 1e-12, 'v max = an');
+  rel(o.maxAcc, a * n * n, 1e-12, 'a max = an²');
 });
 
 test('§9.1 linear drag m = 1, k = 0.5: terminal velocity 19.6 m/s (0.5%)', () => {
-  const st = run('resisted-1d', { direction: 'vertical', resistance: 'linear', resistK: 0.5, mass: 1, g: 9.8, v0: 0, duration: 20 });
+  const st = run('resisted-1d', { direction: 'vertical', drag: 'linear', k: 0.5, mass: 1, g: 9.8, v0: 0, duration: 20 });
   rel(-st.y[1], 19.6, 0.005, 'speed after 20 s of falling from rest');
   rel(outputs(st).terminalSpeed, 19.6, 1e-12, 'mg/k');
 });
 
 test('§9.1 quadratic drag m = 1, k = 0.1: terminal velocity 9.899 m/s (0.5%)', () => {
-  const st = run('resisted-1d', { direction: 'vertical', resistance: 'quadratic', resistK: 0.1, mass: 1, g: 9.8, v0: 0, duration: 20 });
+  const st = run('resisted-1d', { direction: 'vertical', drag: 'quadratic', k: 0.1, mass: 1, g: 9.8, v0: 0, duration: 20 });
   rel(-st.y[1], 9.899, 0.005, 'speed after 20 s of falling from rest');
   rel(outputs(st).terminalSpeed, Math.sqrt(98), 1e-12, '√(mg/k)');
 });
 
 test('resisted motion upward: maximum height and time to it (linear and quadratic)', () => {
   const m = 1, k = 0.5, g = 9.8, v0 = 20;
-  const lin = outputs(run('resisted-1d', { direction: 'vertical', resistance: 'linear', resistK: k, mass: m, g, v0, duration: 5 }));
+  const lin = outputs(run('resisted-1d', { direction: 'vertical', drag: 'linear', k: k, mass: m, g, v0, duration: 5 }));
   // linear: t = (m/k) ln(1 + kv₀/mg), H = (m/k)v₀ − (m²g/k²) ln(1 + kv₀/mg)
   const L = Math.log(1 + (k * v0) / (m * g));
-  rel(lin.timeToMax, (m / k) * L, 1e-9, 'linear time to max');
+  rel(lin.timeToTop, (m / k) * L, 1e-9, 'linear time to max');
   rel(lin.maxHeight, (m / k) * v0 - ((m * m * g) / (k * k)) * L, 1e-9, 'linear max height');
   const kq = 0.1;
-  const q = outputs(run('resisted-1d', { direction: 'vertical', resistance: 'quadratic', resistK: kq, mass: m, g, v0, duration: 5 }));
+  const q = outputs(run('resisted-1d', { direction: 'vertical', drag: 'quadratic', k: kq, mass: m, g, v0, duration: 5 }));
   // quadratic: H = (m/2k) ln(1 + kv₀²/mg), t = √(m/gk) atan(v₀√(k/mg))
   rel(q.maxHeight, (m / (2 * kq)) * Math.log(1 + (kq * v0 * v0) / (m * g)), 1e-9, 'quadratic max height');
-  rel(q.timeToMax, Math.sqrt(m / (g * kq)) * Math.atan(v0 * Math.sqrt(kq / (m * g))), 1e-9, 'quadratic time to max');
+  rel(q.timeToTop, Math.sqrt(m / (g * kq)) * Math.atan(v0 * Math.sqrt(kq / (m * g))), 1e-9, 'quadratic time to max');
 });
 
 test('resisted motion horizontally: v = v₀e^(−kt/m) (linear), v = v₀/(1 + kv₀t/m) (quadratic)', () => {
   const m = 2, k = 0.5, v0 = 10, T = 10;
-  const lin = run('resisted-1d', { direction: 'horizontal', resistance: 'linear', resistK: k, mass: m, v0, duration: T });
+  const lin = run('resisted-1d', { direction: 'horizontal', drag: 'linear', k: k, mass: m, v0, duration: T });
   close(lin.y[1], v0 * Math.exp((-k * T) / m), 1e-8, 'linear v');
   close(lin.y[0], ((m * v0) / k) * (1 - Math.exp((-k * T) / m)), 1e-8, 'linear x');
   rel(outputs(lin).limitDistance, (m * v0) / k, 1e-12, 'limit mv₀/k');
-  const quad = run('resisted-1d', { direction: 'horizontal', resistance: 'quadratic', resistK: k, mass: m, v0, duration: T });
+  const quad = run('resisted-1d', { direction: 'horizontal', drag: 'quadratic', k: k, mass: m, v0, duration: T });
   close(quad.y[1], v0 / (1 + (k * v0 * T) / m), 1e-8, 'quadratic v');
   close(quad.y[0], (m / k) * Math.log(1 + (k * v0 * T) / m), 1e-8, 'quadratic x');
 });
@@ -192,7 +192,7 @@ test('resisted motion horizontally: v = v₀e^(−kt/m) (linear), v = v₀/(1 + 
 test('strong drag stays stable and accurate (adaptive sub-steps): quadratic m = 0.1, k = 2, v₀ = 60 gives x(1) = 0.05 ln 1201', () => {
   // Horizontal quadratic resistance: v = v₀/(1 + (k/m)v₀t), x = (m/k) ln(1 + (k/m)v₀t). With one RK4 step
   // of 1/240 s this case blows up to NaN within five steps ((k/m)|v| = 1200 per second).
-  const p = { direction: 'horizontal', resistance: 'quadratic', resistK: 2, mass: 0.1, v0: 60, duration: 2 };
+  const p = { direction: 'horizontal', drag: 'quadratic', k: 2, mass: 0.1, v0: 60, duration: 2 };
   const st = advance(start('resisted-1d', p), null, 240); // t = 1 s
   close(st.t, 1, 1e-12);
   rel(st.y[0], 0.05 * Math.log(1201), 1e-6, 'x(1)');
@@ -202,13 +202,13 @@ test('strong drag stays stable and accurate (adaptive sub-steps): quadratic m = 
   const top = advance(start('resisted-1d', { ...p, v0: 50 }), null, 240);
   rel(top.y[0], 0.05 * Math.log(1001), 1e-6, 'x(1) with v₀ = 50');
   // linear, k/m = 20: v = v₀e^(−20t)
-  const lin = advance(start('resisted-1d', { ...p, resistance: 'linear', v0: 50 }), null, 24); // t = 0.1 s
+  const lin = advance(start('resisted-1d', { ...p, drag: 'linear', v0: 50 }), null, 24); // t = 0.1 s
   rel(lin.y[1], 50 * Math.exp(-2), 1e-6, 'linear v(0.1)');
   rel(lin.y[0], 2.5 * (1 - Math.exp(-2)), 1e-6, 'linear x(0.1) = (mv₀/k)(1 − e^(−kt/m))');
   // vertical, quadratic, thrown up at 50 m/s: H = (m/2k) ln(1 + kv₀²/mg)
-  const up = outputs(run('resisted-1d', { direction: 'vertical', resistance: 'quadratic', resistK: 2, mass: 0.1, v0: 50, g: 9.8, duration: 3 }));
+  const up = outputs(run('resisted-1d', { direction: 'vertical', drag: 'quadratic', k: 2, mass: 0.1, v0: 50, g: 9.8, duration: 3 }));
   rel(up.maxHeight, 0.025 * Math.log(1 + (20 * 2500) / 9.8), 1e-6, 'max height');
-  rel(up.timeToMax, Math.sqrt(0.1 / (9.8 * 2)) * Math.atan(50 * Math.sqrt(2 / (0.1 * 9.8))), 1e-6, 'time to max');
+  rel(up.timeToTop, Math.sqrt(0.1 / (9.8 * 2)) * Math.atan(50 * Math.sqrt(2 / (0.1 * 9.8))), 1e-6, 'time to max');
 });
 
 test('drag settings at the corners of their ranges never produce NaN', () => {
@@ -222,7 +222,7 @@ test('drag settings at the corners of their ranges never produce NaN', () => {
         }
         for (const direction of ['vertical', 'horizontal']) {
           for (const v0 of [-50, 50]) {
-            const st = run('resisted-1d', { resistance: drag, resistK: Math.max(k, 0.01), mass, v0, direction, g: 25, duration: 60 });
+            const st = run('resisted-1d', { drag, k, mass, v0, direction, g: 25, duration: 60 });
             for (const [key, v] of Object.entries(outputs(st))) assert.ok(v === null || Number.isFinite(v), `resisted ${drag} ${direction} ${key} = ${v}`);
           }
         }
@@ -323,7 +323,7 @@ test('charged particles with real data: deflection ½(qE/m)(L/v)², proton radiu
 });
 
 test('§9.1 braking v₀ = 20, μ = 0.7, g = 10: braking distance 28.571 m (0.5%)', () => {
-  const st = run('braking', { speed: 20, mu: 0.7, g: 10, reactionTime: 0 });
+  const st = run('braking', { approachSpeed: 20, mu: 0.7, g: 10, reactionTime: 0 });
   const o = outputs(st);
   rel(o.brakingDistance, 28.571, 0.005, 'braking distance');
   rel(o.brakingDistance, 400 / 14, 1e-9, 'v²/2μg (event is exact)');
@@ -331,7 +331,7 @@ test('§9.1 braking v₀ = 20, μ = 0.7, g = 10: braking distance 28.571 m (0.5%
 });
 
 test('braking: reaction distance, work done by friction = ½mv², rotor heating ΔT = KE/(mc)', () => {
-  const p = { speed: 25, mu: 0.8, g: 9.8, reactionTime: 1.5, carMass: 1200, rotorMass: 24, rotorHeat: 449 };
+  const p = { approachSpeed: 25, mu: 0.8, g: 9.8, reactionTime: 1.5, carMass: 1200, rotorMass: 24, rotorHeat: 449 };
   const o = outputs(run('braking', p));
   rel(o.reactionDistance, 25 * 1.5, 1e-12, 'reaction distance vt');
   rel(o.brakingDistance, (25 * 25) / (2 * 0.8 * 9.8), 1e-9, 'braking distance');
@@ -390,14 +390,14 @@ test('circular: banked-track forces (design speed, equilibrium, friction limits)
   }
   const top = M.bankedForces({ ...c, speed: at.vMax });
   rel(top.f, 0.7 * top.N, 1e-9, 'at v max, friction is μN');
-  const o = outputs(start('circular', { circularMode: 'track', radius: 50, speed: v0, bankAngle: 15, g: 9.8 }));
+  const o = outputs(start('circular', { circularMode: 'track', radius: 50, circleSpeed: v0, bankAngle: 15, g: 9.8 }));
   rel(o.designSpeed, v0, 1e-12);
 });
 
 test('circular: uniform motion returns after T = 2πr/v; a cut string sends the mass along the tangent', () => {
   const r = 2, v = 3;
   const T = (2 * Math.PI * r) / v;
-  const st = start('circular', { circularMode: 'string', radius: r, speed: v, releaseAfter: 0, duration: 10 });
+  const st = start('circular', { circularMode: 'string', radius: r, circleSpeed: v, releaseAfter: 0, duration: 10 });
   const steps = Math.round(T / DT);
   advance(st, null, steps);
   // T is not a whole number of steps; compare with the analytic position at the step time
@@ -407,7 +407,7 @@ test('circular: uniform motion returns after T = 2πr/v; a cut string sends the 
   rel(Math.hypot(st.y[0], st.y[1]), r, 1e-9, 'radius');
   rel(outputs(st).centripetalForce, (1 * v * v) / r, 1e-12, 'F = mv²/r');
 
-  const cut = start('circular', { circularMode: 'string', radius: r, speed: v, releaseAfter: 1, mass: 1, duration: 10 });
+  const cut = start('circular', { circularMode: 'string', radius: r, circleSpeed: v, releaseAfter: 1, mass: 1, duration: 10 });
   advance(cut, null, 480); // t = 2 s
   const a1 = v / r; // angle at release
   const rx = r * Math.cos(a1), ry = r * Math.sin(a1);
@@ -440,9 +440,10 @@ test('orbits and GPS: GEO and GPS radii from Kepler 3, a geostationary satellite
   const st = start('orbit-gps', { altitude: 400, receiverAngle: 30, clockError: 0 });
   const o = outputs(st);
   // r = ∛(GM T²/4π²): GEO with T = one sidereal day; GPS with half a sidereal day
-  rel(o.geoAltitudeKm + 6371, 42164, 0.001, 'GEO radius ≈ 42 164 km');
-  rel(o.gpsAltitudeKm + 6371, 26560, 0.001, 'GPS radius ≈ 26 560 km (IS-GPS-200 nominal)');
-  rel(o.leoPeriod, 2 * Math.PI * Math.sqrt((6371e3 + 400e3) ** 3 / EARTH.GM), 1e-12, 'LEO period');
+  rel(o.geoAltitudeKm + 6378.137, 42164.17, 1e-5, 'GEO radius ≈ 42 164.17 km');
+  rel(o.geoAltitudeKm, 35786, 1e-4, 'GEO altitude above the equator, the standard 35 786 km');
+  rel(o.gpsAltitudeKm + 6378.137, 26560, 0.001, 'GPS radius ≈ 26 560 km (IS-GPS-200 nominal)');
+  rel(o.leoPeriod, 2 * Math.PI * Math.sqrt((6378137 + 400e3) ** 3 / EARTH.GM), 1e-12, 'LEO period');
   close(o.positionError, 0, 1e-3, 'exact ranges give the exact position');
   advance(st, null, 200000);
   assert.ok(isComplete(st));
@@ -477,7 +478,8 @@ test('relative velocity: crossing time W/(v cos θ), drift (u − v sin θ)t; pl
 
   const pl = outputs(run('relative-velocity', { scenario: 'plane', airspeed: 300, bearing: 0, windSpeed: 60, windBearing: 90, flightTime: 1 }));
   rel(pl.groundSpeedKmh, Math.hypot(300, 60), 1e-12, 'ground speed');
-  rel(pl.groundDirection, Math.atan(60 / 300) / DEG, 1e-12, 'track bearing');
+  rel(pl.trackBearing, Math.atan(60 / 300) / DEG, 1e-12, 'track bearing');
+  assert.equal(pl.groundDirection, null, 'the boat-only output is empty for the plane');
   rel(pl.distance, Math.hypot(300, 60) * 1000, 1e-9, 'distance after 1 h');
   rel(pl.driftAngle, Math.atan(60 / 300) / DEG, 1e-12, 'drift angle');
 });
@@ -543,6 +545,144 @@ test('cart throttle is clamped to ±2 m/s² and drives the acceleration', () => 
   advance(st, null, 240);
   close(st.y[1], 2, 1e-9, 'v after 1 s at the 2 m/s² limit');
   close(st.y[0], 1, 1e-9, 'x = ½at²');
+});
+
+// ---------------------------------------------------------------- review fixes (PR #24)
+
+test('fix 1: a velocity that decays for a long run reaches exactly 0, never a subnormal (kv, k 2, m 0.1, 60 s)', () => {
+  const st = run('resisted-1d', { direction: 'horizontal', drag: 'linear', k: 2, mass: 0.1, v0: 50, duration: 60 });
+  assert.ok(isComplete(st));
+  assert.equal(st.y[1], 0, 'at rest: v = 50e^(−20t) is below 1e-12 × 50 after about 1.6 s');
+  close(st.y[0], 2.5, 1e-9, 'x → mv₀/k = 2.5 m');
+  for (const [k, v] of Object.entries(outputs(st))) assert.ok(v === null || v === 0 || Math.abs(v) >= 1e-200, `${k} = ${v}`);
+  for (const r of dataRows(st)) for (const v of r) assert.ok(v === 0 || Math.abs(v) >= 1e-200, `CSV value ${v}`);
+});
+
+test('fix 1: an extremely slow projectile fall stops calmly at 300 s instead of running for 2000 s', () => {
+  const st = run('projectile', { speed: 20, angle: 45, height: 100, g: 1, drag: 'linear', k: 2, mass: 0.1 });
+  assert.ok(isComplete(st), 'completes inside the acceptance runner’s 200 000 steps');
+  assert.equal(st.ev.end, 'time');
+  close(st.t, M.PROJECTILE_MAX_TIME, 1e-9);
+  assert.equal(st.y[2], 0, 'vₓ has decayed to rest, not to 5e-323');
+  for (const [k, v] of Object.entries(outputs(st))) assert.ok(v === null || Number.isFinite(v), `${k} = ${v}`);
+});
+
+test('fix 3: heading upstream at sin θ = u/v lands exactly opposite (0, not 8.55e-15); directions are upstream-positive like the heading', () => {
+  const o = outputs(run('relative-velocity', { scenario: 'boat', boatSpeed: 3, heading: 30, current: 1.5, riverWidth: 100 }));
+  assert.equal(o.drift, 0);
+  assert.equal(o.groundDirection, 0);
+  rel(o.crossingTime, 100 / (3 * Math.cos(30 * DEG)), 1e-12);
+  // heading 20° upstream into a 1.5 m/s current at 3 m/s: the boat still goes downstream, so the direction is negative
+  const d = outputs(run('relative-velocity', { scenario: 'boat', boatSpeed: 3, heading: 20, current: 1.5, riverWidth: 100 }));
+  rel(d.groundDirection, -Math.atan((1.5 - 3 * Math.sin(20 * DEG)) / (3 * Math.cos(20 * DEG))) / DEG, 1e-12, 'downstream is negative');
+  assert.ok(d.drift > 0, 'distance downstream is positive');
+});
+
+test('fix 4 and 5: each setup has its own speed control; frictionWork is the (positive) work done against friction', () => {
+  assert.deepEqual(meta.params.speed.setups, ['projectile']);
+  assert.equal(meta.params.speed.label, 'Launch speed v');
+  assert.deepEqual(meta.params.approachSpeed.setups, ['braking']);
+  assert.deepEqual(meta.params.circleSpeed.setups, ['circular']);
+  assert.equal(meta.outputs.frictionWork.label, 'Work done against friction');
+  assert.ok(outputs(run('braking', { approachSpeed: 20 })).frictionWork > 0);
+});
+
+test('a key that is both a param and an output of one setup has one unit', () => {
+  for (const setup of meta.setups) {
+    for (const [key, spec] of Object.entries(meta.params)) {
+      const out = meta.outputs[key];
+      const inSetup = (s) => !s.setups || s.setups.includes(setup);
+      if (out && inSetup(spec) && inSetup(out)) assert.equal(out.unit, spec.unit ?? '', `${setup}.${key}: param ${spec.unit} vs output ${out.unit}`);
+    }
+  }
+});
+
+test('cart: displacement x − x₀ and distance ∫|v|dt (hand values from the motion-graphs spec)', () => {
+  const p = { cartMode: 'uniform', x0: -8, u: 4, accel: -1, duration: 8 };
+  const six = outputs(advance(start('cart', p), null, 1440)); // t = 6 s
+  close(six.displacement, 6, 1e-9, 'x(6) = −2, so 6 m');
+  close(six.distance, 10, 1e-9, 'out 8 m to the turn at x = 0, back 2 m');
+  const end = outputs(run('cart', p));
+  close(end.displacement, 0, 1e-9);
+  close(end.distance, 16, 1e-9);
+  const rev = outputs(run('cart', { cartMode: 'uniform', x0: -5, u: -2, accel: 1.5, duration: 4 }));
+  close(rev.displacement, 4, 1e-9, 'x(4) = −1');
+  close(rev.distance, 4 / 3 + 16 / 3, 1e-9, 'turn at t = 4/3 s, x = −6.333 m: 1.333 + 5.333 m');
+});
+
+test('SHM in Maths form: a = √((x₀ − c)² + (v₀/n)²), α from a cos α = x₀ − c and a sin α = −v₀/n (me2-shm hand values)', () => {
+  const cases = [
+    { n: 2, centre: 0, x0: 3, v0: 8, a: 5, alpha: Math.atan2(-4, 3) },
+    { n: 2, centre: 0, x0: 2, v0: 0, a: 2, alpha: 0 },
+    { n: 0.5, centre: 1, x0: 1, v0: 1, a: 2, alpha: -Math.PI / 2 },
+    { n: 3, centre: -1, x0: 2, v0: -6, a: Math.sqrt(13), alpha: Math.atan2(2, 3) },
+  ];
+  for (const k of cases) {
+    const st = start('shm', { shmForm: 'maths', n: k.n, centre: k.centre, x0: k.x0, v0: k.v0, duration: 20 });
+    const o = outputs(st);
+    rel(o.amplitude, k.a, 1e-12, 'amplitude');
+    close(o.alpha, k.alpha, 1e-12, 'α');
+    rel(o.period, (2 * Math.PI) / k.n, 1e-12, 'period 2π/n');
+    rel(o.maxSpeed, k.n * k.a, 1e-12, 'na');
+    rel(o.maxAcc, k.n * k.n * k.a, 1e-12, 'n²a');
+    for (let i = 0; i < 4; i++) {
+      advance(st, null, 300);
+      const [x, v] = st.y;
+      close(x, k.centre + k.a * Math.cos(k.n * st.t + k.alpha), 1e-8, `x at t = ${st.t}`);
+      close(v * v, k.n * k.n * (k.a * k.a - (x - k.centre) ** 2), 1e-7, 'v² = n²(a² − (x − c)²)');
+      close(outputs(st).acc, -k.n * k.n * (x - k.centre), 1e-12, 'ẍ = −n²(x − c)');
+    }
+  }
+  const rest = run('shm', { shmForm: 'maths', n: 2, centre: 1.5, x0: 1.5, v0: 0, duration: 5 });
+  assert.equal(outputs(rest).amplitude, 0);
+  assert.equal(outputs(rest).alpha, 0);
+  close(rest.y[0], 1.5, 0, 'rests at the centre');
+  // the spring form is unchanged: m = 1, k = 4 gives n = 2 and period π
+  rel(outputs(start('shm', { shmForm: 'spring', springK: 4, mass: 1 })).period, Math.PI, 1e-12);
+});
+
+test('resisted motion: no resistance and v₀ up to 60 m/s (me2-resisted-motion)', () => {
+  assert.deepEqual(clampParams(meta.params, 'resisted-1d', { v0: 60, drag: 'none', k: 0 }).invalid, []);
+  // no resistance: H = v₀²/2g = 19.6 m at t = v₀/g = 2 s
+  const o = outputs(run('resisted-1d', { direction: 'vertical', drag: 'none', v0: 19.6, g: 9.8, duration: 4 }));
+  rel(o.maxHeight, 19.6, 1e-9, 'greatest height');
+  rel(o.timeToTop, 2, 1e-9, 'time to the top');
+  assert.equal(o.terminalSpeed, null);
+  assert.equal(o.limitDistance, null);
+  close(o.x, 19.6 * 4 - 4.9 * 16, 1e-9, 'x(4) = v₀t − ½gt²');
+  // the greatest height so far rises with the body, then stays at the top
+  const mid = advance(start('resisted-1d', { direction: 'vertical', drag: 'none', v0: 19.6, g: 9.8, duration: 4 }), null, 240);
+  close(outputs(mid).maxHeight, 19.6 - 4.9, 1e-9, 'at t = 1 s the body is still rising');
+  // and v₀ = 60 with strong kv² resistance, the top of the new range: x(1) = 0.05 ln 1201
+  const fast = advance(start('resisted-1d', { direction: 'horizontal', drag: 'quadratic', k: 2, mass: 0.1, v0: 60, duration: 2 }), null, 240);
+  rel(fast.y[0], 0.05 * Math.log(1201), 1e-6);
+});
+
+test('orbit: leaving the view is "escape" only when the total energy is not negative (10.80 km/s bound, 11.2 km/s escapes)', () => {
+  // From 400 km, v_esc = √(2GM/r) = 10.85 km/s: 10.80 km/s is bound (ε = v²/2 − GM/r < 0) with its apogee
+  // far outside the view, so it leaves the view but will return; 11.2 km/s escapes.
+  const r0 = EARTH.radius + 400e3;
+  const bound = run('orbit', { altitude: 400, orbitSpeed: 10.8 });
+  assert.ok(0.5 * 10800 ** 2 - EARTH.GM / r0 < 0, 'the 10.80 km/s case is bound');
+  assert.equal(bound.ev.end, 'view');
+  assert.ok(outputs(bound).totalEnergy < 0);
+  assert.ok(outputs(bound).period > 0, 'a bound orbit has a period');
+  const free = run('orbit', { altitude: 400, orbitSpeed: 11.2 });
+  assert.equal(free.ev.end, 'escape');
+  assert.ok(outputs(free).totalEnergy > 0);
+  assert.equal(outputs(free).period, null);
+});
+
+test('orbit-gps: a satellite exactly overhead keeps a finite elevation (90°) and the fix', () => {
+  // GPS satellites start at 10° + k·45°, so a receiver at 10° has satellite 0 directly above it at t = 0.
+  const st = start('orbit-gps', { receiverAngle: 10, clockError: 0 });
+  const fix = M.gpsFix(st);
+  for (const s of fix.sats) assert.ok(Number.isFinite(s.elevation), `satellite ${s.i} elevation ${s.elevation}`);
+  close(fix.sats[0].elevation, Math.PI / 2, 1e-7, 'overhead');
+  assert.equal(fix.used[0].i, 0, 'the overhead satellite is used first');
+  assert.equal(fix.used.length, 3);
+  close(fix.error, 0, 1e-3, 'exact ranges still give the exact position');
+  for (const [k, v] of Object.entries(outputs(st))) assert.ok(v === null || Number.isFinite(v), `${k} = ${v}`);
 });
 
 // ---------------------------------------------------------------- engine-wide checks

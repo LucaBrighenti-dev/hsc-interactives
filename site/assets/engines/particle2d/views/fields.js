@@ -1,10 +1,10 @@
 // Field views: charged particles in E and B fields, an orbit around Earth, and orbits with a GPS fix.
-import { q, si, rich, header, subheader, niceCeil, polyline, clipTo, line, disc, vector, viewport, axisMargins, drawAxes, label, arrow, rect, barRows, textWidth } from './common.js';
+import { q, si, header, subheader, niceCeil, polyline, clipTo, line, disc, vector, viewport, axisMargins, drawAxes, label, arrow, rect, barRows, fitText } from './common.js';
 import { tickText } from '../../../engine-kit.js';
 import { PARTICLES, gpsSatellites, gpsReceiver, gpsFix, circularOrbit } from '../model.js';
 import { formatPlain, formatNumber } from '../../../format.js';
 
-const time = (t) => (t < 1e-6 ? q(t * 1e9, 'ns') : t < 1e-3 ? q(t * 1e6, 'µs') : t < 120 ? q(t, 's') : t < 7200 ? q(t / 60, 'min') : q(t / 3600, 'h'));
+const time = (t) => (t === 0 ? '0 s' : t < 1e-6 ? q(t * 1e9, 'ns') : t < 1e-3 ? q(t * 1e6, 'µs') : t < 120 ? q(t, 's') : t < 7200 ? q(t / 60, 'min') : q(t / 3600, 'h'));
 
 /** Equal-scale viewport centred in a rect, covering [x0, x1] × [y0, y1]. */
 function fit(rectIn, x, y) {
@@ -199,8 +199,9 @@ export function drawOrbit(ctx, S, st, p, ahead, pal) {
   label(ctx, `${formatNumber(sb / 1000)} km`, sx, sy + 6, { colour: pal.ink, px, kind: 'mono', baseline: 'top' });
 
   if (st.done) {
-    const msg = st.ev.end === 'crash' ? `Hit Earth after ${time(st.t)}` : st.ev.end === 'escape' ? `Escaped: left the view after ${time(st.t)}` : st.ev.end === 'orbit' ? `One full orbit in ${time(st.t)}` : `Stopped after ${time(st.t)}`;
-    label(ctx, msg, area.x + area.w / 2, area.y + px * 0.2, { colour: pal.ink, px, kind: 'strong', align: 'center', baseline: 'top', box: pal.bg, padding: 6 });
+    const msg = st.ev.end === 'crash' ? `Hit Earth after ${time(st.t)}` : st.ev.end === 'escape' ? `Escaped (total energy ≥ 0): left the view after ${time(st.t)}` : st.ev.end === 'view' ? `Left the view after ${time(st.t)} (still bound: it will return)` : st.ev.end === 'orbit' ? `One full orbit in ${time(st.t)}` : `Stopped after ${time(st.t)}`;
+    // Phones: at the bottom, clear of the scale bar.
+    label(ctx, fitText(ctx, msg, area.w - 12, px, 'strong'), area.x + area.w / 2, S.narrow ? area.y + area.h : area.y + px * 0.2, { colour: pal.ink, px, kind: 'strong', align: 'center', baseline: S.narrow ? 'bottom' : 'top', box: pal.bg, padding: 6 });
   }
 
   // Energy bars (wide stages): KE, GPE and total, per kilogram scale from the start.
@@ -282,7 +283,7 @@ export function drawOrbitGps(ctx, S, st, p, ahead, pal) {
     }
     const rx = gpsReceiver(st);
     disc(ctx, vp.toX(rx[0]), vp.toY(rx[1]), Math.max(3, px * 0.25), pal.ink);
-    label(ctx, 'Earth turns once per sidereal day (23.93 h)', area.x, area.y + area.h, { colour: pal.muted, px, baseline: 'bottom', box: pal.bg });
+    label(ctx, fitText(ctx, `Altitudes above Earth's equatorial radius, ${formatNumber(c.R / 1000, { sigfigs: 7 })} km · Earth turns once per sidereal day (23.93 h)`, area.w, px), area.x, area.y + area.h, { colour: pal.muted, px, baseline: 'bottom', box: pal.bg });
     return;
   }
 
