@@ -704,6 +704,7 @@ export async function mountInteractive(config) {
         playlistNav.append(
           prev ? button({ label: 'Previous in playlist', icon: 'arrowLeft', iconOnly: true, href: prev }) : null,
           el('span', { text: `${list.title} · ${flags.i + 1} of ${list.items.length}` }),
+          list.items[flags.i]?.note ? el('span', { class: 'hsc-playlist__note', text: list.items[flags.i].note, title: list.items[flags.i].note }) : null,
           next ? button({ label: 'Next in playlist', icon: 'arrowRight', iconOnly: true, href: next }) : null,
         );
         playlistNav.hidden = false;

@@ -401,6 +401,9 @@ Wave 0 made these additions and clarifications while building §5.1–§5.9. Eac
 - Outputs may have `setups`, `integer: true` (counts: shown as whole numbers with grouping, never "369.0") or `siPrefix: true` (the readout scales the unit, e.g. 0.0048 m shows as "4.80 mm"). `unit` is required (`''` when dimensionless).
 - Any param's `help` text is shown under its control and linked with `aria-describedby`.
 - The stage element is `role="group"` with `aria-roledescription="simulation"` and the `aria-label` (§6.7 said `role="img"`, which hides interactive children such as editors and in-stage buttons). Engines may put focusable controls inside the stage.
+- Output units: SI is the default, but an output may use the topic's conventional unit (eV, MeV, u, nm, µA, ns, kN, MPa, L☉, R☉ and so on) when its `unit` field states it exactly. Acceptance values use the same unit as the output.
+- Tokens: `--c-danger-text` (#FF8A8D) is for small error text on graphite; `--c-danger` is for borders and marks.
+- The shell's playlist bar shows the current item's note when the playlist has one.
 - Event `'params'` (no payload needed): an engine that changes its own params (a dragged point or handle) emits it after `setParams`-equivalent changes, and the shell resyncs the controls, the URL and the share link.
 - `drawAxes` options `xAxisAt: 'zero' | 'bottom'` and `yAxisAt: 'zero' | 'left'` pin an axis to the plot edge (histograms, time series); the default places each axis at zero when zero is in range. `titles: 'outside'` draws the axis titles beyond the plot (x below the ticks, y above the top-left) so they never cover data; pair it with `axisMargins(px, { titles: 'outside' })`.
 - `step(n)` stops early when the scenario completes. Optional `describe()` returns a sentence for the stage's `aria-label`.
