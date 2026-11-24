@@ -8,8 +8,8 @@ priority: P1
 status: draft            # stub → draft → approved (Gate B)
 page: /interactives/engineering/moments.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
-  - {"course":"Engineering Studies","version":"2011","area":"Engineering Fundamentals","outcomes":[],"verified":false}
-  - {"course":"Engineering Studies","version":"2026","focusArea":"Applied engineering analysis","year":11,"outcomes":[],"verified":false,"subtopic":"Equilibrium in mechanics"}
+  - {"course":"Engineering Studies","version":"2011","area":"Engineered products","subtopic":"Engineering mechanics","year":11,"outcomes":["P3.1"],"url":"https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Applied engineering analysis","subtopic":"Equilibrium in mechanics","year":11,"outcomes":["ES-11-04"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-11/faa305594d","verified":true}
 ---
 # Moments and equilibrium
 
@@ -18,7 +18,7 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 ## Learning goal
 Students calculate the moment of a force as force × perpendicular distance, with the engineering convention that clockwise moments are positive, and use the two conditions of equilibrium (ΣM = 0 about any point and ΣFy = 0) to find the reactions of a beam on two supports, including beams that overhang a support. They see that once the beam is in equilibrium the moments balance about every point, not just the support they chose.
 
-Syllabus fit: 2011 Engineering Fundamentals (moments, equilibrium, beam reactions); 2026 Applied engineering analysis, Year 11, equilibrium in mechanics. Pitched at Stage 6: point loads, two supports, clockwise-positive sign convention.
+Syllabus fit: 2011 Engineered products (engineering mechanics: moments, equilibrium, beam reactions); 2026 Applied engineering analysis, Year 11, equilibrium in mechanics. Pitched at Stage 6: point loads, two supports, clockwise-positive sign convention.
 
 ## What the student sees
 Default view at 1920×1080, light projector theme:

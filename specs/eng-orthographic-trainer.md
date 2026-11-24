@@ -8,8 +8,8 @@ priority: P1
 status: draft            # stub → draft → approved (Gate B)
 page: /interactives/engineering/orthographic-trainer.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
-  - {"course":"Engineering Studies","version":"2011","area":"Engineering Fundamentals","outcomes":[],"verified":false}
-  - {"course":"Engineering Studies","version":"2026","focusArea":"Technical graphics and communication","year":11,"outcomes":[],"verified":false}
+  - {"course":"Engineering Studies","version":"2011","area":"Engineering fundamentals","subtopic":"Communication","year":11,"outcomes":["P3.3"],"url":"https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Technical graphics and communication","subtopic":"Engineering graphics – orthogonal drawing","year":11,"outcomes":["ES-11-06"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-11/fa3a2669b1","verified":true}
 ---
 # Orthogonal projection trainer
 

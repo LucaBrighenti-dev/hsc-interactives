@@ -8,8 +8,9 @@ priority: P1
 status: draft            # stub → draft → approved (Gate B)
 page: /interactives/engineering/tensile-test.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
-  - {"course":"Engineering Studies","version":"2011","area":"Engineered Products","outcomes":[],"verified":false}
-  - {"course":"Engineering Studies","version":"2026","focusArea":"Applied engineering analysis","year":11,"outcomes":[],"verified":false,"subtopic":"Mechanical strength of materials"}
+  - {"course":"Engineering Studies","version":"2011","area":"Braking systems","subtopic":"Engineering mechanics and hydraulics","year":11,"outcomes":["P2.1","P3.1"],"url":"https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Applied engineering analysis","subtopic":"Mechanical strength of materials","year":11,"outcomes":["ES-11-04"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-11/faa305594d","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Engineering materials","subtopic":"Material stress-strain behaviour","year":11,"outcomes":["ES-11-02"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-11/fa8bab5606","verified":true}
 ---
 # Tensile test machine
 
@@ -18,7 +19,7 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 ## Learning goal
 Students run a virtual tensile test and turn the load–extension graph into a stress–strain graph (σ = F/A₀, ε = ΔL/L₀), then read off Young's modulus (the elastic slope), the yield strength (with the 0.2% offset where there is no sharp yield point), the ultimate tensile strength, the percentage elongation and the toughness (the area under the curve). They compare ductile metals, a polymer and a brittle ceramic, and see that specimen size changes the loads but not the material's stress–strain curve.
 
-Syllabus fit: 2011 Engineered Products (tensile testing, stress–strain, properties of materials); 2026 Applied engineering analysis, Year 11, mechanical strength of materials (and Engineering materials). Pitched at Stage 6: reading properties from a graph, σ = F/A, ε = ΔL/L, E = σ/ε, toughness as an area.
+Syllabus fit: 2011 Braking systems (engineering mechanics and materials: tensile testing, stress–strain, properties of materials); 2026 Applied engineering analysis, Year 11, mechanical strength of materials, and Engineering materials, Year 11, stress–strain behaviour. Pitched at Stage 6: reading properties from a graph, σ = F/A, ε = ΔL/L, E = σ/ε, toughness as an area.
 
 ## What the student sees
 Default view at 1920×1080, light projector theme:

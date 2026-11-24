@@ -8,8 +8,8 @@ priority: P1
 status: draft            # stub → draft → approved (Gate B)
 page: /interactives/engineering/materials-selection.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
-  - {"course":"Engineering Studies","version":"2011","area":"Aeronautical Engineering","outcomes":[],"verified":false}
-  - {"course":"Engineering Studies","version":"2026","focusArea":"Aeronautical and aerospace engineering","year":12,"outcomes":[],"verified":false,"subtopic":"Properties of engineering materials"}
+  - {"course":"Engineering Studies","version":"2011","area":"Aeronautical engineering","subtopic":"Engineering materials","year":12,"outcomes":["H1.2"],"url":"https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Aeronautical and aerospace engineering","subtopic":"Properties of engineering materials","year":12,"outcomes":["ES-12-02"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fa66e557c0","verified":true}
 ---
 # Materials selection chart
 

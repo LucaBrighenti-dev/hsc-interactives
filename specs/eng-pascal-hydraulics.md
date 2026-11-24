@@ -8,8 +8,9 @@ priority: P1
 status: draft            # stub → draft → approved (Gate B)
 page: /interactives/engineering/pascal-hydraulics.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
-  - {"course":"Engineering Studies","version":"2011","area":"Aeronautical Engineering","outcomes":[],"verified":false}
-  - {"course":"Engineering Studies","version":"2026","focusArea":"Aeronautical and aerospace engineering","year":12,"outcomes":[],"verified":false,"subtopic":"Propulsion and measurement systems"}
+  - {"course":"Engineering Studies","version":"2011","area":"Aeronautical engineering","subtopic":"Engineering mechanics and hydraulics","year":12,"outcomes":["H3.1"],"url":"https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Aeronautical and aerospace engineering","subtopic":"Propulsion and measurement systems","year":12,"outcomes":["ES-12-04"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fa66e557c0","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Environmental engineering and energy systems","subtopic":"Hydraulics and pneumatics","year":12,"outcomes":["ES-12-04"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fa4b243f12","verified":true}
 ---
 # Pascal's principle
 
@@ -18,7 +19,7 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 ## Learning goal
 Students apply Pascal's principle: pressure applied to an enclosed liquid is transmitted equally throughout it, so p = F₁/A₁ and F₂ = pA₂ = F₁A₂/A₁. They see the cost of the force gain: because the liquid's volume is conserved, the output piston moves A₁/A₂ as far, so (for an ideal system) work out equals work in. In the aircraft mode they size a double-acting actuator at a typical aircraft system pressure and see why it pushes harder than it pulls (the rod takes up part of one piston face).
 
-Syllabus fit: 2011 Aeronautical Engineering (aircraft hydraulic systems, Pascal's principle); 2026 Aeronautical and aerospace engineering, Year 12, propulsion and measurement systems. Pitched at Stage 6: pressure, area and force; work and efficiency; no fluid flow or losses beyond a single efficiency factor.
+Syllabus fit: 2011 Aeronautical engineering (aircraft hydraulic systems, Pascal's principle); 2026 Aeronautical and aerospace engineering, Year 12, propulsion and measurement systems, and Environmental engineering and energy systems, Year 12, hydraulics and pneumatics. Pitched at Stage 6: pressure, area and force; work and efficiency; no fluid flow or losses beyond a single efficiency factor.
 
 ## What the student sees
 Default view at 1920×1080, light projector theme.

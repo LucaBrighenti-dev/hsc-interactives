@@ -8,8 +8,8 @@ priority: P1
 status: draft            # stub → draft → approved (Gate B)
 page: /interactives/engineering/braking-energy.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
-  - {"course":"Engineering Studies","version":"2011","area":"Braking Systems","outcomes":[],"verified":false}
-  - {"course":"Engineering Studies","version":"2026","focusArea":"Transport engineering and automation","year":12,"outcomes":[],"verified":false}
+  - {"course":"Engineering Studies","version":"2011","area":"Braking systems","subtopic":"Engineering mechanics and hydraulics","year":11,"outcomes":["P3.1"],"url":"https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Transport engineering and automation","subtopic":"Mechanics systems (work, energy and power)","year":12,"outcomes":["ES-12-04"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fab1f95ed9","verified":true}
 ---
 # Braking energy
 
@@ -18,7 +18,7 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 ## Learning goal
 Students see that a braking vehicle's kinetic energy ½mv² is all turned into heat by the work done against friction, so the braking distance is v²/(2μg) and grows with the square of the speed, while the reaction distance grows only in proportion to it. They estimate how hot the brake rotors get from Q = mcΔT and relate this to brake design (rotor mass, material, ventilation).
 
-Syllabus fit: 2011 Braking Systems (friction, energy conversion in brakes, stopping distances); 2026 Transport engineering and automation, Year 12. Pitched at Stage 6: uniform deceleration, work–energy, specific heat; no tyre slip models.
+Syllabus fit: 2011 Braking systems (friction, energy conversion in brakes, stopping distances); 2026 Transport engineering and automation, Year 12, mechanics systems (work, energy and power). Pitched at Stage 6: uniform deceleration, work–energy, specific heat; no tyre slip models.
 
 ## What the student sees
 Default view at 1920×1080, light projector theme:

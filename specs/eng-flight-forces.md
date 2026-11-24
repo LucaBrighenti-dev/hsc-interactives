@@ -8,8 +8,8 @@ priority: P0
 status: draft            # stub → draft → approved (Gate B)
 page: /interactives/engineering/flight-forces.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
-  - {"course":"Engineering Studies","version":"2011","area":"Aeronautical Engineering","outcomes":[],"verified":false}
-  - {"course":"Engineering Studies","version":"2026","focusArea":"Aeronautical and aerospace engineering","year":12,"outcomes":[],"verified":false,"subtopic":"Flight mechanics"}
+  - {"course":"Engineering Studies","version":"2011","area":"Aeronautical engineering","subtopic":"Engineering mechanics and hydraulics","year":12,"outcomes":["H3.1"],"url":"https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Aeronautical and aerospace engineering","subtopic":"Flight mechanics","year":12,"outcomes":["ES-12-04"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fa66e557c0","verified":true}
 ---
 # Flight forces and stall
 

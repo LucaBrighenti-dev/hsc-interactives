@@ -8,8 +8,8 @@ priority: P1
 status: draft            # stub → draft → approved (Gate B)
 page: /interactives/engineering/beam-lab.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
-  - {"course":"Engineering Studies","version":"2011","area":"Civil Structures","outcomes":[],"verified":false}
-  - {"course":"Engineering Studies","version":"2026","focusArea":"Civil and structural engineering","year":12,"outcomes":[],"verified":false}
+  - {"course":"Engineering Studies","version":"2011","area":"Civil structures","subtopic":"Engineering mechanics","year":12,"outcomes":["H3.1"],"url":"https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Civil and structural engineering","subtopic":"Engineering mechanics – truss analysis","year":12,"outcomes":["ES-12-04"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fab35fb465","verified":true}
 ---
 # Beam lab
 

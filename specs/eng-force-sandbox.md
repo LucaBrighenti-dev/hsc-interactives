@@ -8,8 +8,8 @@ priority: P1
 status: draft            # stub → draft → approved (Gate B)
 page: /interactives/engineering/force-sandbox.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
-  - {"course":"Engineering Studies","version":"2011","area":"Engineering Fundamentals","outcomes":[],"verified":false}
-  - {"course":"Engineering Studies","version":"2026","focusArea":"Applied engineering analysis","year":11,"outcomes":[],"verified":false,"subtopic":"Equilibrium in mechanics"}
+  - {"course":"Engineering Studies","version":"2011","area":"Engineered products","subtopic":"Engineering mechanics","year":11,"outcomes":["P3.1"],"url":"https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Applied engineering analysis","subtopic":"Equilibrium in mechanics","year":11,"outcomes":["ES-11-04"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-11/faa305594d","verified":true}
 ---
 # Force sandbox
 
@@ -18,7 +18,7 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 ## Learning goal
 Students resolve forces into x and y components, add concurrent forces to find their resultant (by components and by a closed force polygon), and recognise the equilibrant as the force that would close the polygon. In the boom scene they apply the three-force rule: three non-parallel forces in equilibrium must meet at one point, which locates the line of action of an unknown pin reaction.
 
-Syllabus fit: 2011 Engineering Fundamentals (forces, resolution, resultants, equilibrium); 2026 Applied engineering analysis, Year 11, equilibrium in mechanics. Pitched at Stage 6: graphical (polygon) and analytical (components) methods side by side.
+Syllabus fit: 2011 Engineered products (engineering mechanics: forces, resolution, resultants, equilibrium); 2026 Applied engineering analysis, Year 11, equilibrium in mechanics. Pitched at Stage 6: graphical (polygon) and analytical (components) methods side by side.
 
 ## What the student sees
 Default view at 1920×1080, light projector theme.

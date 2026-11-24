@@ -8,8 +8,9 @@ priority: P1
 status: draft            # stub → draft → approved (Gate B)
 page: /interactives/engineering/simple-machines.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
-  - {"course":"Engineering Studies","version":"2011","area":"Engineered Products","outcomes":[],"verified":false}
-  - {"course":"Engineering Studies","version":"2026","focusArea":"Applied engineering analysis","year":11,"outcomes":[],"verified":false,"subtopic":"Mechanics of simple machines"}
+  - {"course":"Engineering Studies","version":"2011","area":"Engineering fundamentals","subtopic":"Engineering mechanics","year":11,"outcomes":["P3.1"],"url":"https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Applied engineering analysis","subtopic":"Mechanics of simple machines","year":11,"outcomes":["ES-11-04"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-11/faa305594d","verified":true}
+  - {"course":"Engineering Studies","version":"2026","focusArea":"Transport engineering and automation","subtopic":"Simple machines","year":12,"outcomes":["ES-12-04"],"url":"https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fab1f95ed9","verified":true}
 ---
 # Simple machines
 
@@ -18,7 +19,7 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 ## Learning goal
 Students calculate the velocity ratio (VR, from the geometry: effort distance ÷ load distance), the mechanical advantage (MA = load ÷ effort) and the efficiency η = MA/VR for levers of each class, pulley blocks, gear trains and screw jacks. They see that a machine trades force for distance, that friction makes MA less than VR, and that work out is always less than work in for a real machine.
 
-Syllabus fit: 2011 Engineered Products (mechanisms: levers, pulleys, gears, screws; MA, VR, efficiency); 2026 Applied engineering analysis, Year 11, mechanics of simple machines. Pitched at Stage 6: MA, VR, η and work for single machines; gear trains as speed and torque ratios.
+Syllabus fit: 2011 Engineering fundamentals (engineering mechanics: levers, pulleys, gears, screws; MA, VR, efficiency); 2026 Applied engineering analysis, Year 11, mechanics of simple machines, revisited in Transport engineering and automation, Year 12. Pitched at Stage 6: MA, VR, η and work for single machines; gear trains as speed and torque ratios.
 
 ## What the student sees
 Default view at 1920×1080, light projector theme, one machine at a time chosen with **Machine**:
