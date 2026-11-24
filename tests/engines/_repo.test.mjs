@@ -1,7 +1,7 @@
 // Repository consistency checks that run with `npm test` (fast, no browser):
 //  - catalog fragments are valid and match docs/backlog.json; generated stubs are in sync
-//  - specs with status draft/approved have a valid acceptance block whose params and outputs exist
-//    in the engine's meta (once that engine exists)
+//  - specs with status draft/approved have a valid acceptance block; once the page is in review or live,
+//    its params and outputs must exist in the engine's meta
 //  - teacher notes that are not stubs use the fixed headings in order (guide §5.9)
 //  - pages in review or live have their HTML, notes, approved spec and listing presets
 //  - render.yaml sends the same Content-Security-Policy as the dev server
@@ -49,8 +49,13 @@ for (const file of specFiles) {
   test(`spec ${file}: acceptance block matches the engine`, async () => {
     const { checks, error } = parseAcceptance(md);
     assert.equal(error, null, error ?? '');
+    // Param and output keys must match the engine once the page is being built (status review or live).
+    // Before that, specs may carry "keys to reconcile" with an engine that merged later; the page builder
+    // reconciles them in its PR, so an engine merge never breaks main. The JSON is always validated above.
+    const entry = entries.find((e) => e.id === fm.id);
+    if (!entry || !['review', 'live'].includes(entry.status)) return;
     const meta = await engineMeta(fm.engine, fm.id);
-    if (!meta) return; // engine not merged yet: Gate B reviews the numbers; this check runs once it lands
+    assert.ok(meta, `${fm.id} is ${entry.status} but its engine "${fm.engine}" is not on this branch`);
     const setup = fm.setup && fm.setup !== 'none' ? fm.setup : meta.setups[0];
     assert.ok(meta.setups.includes(setup), `engine ${meta.name} has no setup "${setup}"`);
     const params = new Map(paramsFor(meta.params, setup));
