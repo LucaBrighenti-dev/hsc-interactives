@@ -17,6 +17,7 @@
   --c-accent: #FF4F00;
   --c-on-accent: #0F1012;
   --c-danger: #E5484D;
+  --c-danger-text: #FF8A8D; /* small error text on graphite (≥ 4.5:1); --c-danger is for borders and marks */
   --c-ok: #3DD68C;
   --c-scrim: rgba(15, 16, 18, 0.72);
 

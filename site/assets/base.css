@@ -185,7 +185,7 @@ textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-
 .select option { background: var(--c-surface); color: var(--c-text); }
 .msg { font-size: var(--t-14); }
 .control-help { margin-top: var(--sp-1); font-size: 13px; line-height: 1.4; color: var(--c-muted); }
-.msg--error { color: #FF8A8D; }
+.msg--error { color: var(--c-danger-text); }
 .msg--ok { color: var(--c-ok); }
 
 /* ---------- slider (label, number entry, unit, range) ---------- */
@@ -392,7 +392,8 @@ dialog.drawer[open] { display: flex; flex-direction: column; animation: hsc-slid
 .hsc-crumbs a { color: var(--c-muted); text-decoration: none; }
 .hsc-crumbs a:hover { color: var(--c-text); }
 .hsc-crumbs [aria-current] { color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hsc-playlist { display: flex; align-items: center; gap: var(--sp-2); font-family: var(--f-mono); font-size: var(--t-12); color: var(--c-muted); }
+.hsc-playlist { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; font-family: var(--f-mono); font-size: var(--t-12); color: var(--c-muted); }
+.hsc-playlist__note { font-family: var(--f-body); font-size: var(--t-14); color: var(--c-text); max-width: 40ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hsc-user { margin-left: auto; display: flex; align-items: center; gap: var(--sp-4); font-size: var(--t-14); }
 .hsc-user__name { color: var(--c-text); white-space: nowrap; max-width: 24ch; overflow: hidden; text-overflow: ellipsis; }
 
