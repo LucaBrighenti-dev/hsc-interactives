@@ -36,11 +36,11 @@ Default view at 1920×1080 (projector theme), y = √x on 0 ≤ x ≤ 4 about th
 | showDiscs | Disc slices | | | | | on | |
 | showSolid | Solid surface | | | | | on | |
 | sweep | Revolve by | ° | 0 | 360 | 5 | 360 | how far the region has been spun (view only) |
-| projection | View | | | | | perspective | enum: `perspective`, `orthographic` |
+| camera | View | | | | | perspective | enum: `perspective`, `orthographic` |
 
 How the engine computes (static setup, `meta.staticSetups` includes `revolution`):
 - **volume** = π∫ f² over [lower, upper] by adaptive Simpson's rule to a relative tolerance of 1e-10.
-- **discSum** = Σ π f(sᵢ)² Δ for i = 0 … N − 1, where Δ = (upper − lower)/N and the sample point sᵢ = lower + iΔ (left), lower + (i + ½)Δ (midpoint) or lower + (i + 1)Δ (right), each computed from i directly (not by repeated addition).
+- **discSum** = Σ π f(sᵢ)² Δ for i = 0 … N − 1, where Δ = (upper − lower)/N and the sample point is sᵢ = lower + (upper − lower)·j/N with j = i (left), i + ½ (midpoint) or i + 1 (right), computed from j directly (never by repeated addition) and then clamped to [lower, upper]. This way the last right-rule disc lands exactly on the upper bound, never one rounding step past it (which would make √(9 − x²) undefined at x = 3).
 - If f is undefined at any sample point (for example √ of a negative number), the stage says "the curve is undefined at …" and the outputs are NaN.
 
 ## Presets
@@ -86,7 +86,7 @@ How the engine computes (static setup, `meta.staticSetups` includes `revolution`
 
 ## Engine change requests
 The space3d engine was not yet on `origin` when this spec was written, so these are **keys to reconcile with engine meta**:
-- Params (setup `revolution`): `f`, `axis`, `lower`, `upper`, `discs`, `discRule`, `showDiscs`, `showSolid`, `sweep`, `projection`.
+- Params (setup `revolution`): `f`, `axis`, `lower`, `upper`, `discs`, `discRule`, `showDiscs`, `showSolid`, `sweep`, `camera` (named `camera` rather than `projection` so it cannot be confused with vector projection).
 - Outputs: `volume`, `volumeOverPi`, `discSum`, `discError`, `discWidth`.
 - The engine needs the shared parser `site/assets/engines/fnplot/parser.js` (owned by fnplot) for `f`, compiled with `variables: ['x']` or `['y']` according to `axis`.
 

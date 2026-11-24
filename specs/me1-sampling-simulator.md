@@ -15,7 +15,7 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 > Backlog summary: Bernoulli trials build a binomial histogram; sample means converge to normal as n grows.
 
 ## Learning goal
-Students see that counting successes in n independent Bernoulli trials produces a binomial distribution with mean np and variance np(1 − p), and that a sample mean (including a sample proportion p̂, the mean of n Bernoulli values) is a random variable in its own right: centred on the population mean μ, with standard deviation σ/√n, and closer to a normal shape as n grows, whatever shape the population has.
+Students see that counting successes in n independent Bernoulli trials produces a binomial distribution with mean np and variance np(1 − p), and that a sample mean (including the proportion of successes in a sample, which is the mean of n Bernoulli values) is a random variable in its own right: centred on the population mean μ, with standard deviation σ/√n, and closer to a normal shape as n grows, whatever shape the population has.
 
 ## What the student sees
 Default view at 1920×1080 (projector theme), Bernoulli trials, n = 20, p = 0.3:
@@ -51,7 +51,7 @@ Behaviour the numbers depend on: one fixed step (the shell's Step button, and `s
 | --- | --- | --- |
 | default | mode binomial, n = 20, p = 0.3, samples 2000, drawRate 200, seed 2027, yScale relative | A skewed-but-not-too-skewed binomial; peak at 6 |
 | coin-flips | mode binomial, n = 10, p = 0.5, samples 200, drawRate 5, seed 2027 | Slow enough to watch the trials build each count |
-| sample-proportion | mode means, population bernoulli, p = 0.4, n = 50, samples 5000, drawRate 500, seed 2027, meansAxis zoom | The mean of n Bernoulli values is p̂: centred at p with SD √(p(1 − p)/n) |
+| sample-proportion | mode means, population bernoulli, p = 0.4, n = 25, samples 5000, drawRate 500, seed 2027, meansAxis zoom | The mean of n Bernoulli values is the sample proportion: centred at p with SD √(p(1 − p)/n), here √(0.24/25) = 0.098; at n = 100 it halves to 0.049 |
 | dice-means | mode means, population die, n = 5, samples 5000, drawRate 500, seed 2027 | A flat population gives bell-shaped means quickly |
 | skewed-means | mode means, population exponential, rate 1, n = 30, samples 5000, drawRate 500, seed 2027 | A strongly skewed population still gives near-normal means at n = 30 |
 | population-shape | mode means, population skewed, n = 1, samples 2000, drawRate 500, seed 2027 | With n = 1 the histogram is the population itself; then raise n |
@@ -81,7 +81,7 @@ Definitions (all dimensionless):
 
 ## Try this (3–5 predict, observe, explain prompts)
 1. Predict: with n = 20 and p = 0.3, which number of successes will be most common, and will the histogram be symmetric? Press play and check.
-2. Observe: in the sample-proportion preset, note the theoretical SD, then change n from 50 to 200. What happened to the spread when n became four times as large?
+2. Observe: in the sample-proportion preset (n = 25), note the theoretical SD, then change n to 100. What happened to the spread when n became four times as large?
 3. Predict: in the population-shape preset (n = 1), what shape will the histogram be? Now predict the shape for n = 25, then run it.
 4. Observe: run the default twice with seeds 2027 and 2028. Which readouts changed and which stayed exactly the same? Why?
 5. Explain: the SD of a single die roll is about 1.71. Why is the SD of the mean of 10 rolls about 0.54 rather than 0.171?
@@ -89,7 +89,7 @@ Definitions (all dimensionless):
 ## Teacher notes outline
 - Misconceptions to target: "a big sample makes the population normal" (only the distribution of the sample mean approaches normal); confusing the SD of one sample's data with the SD of the sample means (σ/√n); "doubling n halves the spread" (it takes four times the sample size); "a binomial is always symmetric" (only when p = 0.5; compare p = 0.1 with n = 10); "the same seed is cheating" (it makes a class demonstration repeatable).
 - 10-minute lesson flow: 0–2 min predict the peak and shape for the default; 2–4 min run it and compare the simulated mean and SD with np and √(np(1 − p)); 4–6 min sample-proportion preset and quadruple n; 6–9 min dice-means, then population-shape with n = 1, 5, 25; 9–10 min summarise σ/√n and the normal shape on the board.
-- Original HSC-style question idea: a spinner shows red with probability 0.35. A student records the proportion of red results in 80 spins. (a) State the mean and standard deviation of the sample proportion. (b) Use a normal approximation to estimate the probability that the sample proportion exceeds 0.45. (c) How many spins would halve the standard deviation found in (a)? Full question and worked solution go in the notes file.
+- Original HSC-style question idea: a spinner shows red with probability 0.35. Let Xᵢ = 1 if spin i is red and 0 otherwise, and let X̄ be the mean of X₁, …, X₈₀ (the proportion of red in 80 spins). (a) Find the mean and variance of one Xᵢ, and hence the mean and standard deviation of X̄. (b) Use the central limit theorem to estimate P(X̄ > 0.45). (c) How many spins would halve the standard deviation found in (a)? Full question and worked solution go in the notes file. (μ = 0.35, σ² = 0.2275; SD of X̄ = √(0.2275/80) = 0.0533; z = 0.10/0.0533 = 1.875, so P ≈ 0.030; 320 spins.)
 
 ## Accessibility notes
 - Second cues beyond colour: successes are filled squares and failures hollow squares; the binomial overlay is drawn as rings and the normal overlay as a line, each named in the legend; the theoretical mean line carries a text label (np or μ); the latest value is also printed as text ("X = 7 successes", "x̄ = 3.4").
@@ -104,7 +104,7 @@ None. Every param and output key above exists in the statsim `meta` on `origin/w
 Every number below comes from the formula and hand calculation shown here. Theory outputs are exact closed forms (tolerance 1e-9 or relative 1e-8). Simulated statistics come from seeded random draws, so they are checked against the theory with a tolerance of at least 4.9 standard errors: a seed-independent check that any correct sampler passes. With N = 10 000 samples, the standard error of a mean is SD/√N = SD/100 and the standard error of an SD is about SD/√(2N) = SD/141.
 
 - **Check 1, binomial count, n = 20, p = 0.3, 10 000 samples.** Mean np = 20 × 0.3 = **6**. Variance np(1 − p) = 20 × 0.3 × 0.7 = 4.2, so SD = √4.2 = **2.049390153**. Population (one trial): μ = p = **0.3**, σ = √(0.3 × 0.7) = √0.21 = **0.4582575695**. The run completes with **count = 10 000**. SE of the simulated mean = 2.0494/100 = 0.0205, so the tolerance 0.1 is 4.9 SE; SE of the simulated SD ≈ 2.0494/141 = 0.0145, so 0.08 is 5.5 SE.
-- **Check 2, sample proportion as the mean of Bernoulli values, n = 50, p = 0.4.** Population μ = p = **0.4**, σ = √(0.4 × 0.6) = √0.24 = **0.4898979486**. Mean of p̂ = **0.4**; SD = σ/√n = √(0.24/50) = √0.0048 = **0.069282032**. SE of the simulated mean = 0.06928/100 = 0.00069 (tolerance 0.004 is 5.8 SE); SE of the simulated SD ≈ 0.06928/141 = 0.00049 (tolerance 0.003 is 6.1 SE).
+- **Check 2, sample proportion as the mean of Bernoulli values, n = 50, p = 0.4.** Population μ = p = **0.4**, σ = √(0.4 × 0.6) = √0.24 = **0.4898979486**. Mean of the sample proportion = **0.4**; SD = σ/√n = √(0.24/50) = √0.0048 = **0.069282032**. SE of the simulated mean = 0.06928/100 = 0.00069 (tolerance 0.004 is 5.8 SE); SE of the simulated SD ≈ 0.06928/141 = 0.00049 (tolerance 0.003 is 6.1 SE).
 - **Check 3, exponential population, λ = 1, n = 30.** μ = σ = 1/λ = **1**. SD of x̄ = σ/√n = 1/√30 = **0.182574186**. SE of the simulated mean = 0.18257/100 = 0.0018 (tolerance 0.01 is 5.5 SE); SE of the simulated SD ≈ 0.18257/141 × √1.1 = 0.0014 (the factor allows for the slight skew of x̄; tolerance 0.008 is 5.9 SE).
 - **Check 4, uniform population on [0, 1], n = 12.** μ = **0.5**, σ = 1/√12 = **0.288675135**. SD of x̄ = σ/√12 = 1/12 = **0.083333333**. SE of the simulated mean = 0.0833/100 = 0.00083 (tolerance 0.005 is 6.0 SE); SE of the simulated SD ≈ 0.0833/141 = 0.00059 (tolerance 0.004 is 6.8 SE).
 - **Check 5, die, n = 10, after exactly 100 steps.** One step draws one sample, so after 100 steps **count = 100** (below samples = 2000, so the run is still going). μ = (1 + 2 + … + 6)/6 = **3.5**. σ² = (1² + … + 6²)/6 − 3.5² = 91/6 − 12.25 = 35/12, so σ = √(35/12) = **1.707825128**. SD of x̄ = σ/√10 = **0.540061725**.

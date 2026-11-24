@@ -45,7 +45,7 @@ Default view at 1920×1080 (projector theme), 3D, a = (1, 2, 2), b = (2, −1, 2
 | scalar | k | | −3 | 3 | 0.25 | 2 | scale only |
 | showComponents | Component guides | | | | | on | |
 | showLabels | Labels | | | | | on | |
-| projection | View | | | | | perspective | enum: `perspective`, `orthographic` (2D always uses orthographic) |
+| camera | View | | | | | perspective | enum: `perspective`, `orthographic` (2D always uses orthographic) |
 
 ## Presets
 | Name | Values | Why |
@@ -96,7 +96,7 @@ Default view at 1920×1080 (projector theme), 3D, a = (1, 2, 2), b = (2, −1, 2
 
 ## Engine change requests
 The space3d engine was not yet on `origin` when this spec was written, so these are **keys to reconcile with engine meta**:
-- Params (setup `vectors`): `dimension`, `ax`, `ay`, `az`, `bx`, `by`, `bz`, `operation`, `scalar`, `showComponents`, `showLabels`, `projection`.
+- Params (setup `vectors`): `dimension`, `ax`, `ay`, `az`, `bx`, `by`, `bz`, `operation`, `scalar`, `showComponents`, `showLabels`, `camera` (named `camera` rather than `projection` so it cannot be confused with vector projection).
 - Outputs: `magA`, `magB`, `dot`, `angle`, `scalarProjection`, `resultX`, `resultY`, `resultZ`, `resultMag`.
 - Uses the pure vec3 helpers in `space3d/model.js` (dot, cross, projection).
 

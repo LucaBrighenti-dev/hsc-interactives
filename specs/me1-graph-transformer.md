@@ -62,7 +62,7 @@ Default view at 1920×1080 (projector theme), f(x) = x² − 2x − 3, transform
 
 ## Assumptions shown on stage
 - Asymptotes and key points found numerically in the window shown
-- x and y axes use the same units (not necessarily the same scale)
+- x is in radians for trigonometric functions
 
 ## Try this (3–5 predict, observe, explain prompts)
 1. Predict: f(x) = x² − 2x − 3 is zero at x = −1 and x = 3. What will y = 1/f(x) do near those x-values? Turn on the reciprocal to check.

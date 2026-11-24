@@ -41,7 +41,7 @@ Default view at 1920×1080 (projector theme), the tower scene, perspective camer
 | baseSide | Base side s | m | 1 | 50 | 0.5 | 6 | pyramid |
 | showTriangles | Shade the key triangles | | | | | on | |
 | showLabels | Labels | | | | | on | |
-| projection | View | | | | | perspective | enum: `perspective`, `orthographic` |
+| camera | View | | | | | perspective | enum: `perspective`, `orthographic` |
 
 ## Presets
 | Name | Values | Why |
@@ -98,7 +98,7 @@ Outputs that do not belong to the current scene are NaN (the shell shows —). A
 
 ## Engine change requests
 The space3d engine was not yet on `origin` when this spec was written, so these are **keys to reconcile with engine meta**:
-- Params (setup `trig3d`): `scene`, `towerHeight`, `distA`, `bearingA`, `distB`, `bearingB`, `length`, `width`, `height`, `baseSide`, `showTriangles`, `showLabels`, `projection`.
+- Params (setup `trig3d`): `scene`, `towerHeight`, `distA`, `bearingA`, `distB`, `bearingB`, `length`, `width`, `height`, `baseSide`, `showTriangles`, `showLabels`, `camera` (named `camera` rather than `projection` so it cannot be confused with vector projection).
 - Outputs: `elevA`, `elevB`, `baseAngle`, `distAB`, `bearingAtoB`, `faceDiagonal`, `spaceDiagonal`, `diagonalAngle`, `slantHeight`, `faceAngle`, `slantEdge`, `edgeAngle` (NaN when not in the current scene).
 - Optional, for the orchestrator (a shell feature, not needed for correctness): a way to hide readouts that are NaN for the current scene would tidy the readouts row.
 

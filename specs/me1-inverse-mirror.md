@@ -24,8 +24,8 @@ Default view at 1920×1080 (projector theme), f(x) = (x − 2)² + 1, domain −
 - The whole of y = f(x) as a faint grey dashed curve; the restricted part (domain from `domainMin` to `domainMax`) as the thick orange curve (3 px), with filled endpoint dots and two draggable handles on the x-axis marking the restriction.
 - The reflection of the restricted part (x = f(y)) as a thick blue curve (`--s2`, 3 px, long dashes), with its own endpoint dots. A few thin grey dotted chords join matching points (a, b) and (b, a) at right angles to the mirror.
 - **Horizontal line test** (toggle): a horizontal line sweeps slowly across the orange curve; when it meets the curve twice, both crossing points pulse with ring markers and a banner says "Not one-to-one: the reflection fails the vertical line test". When f is one-to-one on the domain, the banner says "One-to-one: the reflection is the inverse function f⁻¹".
-- A probe: a horizontal guide at y = probe meets the orange curve; its reflection meets the blue curve at (probe, f⁻¹(probe)), labelled "f⁻¹(5) = 4".
-- Readout chips under the plot: "Domain of f: [2, 5] → Range of f⁻¹: [2, 5]" and "Range of f: [1, 10] → Domain of f⁻¹: [1, 10]".
+- A probe: a horizontal guide at y = probe meets the orange curve; its reflection meets the blue curve at (probe, f⁻¹(probe)). In the default view f is not one-to-one, so the label reads "f⁻¹ is not a function on this domain"; after dragging the left handle to 2 (the right-branch preset) it reads "f⁻¹(5) = 4".
+- Readout chips under the plot. In the default view: "Domain of f: [−1, 5]" and "Range of f: [1, 10]"; once f is one-to-one, for example on the right branch: "Domain of f: [2, 5] → Range of f⁻¹: [2, 5]" and "Range of f: [1, 10] → Domain of f⁻¹: [1, 10]".
 
 ## Parameters
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
@@ -45,7 +45,7 @@ Default view at 1920×1080 (projector theme), f(x) = (x − 2)² + 1, domain −
 
 How the engine decides (static setup):
 - Samples f at 2001 equally spaced points on the domain. f is **one-to-one** when the successive differences are all positive or all negative (a difference within 1e-12 of zero counts as neither, so a flat piece fails the test).
-- **Range** of f on the domain: the least and greatest sampled values, each refined by a golden-section search on the neighbouring sample interval to 1e-10 in x.
+- **Range** of f on the domain: the least and greatest sampled values, each refined by a golden-section search on the neighbouring sample interval to 1e-10 in x. The engine keeps the better of the sampled and the refined value, so an extreme at an endpoint of the domain is reported exactly (the refinement can only lose accuracy next to an endpoint).
 - **f⁻¹(probe)**: when f is one-to-one and the probe lies in the range, bisection on the domain to 1e-12; otherwise NaN.
 - If f is undefined anywhere on the domain (NaN or infinite), the stage says so and the outputs are NaN.
 
@@ -61,7 +61,7 @@ How the engine decides (static setup):
 ## Readouts
 | Output | Label | Unit | Sig figs |
 | --- | --- | --- | --- |
-| oneToOne | One-to-one on this domain (1 = yes, 0 = no) | | exact integer |
+| oneToOne | One-to-one on this domain (1 = yes, 0 = no) | | integer (`integer: true`) |
 | rangeMin | Range of f from (domain of f⁻¹ from) | | 4 |
 | rangeMax | Range of f to (domain of f⁻¹ to) | | 4 |
 | inverseAt | f⁻¹ at the probe | | 4 |

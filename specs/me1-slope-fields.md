@@ -77,7 +77,7 @@ Behaviour the numbers depend on:
 2. Observe: click to launch three solution curves above the x-axis and one below. How are they related to the orange curve?
 3. Predict: in the cooling preset, what temperature does the tea approach? Move y₀ to 10 (an iced drink) and describe the new curve.
 4. Observe: in the logistic preset, start at y₀ = 12, then at y₀ = 0. What happens in each case, and why are y = 0 and y = 10 special?
-5. Explain: in the not-separable preset, why do all the solution curves end up running parallel to the line y = x − 1?
+5. Explain: in the not-separable preset, why do all the solution curves approach the line y = x − 1 as x increases?
 
 ## Teacher notes outline
 - Misconceptions to target: a slope field is a graph of y = f(x) (it is a field of gradients, one at every point); solution curves can cross (for these well-behaved fields they never do, because each point has one gradient); every solution of the cooling law reaches the room temperature (it only approaches it); the constant in dy/dx = ky is the same as the starting value.

@@ -65,7 +65,7 @@ The leading coefficient is a magnitude plus a sign toggle so that a can never be
 | coefD | Coefficient d | | 4 |
 | coefE | Coefficient e | | 4 |
 | yIntercept | y-intercept P(0) | | 4 |
-| distinctRoots | Distinct roots | | exact integer |
+| distinctRoots | Distinct roots | | integer (`integer: true`) |
 
 - P(x) = a(x − α)(x − β)… expanded as axⁿ + bxⁿ⁻¹ + cxⁿ⁻² + dxⁿ⁻³ + exⁿ⁻⁴; coefficients beyond the degree are NaN (so coefD and coefE are NaN for a quadratic, coefE for a cubic).
 - `sumTriples` is NaN unless the degree is 4. For a cubic the product of roots is the only triple product.
@@ -76,7 +76,7 @@ The leading coefficient is a magnitude plus a sign toggle so that a can never be
 - P(x) = a(x − α)(x − β)…, so a ≠ 0
 
 ## Try this (3–5 predict, observe, explain prompts)
-1. Predict: if you drag α one unit to the right, how much does the sum of the roots change, and which coefficient changes with it?
+1. Predict: if you drag α one unit to the right, how much does the sum of the roots change? Which coefficient changes in step with the sum, and by how much (it is −a per unit)?
 2. Observe: drag β onto γ. What happens to the graph at that root, and what happens to the relationships panel?
 3. Predict: for the monic cubic with roots 1, 2, 3, what is P(0)? Check the y-intercept.
 4. Observe: in the quartic preset, switch the sign of a. Which relationships change and which stay the same?

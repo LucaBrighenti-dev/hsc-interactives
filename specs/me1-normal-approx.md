@@ -17,6 +17,8 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 ## Learning goal
 Students see when and why a binomial distribution can be approximated by a normal distribution with the same mean np and standard deviation √(np(1 − p)), compare an exact binomial probability with its normal approximation, and judge the quality of the approximation from n and p (np and n(1 − p) both reasonably large). The continuity correction is shown as an optional refinement, so teachers can choose whether to use it with their class.
 
+**Enrichment.** The normal approximation to the binomial (and the continuity correction) is beyond the 2024 Extension 1 course, which solves binomial problems exactly. The page is kept as enrichment: it supports the central limit theorem story (a binomial count is n times the mean of n Bernoulli values, so it becomes bell-shaped as n grows), and it serves teachers who taught the 2017 course. The stage says so in its assumptions footer, and the teacher notes should say so too.
+
 ## What the student sees
 Default view at 1920×1080 (projector theme), n = 30, p = 0.4, event P(X ≤ 15), continuity correction off:
 
@@ -66,6 +68,7 @@ Formulas, with μ = np, σ = √(np(1 − p)) and c = 0.5 with the correction (0
 - error = approx − exact.
 
 ## Assumptions shown on stage
+- Enrichment: the normal approximation to the binomial is beyond the 2024 Extension 1 course
 - X ~ B(n, p): n independent trials with the same p
 - Normal curve with the same mean and SD as the binomial
 - Rule of thumb: np and n(1 − p) both at least 5 (some texts use 10)
@@ -80,7 +83,7 @@ Formulas, with μ = np, σ = √(np(1 − p)) and c = 0.5 with the correction (0
 ## Teacher notes outline
 - Misconceptions to target: the normal approximation is exact for large n (it is still an approximation); a normal curve gives a non-zero probability for a single value without a correction (it gives 0); the approximation is fine whenever n is large, whatever p is (np and n(1 − p) both matter); using σ = np(1 − p) instead of its square root; for P(X ≥ k) the corrected boundary is k + 0.5 (it is k − 0.5).
 - 10-minute lesson flow: 0–2 min predict over or under for the default; 2–4 min turn on the correction and discuss half-bars; 4–6 min the upper-tail and large-n presets; 6–8 min the skewed preset and the rule of thumb; 8–10 min the single-value preset, then connect with the sample proportion (divide X, μ and σ by n: the z-scores do not change).
-- Original HSC-style question idea: in a large city, 18% of households own an electric vehicle. A random sample of 200 households is surveyed. (a) Find the mean and standard deviation of the sample proportion p̂. (b) Use a normal approximation to estimate P(p̂ > 0.22). (c) Explain why the approximation is reasonable here. Full question and worked solution go in the notes file.
+- Original question idea (enrichment, in the style of the 2017 course): in a large city, 18% of households own an electric vehicle. A random sample of 200 households is surveyed. (a) Find the mean and standard deviation of the sample proportion p̂. (b) Use a normal approximation to estimate P(p̂ > 0.22). (c) Explain why the approximation is reasonable here. (d) For a 2024-course version, find P(X ≥ 45) exactly as a binomial sum with technology and compare. Full question and worked solution go in the notes file, under a clear "enrichment" label.
 
 ## Accessibility notes
 - Second cues beyond colour: bars inside the event are filled and those outside are hollow; the normal area is hatched; the boundary line is labelled with its z-score; the single-value case has a text note; the legend names every mark.

@@ -20,7 +20,7 @@ Students see that the sum a sin x + b cos x is a single sinusoid of the same per
 ## What the student sees
 Default view at 1920×1080 (projector theme), a = 3, b = 4, target form R sin(x + α):
 
-- **Main graph (left, about 70% of the stage):** x from 0° to 360° with ticks every 30° (or every π/6 when radians are chosen), y from −(R + 1) to R + 1. The component waves y = a sin x (blue, dashed, 2.5 px) and y = b cos x (green, dotted, 2.5 px) are drawn thinly; their sum y = a sin x + b cos x is the thick orange curve (3 px). The single-wave form R sin(x + α) is drawn as a thin dark dashed curve exactly on top of the orange curve, so students see the two coincide. The maximum and minimum points are marked with labels, e.g. "max 5 at x = 36.87°". Above the graph, the identity in KaTeX with the current values: 3 sin x + 4 cos x = 5 sin(x + 53.13°).
+- **Main graph (left, about 70% of the stage):** x from 0° to 360° with ticks every 30° (or every π/6 when radians are chosen), y from −(R + 1) to R + 1. The component waves y = a sin x (`--s2`, dashed, 2.5 px) and y = b cos x (`--s3`, dotted, 2.5 px) are drawn thinly; their sum y = a sin x + b cos x is the thick orange curve (3 px). The single-wave form R sin(x + α) is drawn as a thin dark dashed curve exactly on top of the orange curve, so students see the two coincide. The maximum and minimum points are marked with labels, e.g. "max 5 at x = 36.87°". Above the graph, the identity in KaTeX with the current values: 3 sin x + 4 cos x = 5 sin(x + 53.13°).
 - **Triangle panel (right):** a right-angled triangle with horizontal leg a, vertical leg b, hypotenuse R and the angle α marked at the origin, all labelled with values. For the cos forms, the legs swap roles as the expansion requires, and the panel shows the matching pair of equations (R cos α = …, R sin α = …).
 - **Optional level line (toggle):** a horizontal line y = c with the solutions of a sin x + b cos x = c in [0°, 360°) marked as hollow rings and listed.
 
@@ -60,7 +60,7 @@ When a, b > 0, `sin-plus` and `cos-minus` give an acute α; the other two give a
 | alphaRad | α | rad | 4 |
 | maxAt | First maximum at x = | ° | 4 |
 | minAt | First minimum at x = | ° | 4 |
-| solutionCount | Solutions in [0°, 360°) | | exact integer |
+| solutionCount | Solutions in [0°, 360°) | | integer (`integer: true`) |
 | solution1 | First solution | ° | 4 |
 | solution2 | Second solution | ° | 4 |
 

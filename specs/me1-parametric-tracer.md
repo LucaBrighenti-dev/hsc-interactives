@@ -65,7 +65,7 @@ For the line with p = 0, step 1 is replaced by "x = h for every t: a vertical li
 | line | line, h = 1, k = 3, p = 2, q = −1, t from −3 to 3, t = 2, window −6 to 8 | A straight line traced at constant speed |
 | parabola | parabola, h = 0, k = 0, a = 1, t from −3 to 3, t = 3, window −8 to 10 | x = 2t, y = t²: the classic parametric parabola x² = 4y |
 | half-circle | circle, h = 0, k = 0, r = 3, t from 0 to π | The Cartesian equation hides the restriction: only the top half is traced |
-| custom-cusp | custom, x(t) = t², y(t) = t³, t from −2 to 2, t = −2, window −2 to 10 | A curve with a cusp, y² = x³ |
+| custom-cusp | custom, x(t) = t², y(t) = t³, t from −2 to 2, t = −2, window x −2 to 10, y −9 to 9 | Enrichment beyond lines, parabolas and circles: a curve with a cusp, y² = x³ (x runs from 0 to 4 and y from −8 to 8, so the whole trace is on stage) |
 
 ## Readouts
 | Output | Label | Unit | Sig figs |
@@ -89,7 +89,7 @@ For the line with p = 0, step 1 is replaced by "x = h for every t: a vertical li
 
 ## Teacher notes outline
 - Misconceptions to target: t is a coordinate on the graph (it is not shown on either axis); the Cartesian equation tells you everything about the parametric curve (it loses direction, speed and restrictions on t); squaring to eliminate t never adds points (it can, as in the half-circle); the parameter for the circle must be in degrees.
-- 10-minute lesson flow: 0–2 min predict the starting point and direction of the default circle; 2–4 min reveal the elimination steps one at a time; 4–6 min the line and parabola presets, eliminating t on the board first; 6–8 min the half-circle and the restriction; 8–10 min the cusp, then students write their own pair of equations in custom mode.
+- 10-minute lesson flow: 0–2 min predict the starting point and direction of the default circle; 2–4 min reveal the elimination steps one at a time; 4–6 min the line and parabola presets, eliminating t on the board first; 6–8 min the half-circle and the restriction; 8–10 min the cusp (label it enrichment: the course's curves are lines, parabolas and circles), then students write their own pair of equations in custom mode.
 - Original HSC-style question idea: a particle moves so that x = 1 + 2 cos t and y = −2 + 2 sin t for 0 ≤ t ≤ 3π/2. (a) Find the Cartesian equation of its path. (b) Sketch the path, showing the start and end points and the direction of motion. (c) Find the values of t for which the particle is on the line y = x − 3. Full question and worked solution go in the notes file.
 
 ## Accessibility notes
