@@ -3,7 +3,7 @@
 // vs a line (with ring markers for a pmf), solid vs dashed, filled vs hollow vs crossed squares, plus a legend.
 import { createSurface, readPalette, stageFontPx, axisMargins, viewport, label, arrow, niceTicks, font, drawAxes, tickText } from '../../engine-kit.js';
 import { formatNumber, formatPlain, formatInteger, MINUS } from '../../format.js';
-import { normalPdf, binomialPmf, samplingTheory, decayTheory, decayProbability, halvingTimes, decaySteps, DECAY_DT } from './model.js';
+import { normalPdf, binomialPmf, samplingTheory, decayTheory, decayProbability, halvingTimes, decaySteps, DECAY_DT, zScore } from './model.js';
 
 const f3 = (x) => formatNumber(x, { sigfigs: 3 });
 const f4 = (x) => formatNumber(x, { sigfigs: 4 });
@@ -19,6 +19,17 @@ export function formatProbability(x) {
   return x < 0 && digits !== '0.0000' ? MINUS + digits : digits;
 }
 const p4 = formatProbability;
+
+/**
+ * Label for a boundary of the normal interval: its x value and z-score, e.g. "x = 15.5, z = 1.30". z has 3
+ * significant figures, like the z readout. Below 0.0005 it shows as 0: np = 30 × 0.4 is 12.000000000000002 in
+ * floating point, so a boundary at the mean would otherwise read "z = −6.62 × 10⁻¹⁶".
+ */
+export function boundaryLabel(x, mean, sd, { withX = true } = {}) {
+  const z = zScore(x, mean, sd);
+  const zText = `z = ${formatNumber(Math.abs(z) < 5e-4 ? 0 : z, { sigfigs: 3 })}`;
+  return withX ? `x = ${formatPlain(x)}, ${zText}` : zText;
+}
 
 /** Short description of the population being sampled. */
 export function populationLabel(params) {
@@ -234,14 +245,17 @@ export function createView(stage, setup) {
     ctx.restore();
   }
 
-  /** Header row: an uppercase panel title on the left, optional legend on the right. */
+  /**
+   * Header row: an uppercase panel title on the left, optional legend or text on the right. rightText may be
+   * a list of alternatives, longest first: the first that fits beside the title is drawn.
+   */
   function headerRow(title, y, px, { left, right, legendItems = [], rightText = null, rightColour, rightKind = 'mono' } = {}) {
     const titleW = measure(title, 'strong', px);
     text(title, left, y, { px, kind: 'strong', baseline: 'middle', box: pal.bg, padding: 3 });
     const used = left + titleW + px;
     if (rightText) {
-      const w = measure(rightText, rightKind, px);
-      if (used + w < right) text(rightText, right, y, { px, kind: rightKind, baseline: 'middle', align: 'right', colour: rightColour ?? pal.ink, box: pal.bg, padding: 3 });
+      const fit = [rightText].flat().find((s) => used + measure(s, rightKind, px) < right);
+      if (fit) text(fit, right, y, { px, kind: rightKind, baseline: 'middle', align: 'right', colour: rightColour ?? pal.ink, box: pal.bg, padding: 3 });
       return;
     }
     if (legendItems.length) {
@@ -442,6 +456,7 @@ export function createView(stage, setup) {
     }
 
     // ---- histogram
+    const histYTitle = compact ? null : relative ? 'Relative frequency' : 'Frequency'; // compact: named in the header
     edgeAxes(vpHist, { px, layer: 'under', xTicks, yTicks });
     if (zoom) {
       const a = vpPop.toX(bins.view[0]);
@@ -549,43 +564,39 @@ export function createView(stage, setup) {
           const lx = muX + sdPx + 8 + lw < L + plotW ? muX + sdPx + 8 : muX - 8 - lw;
           text(lab, lx, yA, { px, baseline: 'middle', box: pal.bg, padding: 3 });
         }
-        text(binomialMode ? 'np' : 'μ', muX + 6, histTop + px * 2.3, { px, kind: 'strong', colour: blue, box: pal.bg, padding: 2 });
+        // The y range is 1.2 × the highest bar or theory value, so the top sixth of the plot holds no data:
+        // the mean's name goes there (on short phone plots a lower label would sit on the curve's peak),
+        // unless the y title is in the way.
+        const titleEnd = histYTitle ? L + 10 + measure(histYTitle, 'label', px) + 8 : -Infinity;
+        text(binomialMode ? 'np' : 'μ', muX + 6, histTop + px * (muX + 4 > titleEnd ? 1 : 2.3), { px, kind: 'strong', colour: blue, box: pal.bg, padding: 2 });
       }
     }
-    // Values beyond the axis, and the empty-state prompt.
+    // Values beyond the axis.
     if (state.under + state.over > 0) {
       const k = state.under + state.over;
       text(`${int(k)} beyond the axis`, L + plotW - 6, histTop + histH - 8, { px, align: 'right', colour: pal.muted, box: pal.bg, padding: 3 });
     }
-    if (N === 0) {
-      text('Press play to draw samples', L + plotW / 2, histTop + histH * 0.45, { px: px + 2, align: 'center', baseline: 'middle', colour: pal.muted, box: pal.bg, padding: 6 });
-    }
-    edgeAxes(vpHist, {
-      px,
-      layer: 'over',
-      xTicks,
-      yTicks,
-      xTitle: binomialMode ? 'X' : 'x̄',
-      yTitle: compact ? null : relative ? 'Relative frequency' : 'Frequency', // compact: named in the header
-    });
+    edgeAxes(vpHist, { px, layer: 'over', xTicks, yTicks, xTitle: binomialMode ? 'X' : 'x̄', yTitle: histYTitle });
 
     // ---- headers (drawn last so their flat background boxes sit over the drop line)
+    // Before the first sample, the slot for the latest result holds the empty-state prompt: nothing else is
+    // drawn there, so it never meets the theory curve or its σ label (which show before any samples).
     const sampTitle = N ? `SAMPLE ${int(N)} OF ${int(params.samples)}` : `0 OF ${int(params.samples)} SAMPLES`;
+    const latestSlot = (str) =>
+      state.latest
+        ? { rightText: str, rightColour: pal.accentText, rightKind: 'strong' } // Inter: JetBrains Mono misplaces the combining macron of x̄
+        : { rightText: ['Press play to draw samples', 'Press play'], rightColour: pal.muted, rightKind: 'label' };
     if (binomialMode) {
       headerRow(compact ? `${sampTitle} · n = ${params.n}` : `${sampTitle} · n = ${params.n} trials · P(success) = ${formatPlain(params.p)}`, sampHeadY + rowH / 2, px, {
         left: L - m.left,
         right: R,
-        rightText: state.latest ? `X = ${state.latestValue} success${state.latestValue === 1 ? '' : 'es'}` : null,
-        rightColour: pal.accentText,
-        rightKind: 'strong',
+        ...latestSlot(state.latest && [`X = ${state.latestValue} success${state.latestValue === 1 ? '' : 'es'}`, `X = ${state.latestValue}`]),
       });
     } else {
       headerRow(compact ? `${sampTitle} · n = ${params.n}` : `${sampTitle} · size n = ${params.n}`, sampHeadY + rowH / 2, px, {
         left: L - m.left,
         right: R,
-        rightText: state.latest ? `x̄ = ${f4(state.latestValue)}` : null,
-        rightColour: pal.accentText,
-        rightKind: 'strong', // Inter: JetBrains Mono misplaces the combining macron of x̄
+        ...latestSlot(state.latest && `x̄ = ${f4(state.latestValue)}`),
       });
     }
     const histTitle = compact ? (relative ? 'REL. FREQUENCY' : 'FREQUENCY') : binomialMode ? 'NUMBER OF SUCCESSES X' : 'SAMPLE MEANS x̄';
@@ -741,19 +752,44 @@ export function createView(stage, setup) {
     });
     const headerBottom = Math.max(resTop + (results.length - 1) * resStep, compact ? first : first + 2 * lineH) + px * 0.5;
 
-    // Legend row.
-    const legendY = headerBottom + px * 0.9;
+    // Rows between the header and the plot: the legend; the y-axis title, outside the plot above its top-left
+    // corner (as drawAxes' titles: 'outside'), so it never meets the data or the note; and, for P(X = k)
+    // without the correction, the note. The title shares the legend's row when both fit, and the note shares
+    // the title's row when it fits (a shorter wording first, on narrow stages).
     const items = [
       { kind: 'bar', colour: accent, text: compact ? 'In event' : 'P(X = k) in the event' },
       { kind: 'hollow', colour: pal.muted, text: compact ? 'Outside' : 'P(X = k) outside it' },
       { kind: 'line', colour: blue, text: compact ? 'Normal' : 'Normal density' },
       { kind: 'hatch', colour: blue, text: compact ? 'Area' : 'Normal area' },
     ];
-    if (legend(items, 0, 0, px, { draw: false }) < W - 2 * pad) legend(items, W - pad, legendY, px);
+    const plotX = pad + m.left;
+    const rowRight = W - pad;
+    const rowStep = Math.round(px * 1.5);
+    const yTitle = 'Probability';
+    const titleW = measure(yTitle, 'label', px);
+    const legendW = legend(items, 0, 0, px, { draw: false });
+    let rowY = headerBottom + px * 0.9;
+    let titleBesideLegend = false;
+    if (legendW < W - 2 * pad) {
+      legend(items, rowRight, rowY, px);
+      titleBesideLegend = plotX + titleW + px + legendW <= rowRight;
+      if (!titleBesideLegend) rowY += rowStep;
+    }
+    text(yTitle, plotX, rowY, { px, baseline: 'middle', colour: pal.ink });
+    if (params.event === 'eq' && !params.continuity) {
+      const notes = ['A single point has no area: P(Y = k) = 0', 'A single point has no area', 'No area at a point'];
+      const fitsFrom = (from) => (s) => from + measure(s, 'label', px) <= rowRight;
+      let note = titleBesideLegend ? null : notes.find(fitsFrom(plotX + titleW + px));
+      if (!note) {
+        rowY += rowStep;
+        note = notes.find(fitsFrom(plotX)) ?? notes[notes.length - 1];
+      }
+      text(note, rowRight, rowY, { px, baseline: 'middle', align: 'right', colour: pal.muted });
+    }
 
     // Plot.
-    const top = legendY + px * 1.2;
-    const rect = { x: pad + m.left, y: top, w: W - 2 * pad - m.left - m.right, h: Math.max(60, H - top - m.bottom - pad * 0.5) };
+    const top = rowY + px * 1.1;
+    const rect = { x: plotX, y: top, w: W - 2 * pad - m.left - m.right, h: Math.max(60, H - top - m.bottom - pad * 0.5) };
     let lo = Math.max(0, Math.floor(r.mean - 4.5 * r.sd));
     let hi = Math.min(n, Math.ceil(r.mean + 4.5 * r.sd));
     lo = Math.min(lo, Math.max(0, k - 1));
@@ -767,9 +803,63 @@ export function createView(stage, setup) {
     let peak = 0;
     for (let j = lo; j <= hi; j++) peak = Math.max(peak, state.pmf[j]);
     peak = Math.max(peak, normalPdf(0) / r.sd);
-    const vp = viewport({ x: [x0, x1], y: [0, peak * 1.18], rect });
+
+    // Boundary labels ("x = 15.5, z = 1.30") sit at the top of the plot beside their line: on the tail side
+    // of a single boundary (away from the mean, where the data falls away), and outside a pair. Where that
+    // doesn't fit, the label drops its x (the results above give it), then tries the other side, then takes
+    // a second row. The x scale doesn't depend on the y range, so the labels are placed first and the y
+    // range gains headroom when the bars or curve under a label would reach it (short phone plots, a
+    // boundary near the peak).
+    const xvp = viewport({ x: [x0, x1], y: [0, 1], rect });
+    const dataTop = (a, b) => {
+      let h = 0;
+      for (let j = Math.max(lo, Math.ceil(a - 0.5)); j <= Math.min(hi, Math.floor(b + 0.5)); j++) h = Math.max(h, state.pmf[j]);
+      for (let s = 0; s <= 16; s++) h = Math.max(h, normalPdf(a + ((b - a) * s) / 16, r.mean, r.sd));
+      if (r.mean > a && r.mean < b) h = Math.max(h, normalPdf(r.mean, r.mean, r.sd));
+      return h;
+    };
+    const bounds = [r.lower, r.upper].filter((v, i, arr) => Number.isFinite(v) && arr.indexOf(v) === i && v >= x0 && v <= x1);
+    const boxH = px + 6; // a label's box (padding 3); its baseline sits 0.25 px above the box's bottom
+    const rowGap = 4;
+    const labels = [];
+    bounds.forEach((v, i) => {
+      const X = xvp.toX(v);
+      const prefer = bounds.length === 2 ? i === 1 : v >= r.mean; // true: right of the line
+      const texts = [boundaryLabel(v, r.mean, r.sd), boundaryLabel(v, r.mean, r.sd, { withX: false })];
+      const at = (right, str) => {
+        const w = measure(str, 'label', px);
+        return { str, X, w, left: right ? X + 8 : X - 8 - w };
+      };
+      const clear = (c, row) => c.left >= rect.x && c.left + c.w <= rect.x + rect.w && !labels.some((l) => l.row === row && c.left < l.left + l.w + 8 && l.left < c.left + c.w + 8);
+      // A pair keeps its sides (dropping x first); a single label keeps its x (changing side first).
+      const [full, short] = texts;
+      const order = bounds.length === 2 ? [[prefer, full], [prefer, short], [!prefer, full], [!prefer, short]] : [[prefer, full], [!prefer, full], [prefer, short], [!prefer, short]];
+      let pick = null;
+      for (const [right, str] of order) {
+        const c = at(right, str);
+        if (clear(c, 0)) {
+          pick = { ...c, row: 0 };
+          break;
+        }
+      }
+      if (!pick) {
+        pick = at(prefer, short);
+        pick.left = Math.min(Math.max(pick.left, rect.x), rect.x + rect.w - pick.w);
+        pick.row = 1;
+        while (labels.some((l) => l.row === pick.row)) pick.row++;
+      }
+      pick.h = dataTop(xvp.fromX(pick.left - 4), xvp.fromX(pick.left + pick.w + 4));
+      labels.push(pick);
+    });
+    let yTop = peak * 1.18;
+    for (const l of labels) {
+      const need = rowGap + (l.row + 1) * boxH + l.row * rowGap + 6; // the rows of labels, then 6 px to the data
+      yTop = Math.max(yTop, (l.h * rect.h) / Math.max(rect.h * 0.4, rect.h - need));
+    }
+
+    const vp = viewport({ x: [x0, x1], y: [0, yTop], rect });
     const xTicks = niceTicks(x0, x1, Math.max(3, Math.min(12, Math.floor(rect.w / (px * 4))))).ticks.filter((t) => Number.isInteger(t) && t >= lo && t <= hi);
-    const yTicks = niceTicks(0, peak * 1.18, Math.max(2, Math.min(5, Math.floor(rect.h / (px * 2.4))))).ticks;
+    const yTicks = niceTicks(0, yTop, Math.max(2, Math.min(5, Math.floor(rect.h / (px * 2.4))))).ticks;
     edgeAxes(vp, { px, layer: 'under', xTicks, yTicks });
 
     // Bars: width 1, so each bar's area is P(X = k) on the same scale as the normal density.
@@ -838,22 +928,14 @@ export function createView(stage, setup) {
     ctx.stroke();
     ctx.restore();
 
-    // Boundaries of the normal interval.
-    const bounds = [r.lower, r.upper].filter((v, i, arr) => Number.isFinite(v) && arr.indexOf(v) === i);
-    bounds.forEach((v, i) => {
-      if (v < x0 || v > x1) return;
-      const X = vp.toX(v);
-      dashedLine(X, rect.y, X, base, pal.ink, 2, [7, 5]);
-      const lab = `x = ${formatPlain(v)}`;
-      const w = measure(lab, 'label', px);
-      const right = bounds.length === 2 && i === 0;
-      text(lab, right ? X - 8 - w : X + 8, rect.y + px * (2.4 + i * 1.5), { px, box: pal.bg, padding: 3 });
-    });
-    if (params.event === 'eq' && !params.continuity) {
-      text('A single point has no area: P(Y = k) = 0', rect.x + rect.w - 8, rect.y + px * 1.2, { px, align: 'right', colour: pal.muted, box: pal.bg, padding: 3 });
+    // Boundaries of the normal interval, labelled with x and z (placed above).
+    for (const l of labels) dashedLine(l.X, rect.y, l.X, base, pal.ink, 2, [7, 5]);
+    for (const l of labels) {
+      const bottom = rect.y + rowGap + (l.row + 1) * boxH + l.row * rowGap;
+      text(l.str, l.left, bottom - 3 - px * 0.25, { px, box: pal.bg, padding: 3 });
     }
 
-    edgeAxes(vp, { px, layer: 'over', xTicks, yTicks, xTitle: 'k', yTitle: 'Probability' });
+    edgeAxes(vp, { px, layer: 'over', xTicks, yTicks, xTitle: 'k' });
   }
 
   // ---------------------------------------------------------------- decay

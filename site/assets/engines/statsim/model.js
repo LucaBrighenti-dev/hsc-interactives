@@ -408,6 +408,11 @@ export function binomialCdf(n, p, k) {
   return Math.min(1, s);
 }
 
+/** z-score of x under N(mean, sd²): z = (x − mean)/sd. */
+export function zScore(x, mean, sd) {
+  return (x - mean) / sd;
+}
+
 /**
  * Normal approximation to X ~ B(n, p) with Y ~ N(np, np(1 − p)).
  * event 'le': P(X ≤ k) ≈ P(Y ≤ k + c); 'ge': P(X ≥ k) ≈ P(Y ≥ k − c); 'eq': P(X = k) ≈ P(k − c ≤ Y ≤ k + c),
@@ -434,7 +439,7 @@ export function normalApprox({ trials: n, prob: p, k, event = 'le', continuity =
     lower = k - c;
     upper = Infinity;
     approx = 1 - normalCdf(lower, mean, sd);
-    z = (lower - mean) / sd;
+    z = zScore(lower, mean, sd);
   } else if (event === 'eq') {
     kFrom = k;
     kTo = k;
@@ -449,7 +454,7 @@ export function normalApprox({ trials: n, prob: p, k, event = 'le', continuity =
     lower = -Infinity;
     upper = k + c;
     approx = normalCdf(upper, mean, sd);
-    z = (upper - mean) / sd;
+    z = zScore(upper, mean, sd);
   }
   return { exact, approx, error: approx - exact, mean, sd, z, lower, upper, kFrom, kTo };
 }
