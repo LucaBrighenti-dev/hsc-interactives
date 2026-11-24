@@ -9,3 +9,6 @@ docs/syllabus-reference/
 *.log
 .DS_Store
 Thumbs.db
+
+# Agent worktrees (Claude Code isolation) live inside the repo folder; never commit them.
+.claude/worktrees/
