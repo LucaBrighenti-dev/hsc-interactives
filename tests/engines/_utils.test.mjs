@@ -212,4 +212,10 @@ test('safeNext keeps sign-in redirects on this site', async () => {
   assert.equal(safeNext('/signin.html?next=/'), '/');
   assert.equal(safeNext(null), '/');
   assert.equal(safeNext('/a\nb'), '/');
+  // Dot segments that normalise to a protocol-relative URL (open redirect found in review of #37).
+  for (const evil of ['/.//evil.example/x', '/..//evil.example/x', '/%2e//evil.example/x', '/%2E%2E//evil.example/x', '/a/../..//evil.example', '/./%2e//evil.example']) {
+    assert.equal(safeNext(evil), '/', evil);
+  }
+  // Ordinary paths with dots still work.
+  assert.equal(safeNext('/interactives/./physics/projectile-lab.html'), '/interactives/physics/projectile-lab.html');
 });
