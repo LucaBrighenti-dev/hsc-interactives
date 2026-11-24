@@ -23,7 +23,7 @@ Syllabus fit: 2017 Module 7 The Nature of Light (black-body radiation, Wien's di
 ## What the student sees
 Default view at 1920×1080, projector theme:
 
-- A graph of spectral intensity (relative units, one shared scale for every curve) against wavelength λ from 0 to 3000 nm, with gridlines and labelled axes `Wavelength λ (nm)` and `Spectral intensity (relative)`. The y-axis fits the tallest curve shown.
+- A graph of spectral intensity (relative units, one shared scale for every curve) against wavelength λ from 0 to 3000 nm, with gridlines and labelled axes `Wavelength λ (nm)` and `Spectral intensity (relative)`. The y-axis fits the tallest Planck curve shown (the classical curve, which diverges at short wavelengths, is clipped at the top of the axis).
 - The visible band (380–750 nm) is shaded with a thin rainbow strip along the λ axis, labelled `visible`, and the regions either side labelled `UV` and `IR`.
 - The Planck curve for T in thick orange, with its peak marked by a dot, a dashed vertical line to the axis, and the label `λ_max = 500 nm`.
 - When comparing, the second curve (T₂) is drawn in blue with a dashed peak line and its own label; the area under each curve can be lightly hatched (orange diagonal for T, blue cross-hatch for T₂).

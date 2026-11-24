@@ -69,7 +69,7 @@ Page controls, in order: `aperture`, `wavelength`, `slitSeparation`, `slitWidth`
 | centralWidth | Central bright fringe width | m | 3 |
 | maxOrder | Highest order m | | 2 |
 
-Definitions (from the engine's `interferenceOutputs`, SI units, angles in degrees). For slits and gratings: θ₁ = asin(λ/d); y₁ = L tan θ₁ (exact); small-angle estimate λL/d; fringe spacing = y₁ (exact); central width = 2L tan(asin(s₀)) with s₀ = min(λ/(Nd), λ/a), the first zero either side of the centre; highest order = the largest m with mλ < d (grating only, — otherwise). For a single slit, "first order" is the first dark fringe, asin(λ/a); fringe spacing and highest order show —.
+Definitions (from the engine's `interferenceOutputs`, SI units, angles in degrees). For slits and gratings: θ₁ = asin(λ/d); y₁ = L tan θ₁ (exact); small-angle estimate λL/d; fringe spacing = y₁ (exact) for a double slit, — for a grating (its maxima are not evenly spaced on a flat screen: 0.629 m, 1.50 m, 4.13 m for the `grating` preset, so the screen marks each order instead); central width = 2L tan(asin(s₀)) with s₀ = min(λ/(Nd), λ/a), the first zero either side of the centre; highest order = the largest m with mλ < d (grating only, — otherwise). For a single slit, "first order" is the first dark fringe, asin(λ/a); fringe spacing and highest order show —.
 
 ## Assumptions shown on stage
 - Monochromatic, coherent light; slits lit equally
@@ -79,7 +79,7 @@ Definitions (from the engine's `interferenceOutputs`, SI units, angles in degree
 
 ## Try this (3–5 predict, observe, explain prompts)
 1. Predict: if you halve the slit separation d, what happens to the fringe spacing? Then try it.
-2. Observe: compare the first-order position y₁ with its small-angle estimate as you shrink d towards 0.05 mm. When does the small-angle formula start to be noticeably wrong?
+2. Observe: in the `grating` preset, compare the first-order position y₁ (0.629 m) with its small-angle estimate λL/d (0.600 m). Then go back to the double slit and compare them again. Why is the approximation excellent for the double slit but 5% out for the grating?
 3. Explain: in the default pattern the 5th bright fringe on each side is missing. Turn on the envelope and explain why, using d = 5a.
 4. Predict, then observe: in the `grating` preset, raise the number of slits lit from 100 to 1000. Do the bright lines move, or only get narrower? Read the central width.
 5. Explain: at 600 lines/mm, why are there exactly three orders each side for 500 nm light but only two for 700 nm? Which colour is deviated most, and why does a grating spread white light into a spectrum with red furthest out?
@@ -97,6 +97,8 @@ Definitions (from the engine's `interferenceOutputs`, SI units, angles in degree
 
 ## Engine change requests
 - None required: every key used here exists in the `wave` engine's meta on `w1/engine-wave`.
+- Requested for readability on a projector (`siPrefix` landed in #15): `siPrefix: true` on `firstOrderPosition`, `smallAnglePosition`, `fringeSpacing` and `centralWidth`, so 0.00480 m reads "4.80 mm", and `integer: true` on `maxOrder`. The acceptance values are SI either way.
+- Noted from the wave review: `fringeSpacing` becomes — for a grating; no check here expects a grating fringe spacing.
 - Optional, for a later engine version: a draggable probe on the intensity graph with readouts of the path difference (in wavelengths) and I/I₀ at that point, so students can test the bright and dark conditions directly.
 
 ## Acceptance

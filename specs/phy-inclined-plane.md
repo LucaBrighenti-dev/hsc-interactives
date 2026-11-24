@@ -69,10 +69,11 @@ Page controls, in order: `angle`, `mass`, `muS`, `muK`, `applied`, `appliedAngle
 Further outputs: `weight` (W = mg), `weightPerp` (mg cos θ) and `slipping` (1 sliding, 0 at rest). `friction` and `acceleration` are magnitudes; their directions are shown on the stage.
 
 Model (the engine's `solveIncline`; along the slope + is up, perpendicular + is away from the surface; F at angle φ from up the slope):
-- N = mg cos θ − F sin φ (if negative, the block lifts off: friction 0, acceleration —).
+- N = mg cos θ − F sin φ. If this is negative the block lifts off the surface: the stage says so, N and `friction` are 0, `frictionMax` is 0, and `acceleration` and `slipping` are — (the block is no longer on the slope, so the slope model does not apply).
 - Net force along the slope without friction: D = F cos φ − mg sin θ.
 - If |D| ≤ μₛN: at rest; friction = |D|, acceleration 0.
 - If |D| > μₛN: slides in the direction of D; friction = μₖN; acceleration = (|D| − μₖN)/m.
+- μₖ is capped at μₛ: if μₖ > μₛ is entered, the engine uses μₖ = μₛ and says so on stage. (Without the cap, a block released from rest could "slide" uphill: θ 20°, m 5 kg, μₛ 0.3, μₖ 0.6 would give a = (16.76 − 27.63)/5 up the slope. With the cap, friction is 0.3 × 46.04 = 13.81 N and a = (16.76 − 13.81)/5 = 0.589 m/s² down the slope.)
 
 ## Assumptions shown on stage
 - Block treated as a particle; rigid ramp
@@ -111,6 +112,7 @@ Every number below comes from the formula and hand calculation shown here, using
 - **Check 6, crate pushed harder.** Same with F = 60 N: D = 60 > 50, sliding. Friction 0.3 × 100 = **30 N**; acceleration (60 − 30)/10 = **3.00 m/s²**.
 - **Check 7, pulled at an angle.** F = 60 N at φ = 30° (above the floor): N = 100 − 60 sin 30° = **70 N**; D = 60 cos 30° = 51.9615 N > μₛN = 35 N, sliding. Friction 0.3 × 70 = **21 N**; acceleration (51.9615 − 21)/10 = **3.09615 m/s²**.
 - **Check 8, on the point of slipping.** F = 50 N at 0°: |D| = 50 = μₛN exactly, so the block is still at rest (it slides only when |D| > μₛN): friction **50 N**, acceleration **0**, slipping **0**.
+- **Check 9, μₖ entered above μₛ (capped).** θ = 20°, m = 5 kg, μₛ = 0.3, μₖ = 0.6, g = 9.8: mg sin 20° = 49 × 0.342020 = 16.7590 N; N = 49 × 0.939693 = 46.0449 N; μₛN = 13.8135 N < 16.7590, so it slides down. With μₖ capped at μₛ = 0.3: friction = **13.8135 N**, acceleration = (16.7590 − 13.8135)/5 = **0.589101 m/s²** down the slope, slipping **1**.
 
 ```acceptance
 [
@@ -129,6 +131,8 @@ Every number below comes from the formula and hand calculation shown here, using
   { "name": "crate pulled at 30°", "preset": "eng-horizontal", "params": { "angle": 0, "mass": 10, "muS": 0.5, "muK": 0.3, "applied": 60, "appliedAngle": 30, "g": 10 }, "run": "static",
     "expect": { "normalForce": { "value": 70, "relTol": 1e-9 }, "friction": { "value": 21, "relTol": 1e-9 }, "acceleration": { "value": 3.09615, "relTol": 1e-5 } } },
   { "name": "on the point of slipping stays at rest", "preset": "eng-horizontal", "params": { "angle": 0, "mass": 10, "muS": 0.5, "muK": 0.3, "applied": 50, "appliedAngle": 0, "g": 10 }, "run": "static",
-    "expect": { "friction": { "value": 50, "relTol": 1e-9 }, "acceleration": { "value": 0, "absTol": 1e-9 }, "slipping": { "value": 0, "absTol": 1e-9 } } }
+    "expect": { "friction": { "value": 50, "relTol": 1e-9 }, "acceleration": { "value": 0, "absTol": 1e-9 }, "slipping": { "value": 0, "absTol": 1e-9 } } },
+  { "name": "μk above μs is capped at μs", "params": { "angle": 20, "mass": 5, "muS": 0.3, "muK": 0.6, "applied": 0, "appliedAngle": 0, "g": 9.8 }, "run": "static",
+    "expect": { "friction": { "value": 13.8135, "relTol": 1e-5 }, "acceleration": { "value": 0.589101, "relTol": 1e-5 }, "slipping": { "value": 1, "absTol": 1e-9 } } }
 ]
 ```
