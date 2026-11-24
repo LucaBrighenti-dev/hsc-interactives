@@ -41,7 +41,7 @@ Let β = `speed` (as a fraction of c), L_c = `clockLength`, L₀ = `shipLength`.
 - Dilated tick (moving clock, measured in this frame): Δt = γΔt₀.
 - Light path per tick of the moving clock in this frame: c·Δt = 2γL_c (m). Its vertical speed component is c/γ and horizontal component v.
 - Contracted length of the moving object: L = L₀/γ. In the Earth frame the moving object is the ship; in the ship frame it is the Earth platform, which has the same proper length L₀ so the comparison is symmetric. Lengths perpendicular to the motion (mirror separation, heights) do not change.
-- Frame time t (ns) starts at 0. Display pacing: each fixed step advances t by Δt₀/240, so one tick of the clock at rest takes 1 s on screen at timeScale 1 (footer: "Slow motion: one rest-clock tick = 1 s").
+- Frame time t (ns) starts at 0. Display pacing: the engine keeps a step counter k and sets t = k·Δt₀/240 (not by repeated addition, which drifts), so one tick of the clock at rest takes 1 s on screen at timeScale 1 (footer: "Slow motion: one rest-clock tick = 1 s").
 - Moving clock's own reading: τ = t/γ.
 - Tick counts: restClockTicks = floor(t/Δt₀ + 10⁻⁹), movingClockTicks = floor(t/(γΔt₀) + 10⁻⁹). The 10⁻⁹ guards against rounding at exact tick boundaries.
 - The run is complete when the moving clock has completed `ticks` ticks: t_end = ticks × γ × Δt₀. The last step is clamped so t ends at exactly t_end.

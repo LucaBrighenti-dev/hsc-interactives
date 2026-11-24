@@ -28,7 +28,7 @@ Default view at 1920×1080 (light projector stage):
   - **Current–voltage** (default): photocurrent (µA, 0–10) against anode voltage (V, −8 to 4). The live curve for the current settings, with a dot at the present voltage and a dashed vertical marker at −V_s labelled "V_s = … V". Previous curves can be kept as faint grey traces with the shell's reset clearing them (engine keeps the last 3 traces).
   - **KE_max–frequency**: KE_max (eV, −6 to 8) against frequency (×10¹⁴ Hz, 0 to 20). The line KE_max = hf − φ for the selected metal, extended below the axis as a dashed line to the intercept −φ; threshold f₀ marked on the axis; a dot at the present frequency (hollow when below threshold). With `compareMetals` on, every metal's line is drawn and labelled, so the parallel lines show the common gradient h.
 
-A no-emission state says "No photoelectrons: hf < φ" in the tube, and the beam still hits the cathode.
+A no-emission state says "No photoelectrons: hf ≤ φ" in the tube, and the beam still hits the cathode.
 
 ## Model (custom engine)
 Engine folder `site/assets/engines/custom/phy-photoelectric/`, `meta.name: 'phy-photoelectric'`, one setup `tube`. **Time-based and open-ended**: the electron stream animates while playing, but nothing ends, so `isComplete()` stays false and every output is a closed form of the params (independent of t). It has `timeScale`. Fixed step 1/240 s. The page's acceptance checks are all `static`.
@@ -119,7 +119,7 @@ The page shows the first eight; the J values and v_max are in meta for CSV and f
 - **Original HSC-style question idea:** a student measures stopping voltages of 1.46 V and 0.72 V for light of 330 nm and 410 nm on an unknown metal. (a) Calculate a value of Planck's constant from the two points. (b) Determine the work function and threshold frequency. (c) Explain, with reference to photons, why the stopping voltage does not change when the lamp is moved closer. Worked solution in the notes file.
 
 ## Accessibility notes
-- The beam colour is backed up by the wavelength printed beside the lamp and a "UV" label where invisible. Emission state is stated in words ("No photoelectrons: hf < φ").
+- The beam colour is backed up by the wavelength printed beside the lamp and a "UV" label where invisible. Emission state is stated in words ("No photoelectrons: hf ≤ φ").
 - The current is shown three ways: needle, digits and graph dot. Retarding voltage is shown by sign and by the word "retarding" beside the supply.
 - The graph uses solid lines for the selected metal, dashed for extrapolation, and labelled lines for other metals, not colour alone.
 - Keyboard: all controls through the shell; the voltage slider steps 0.01 V (Page Up/Down 0.1 V).

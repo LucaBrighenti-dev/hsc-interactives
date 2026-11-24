@@ -23,7 +23,7 @@ Syllabus tags: 2017 Module 8 (From the Universe to the Atom: quantum model of th
 ## What the student sees
 Default view at 1920×1080 (light projector stage), three linked panels:
 
-- **Left, the atom (about 40% of the stage width).** A small nucleus (labelled p⁺) with circular orbits n = 1 to 6, each labelled with its n. The electron is an orange dot on orbit n_i. When the run plays, the electron moves radially to orbit n_f over 0.6 s and a photon (a short sine-wave packet in the line's colour, or dark grey with a "UV" or "IR" tag if invisible) leaves the atom (emission) or arrives at it (absorption) over the next 1.4 s. By default orbits are drawn evenly spaced and the footer says "Orbits not to scale"; with `orbitScale` = `true` the radii are drawn ∝ n².
+- **Left, the atom (about 40% of the stage width).** A small nucleus (labelled p⁺) with circular orbits n = 1 to 6, each labelled with its n. The electron is an orange dot on orbit n_i. When the run plays, the electron moves radially to orbit n_f over 0.6 s and a photon (a short sine-wave packet in the line's colour, or dark grey with a "UV" or "IR" tag if invisible) leaves the atom (emission) or arrives at it (absorption) over the next 1.4 s. By default orbits are drawn evenly spaced and the footer says "Orbits not to scale"; with `orbitScale` = `scaled` the radii are drawn ∝ n².
 - **Centre, the energy-level diagram.** A vertical energy axis from −14 eV to 0 eV with a horizontal line per level, labelled "n = 1  −13.6 eV" and so on, plus a dashed "n = ∞  0 eV" ionisation line. Labels for n ≥ 4 sit to the right with leader lines so they never overlap. The transition is a thick orange arrow from E_i to E_f, labelled with ΔE in eV.
 - **Bottom, two spectrum strips.** The upper strip is a log wavelength axis from 80 nm to 8 µm with UV, visible and IR bands labelled. The lower strip is the visible band, 380–750 nm, on a linear axis. An emission transition draws a bright line on a dark strip; an absorption transition draws a dark line on a continuous spectrum. With `showSeries` on, every other line of the same series (same lower level, upper level up to 6) appears as a thinner line labelled with its wavelength, and the series name (Lyman, Balmer, Paschen, Brackett, Pfund) is shown above the strip with its series limit as a dashed tick.
 
@@ -63,7 +63,7 @@ Wavelength-to-colour for visible lines: any standard piecewise approximation (38
 | nFinal | Final level n_f | | 1 | 6 | 1 | 2 | `integer: true`. n_f < n_i emits; n_f > n_i absorbs |
 | showSeries | Show the whole series | | | | | on | boolean |
 | showDeBroglie | de Broglie waves on orbits | | | | | off | boolean |
-| orbitScale | Orbit spacing | | | | | spaced | enum: `spaced` (Evenly spaced), `true` (True scale, r ∝ n²) |
+| orbitScale | Orbit spacing | | | | | spaced | enum: `spaced` (Evenly spaced), `scaled` (True scale, r ∝ n²) |
 | timeScale | Playback speed | × | 0.25 | 2 | 0.25 | 1 | |
 
 ## Presets
@@ -73,7 +73,7 @@ Wavelength-to-colour for visible lines: any standard piecewise approximation (38
 | lyman-alpha | nInitial 2, nFinal 1, showSeries on | every jump to n = 1 is ultraviolet |
 | absorption | nInitial 2, nFinal 3, showSeries off | the same 656 nm line, now as a dark absorption line |
 | paschen | nInitial 4, nFinal 3, showSeries on | infrared series |
-| de-broglie | nInitial 3, nFinal 3, showDeBroglie on, orbitScale true | three wavelengths fit around orbit 3; no transition |
+| de-broglie | nInitial 3, nFinal 3, showDeBroglie on, orbitScale scaled | three wavelengths fit around orbit 3; no transition |
 
 No catalogue listing reuses this page.
 
@@ -130,7 +130,7 @@ Every number below comes from the formula and hand calculation shown here. hcR =
 - **Check 4, Paschen α (4 → 3).** 1/λ = R(1/9 − 1/16) = 7R/144, λ = 144/(7 × 1.097 × 10⁷) = **1875.244 nm**. E_i = −13.601 07/16 = **−0.850 067 eV**.
 - **Check 5, orbit and de Broglie wavelength for n_i = 3.** r = 9a₀ = 9 × 5.291 772 109 × 10⁻¹¹ = **4.762 595 × 10⁻¹⁰ m**. λ_dB = 2πr/3 = 6πa₀ = **9.974 755 × 10⁻¹⁰ m**.
 - **Check 6, the jump animation ends.** A full run lasts 2.0 s (480 steps of 1/240 s), so after `complete` **t = 2 s**, and the wavelength is still **656.3355 nm**.
-- **Check 7, Hδ preset values (6 → 2).** 1/λ = R(1/4 − 1/36) = 2R/9, λ = 9/(2 × 1.097 × 10⁷) = **410.2097 nm**.
+- **Check 7, Hδ (6 → 2).** 1/λ = R(1/4 − 1/36) = 2R/9, λ = 9/(2 × 1.097 × 10⁷) = **410.2097 nm**.
 
 Tolerances are 1 × 10⁻⁶ relative: every value is a closed form.
 
