@@ -16,3 +16,6 @@ PRs that passed independent review (`VERDICT: PASS`) with CI green. The orchestr
 | [#30](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/30) | statsim CR | statsim polish | PASS | 2026-11-25 |
 | [#18](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/18) | W1-E-statics | statics engine (truss, beam, concurrent, moments, incline) | FAIL 5 → PASS | 2026-11-25 |
 | [#29](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/29) | W1-E-rays | rays engine (ray box, lenses, mirrors, fibre) | FAIL 2 → orchestrator re-check PASS | 2026-11-25 |
+| [#37](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/37) | W1-AUTH | premium sign-in, onboarding, privacy, Supabase migration fix | FAIL 2 (incl. open redirect, fixed by lead #47) → PASS | 2026-11-25 |
+| [#38](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/38) | me1-sampling-simulator | page (P0), notes | PASS | 2026-11-25 |
+| [#42](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/42) | me1-normal-approx | page (enrichment), notes | PASS | 2026-11-25 |

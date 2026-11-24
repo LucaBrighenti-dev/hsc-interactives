@@ -5,7 +5,7 @@ subject: me2
 engine: fnplot
 setup: by-parts
 priority: P2
-status: draft            # stub → draft → approved (Gate B)
+status: approved            # stub → draft → approved (Gate B)
 page: /interactives/maths-ext2/integration-by-parts.html
 syllabus:            # copied from the catalog fragment; verified by W1-SYL
   - {"course":"Mathematics Extension 2","version":"2024","area":"Calculus","focusArea":"Further integration","year":12,"outcomes":[],"verified":false}

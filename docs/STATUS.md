@@ -10,8 +10,8 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 - [x] **Gate A**: approved by Luca 2026-11-25. Wave 0 merged: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/1
 - [ ] **Gate B / me1**: Maths Ext 1 specs approved | P0+P1 approved by orchestrator 2026-11-25 (PR #16, reviewer + re-check); P2 PR #31 fixing
-- [ ] **Gate B / me2** | Maths Ext 2 specs approved | P0+P1 approved 2026-11-25 (PR #7); P2 PR #21 FAIL 1 (sign rule when a > b) → writer fixing
-- [ ] **Gate B / phy** | Physics specs approved | A APPROVED 2026-11-25 (#17 + #32 merged after review, re-review and orchestrator re-check); B: #9 + #20 FAIL 1 (peakEmf wording) → writer fixing
+- [x] **Gate B / me2** | Maths Ext 2 specs approved | all approved 2026-11-25 by the orchestrator under overnight authority: P0+P1 #7, P2 #21 (review, 2 re-reviews, re-check)
+- [x] **Gate B / phy** | Physics specs approved | all approved 2026-11-25: A #17 + #32, B #9 + #20 (reviews, re-reviews, orchestrator re-checks)
 - [ ] **Gate B / eng** | Engineering specs approved | #25 + #33 fixed (10 + 10) → re-review running
 - Gate C is per PR: see `docs/gates/gate-c-queue.md`
 
@@ -51,9 +51,9 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 - [ ] W1-E-particle2d | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/24 (12 setups) | review: FAIL (6) → fixed + 9 CRs (orbit escape by energy, GEO radius, GPS clamp, cart distance, SHM Maths form, ...) → re-review running
 - [x] W1-E-statics | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/18 | review: FAIL (5) → fixed → PASS | merged
-- [x] W1-E-statsim | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/6 | review: PASS (all §9.1 numbers reproduced over 30 seeds) | merged
+- [x] W1-E-statsim | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/6 merged | polish #30 merged | overlap CR https://github.com/LucaBrighenti-dev/hsc-interactives/pull/50 in progress
 - [x] W1-E-argand | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/13 | review: FAIL (3) → fixed → PASS | merged
-- [ ] W1-E-aero | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/10 | review: FAIL (5) → fixed → re-review FAIL (3 label overlaps) → builder fixing
+- [ ] W1-E-aero | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/10 | FAIL (5) → FAIL (3 labels) → fixed with a label-overlap regression test → round-3 re-review running
 - [x] W1-E-wave | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/12 | review: FAIL (3) → fixed → PASS | merged
 - [ ] W1-E-fnplot | parser MERGED #5 | engine PR https://github.com/LucaBrighenti-dev/hsc-interactives/pull/28 FAIL (11 + spec keys) → builder fixing
 - [ ] W1-E-field2d | building on the merged parser
@@ -64,8 +64,8 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 ### Platform
 
-- [ ] W1-AUTH | Premium sign-in + accounts | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/37 | review: FAIL (2: open redirect, fixed on main by lead #47; one hard-coded colour) → builder fixing
-- [ ] W1-HUB | Dashboard | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/34 | review: FAIL (1: filter bar truncates at 1200–1500 px) → builder fixing
+- [x] W1-AUTH | Premium sign-in + accounts | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/37 | review: FAIL (2) → fixed (+ lead #47 security) → orchestrator re-check PASS | merged
+- [ ] W1-HUB | Dashboard | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/34 | review: FAIL (1) → fixed; needs rebase (its live-card test assumes no real live pages) → builder fixing
 
 ### Syllabus (`syllabus-tagger`)
 
@@ -73,9 +73,9 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 ### Specs (`spec-writer`, P0 first)
 
-- [ ] W1-SPEC-me1 | P0+P1 MERGED (#16) | P2: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/31 (replaces #22) FAIL 8 → writer fixing
-- [ ] W1-SPEC-me2 | P0+P1 MERGED (#7) | P2: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/21 FAIL 1 → writer fixing
-- [ ] W1-SPEC-phy | A: MERGED (#17 P0 + first P1, #32 remaining P1) | B: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/9 (P1 custom) + https://github.com/LucaBrighenti-dev/hsc-interactives/pull/20 (P2) FAIL 1 → writer fixing
+- [ ] W1-SPEC-me1 | P0+P1 MERGED (#16) | P2: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/31 re-review FAIL 1 (inequality method) → writer fixing
+- [x] W1-SPEC-me2 | P0+P1 MERGED (#7) | P2 MERGED (#21)
+- [x] W1-SPEC-phy | A: MERGED #17, #32 | B: MERGED #9, #20
 - [ ] W1-SPEC-eng | P0+P1: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/25 + P2: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/33, both fixed (10 + 10) → re-review running
 
 ## Wave 2: interactives (`interactive-builder`; start when the subject's Gate B is approved and the engine has merged)
@@ -86,9 +86,9 @@ Format: `id | title | engine | spec approved | PR | review`
 
 - [ ] `eng-flight-forces` | Flight forces and stall | engine: aero | spec: [ ] | PR: | review: 
 - [ ] `eng-truss-solver` | Truss solver | engine: statics | spec: [ ] | PR: | review: 
-- [ ] `me1-sampling-simulator` | Sampling simulator | engine: statsim | spec: [x] | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/38 | review: in progress (+ engine CR for stage overlaps)
+- [x] `me1-sampling-simulator` | Sampling simulator | engine: statsim | spec: [x] | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/38 | review: PASS (0) | LIVE
 - [ ] `me1-slope-fields` | Slope fields | engine: field2d | spec: [ ] | PR: | review: 
-- [ ] `me2-argand-explorer` | Argand explorer | engine: argand | spec: [x] | PR: building | review:
+- [ ] `me2-argand-explorer` | Argand explorer | engine: argand | spec: [x] | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/46 | review: in progress
 - [ ] `phy-double-slit` | Double slit and diffraction grating | engine: wave | spec: [x] | PR: building | review:
 - [ ] `phy-projectile-lab` | Projectile lab | engine: particle2d | spec: [ ] | PR: | review: 
 
@@ -110,13 +110,13 @@ Format: `id | title | engine | spec approved | PR | review`
 - [ ] `me1-auxiliary-angle` | Auxiliary angle | engine: fnplot | spec: [ ] | PR: | review: 
 - [ ] `me1-graph-transformer` | Graph transformer | engine: fnplot | spec: [ ] | PR: | review: 
 - [ ] `me1-inverse-mirror` | Inverse function mirror | engine: fnplot | spec: [ ] | PR: | review: 
-- [ ] `me1-normal-approx` | Normal approximation to the binomial (enrichment) | engine: statsim | spec: [x] | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/42 | review: in progress
+- [x] `me1-normal-approx` | Normal approximation to the binomial (enrichment) | engine: statsim | spec: [x] | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/42 | review: PASS (0) | LIVE
 - [ ] `me1-parametric-tracer` | Parametric tracer | engine: fnplot | spec: [ ] | PR: | review: 
 - [ ] `me1-roots-coefficients` | Roots and coefficients | engine: fnplot | spec: [ ] | PR: | review: 
 - [ ] `me1-solids-revolution` | Solids of revolution | engine: space3d | spec: [ ] | PR: | review: 
 - [ ] `me1-vector-playground` | Vector playground | engine: space3d | spec: [ ] | PR: | review: 
 - [ ] `me2-3d-lines-spheres` | 3D lines and spheres | engine: space3d | spec: [ ] | PR: | review: 
-- [ ] `me2-loci-painter` | Loci painter | engine: argand | spec: [x] | PR: building (after the explorer) | review:
+- [ ] `me2-loci-painter` | Loci painter | engine: argand | spec: [x] | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/48 | review: in progress
 - [ ] `me2-resisted-motion` | Resisted motion | engine: particle2d | spec: [ ] | PR: | review: 
 - [ ] `me2-shm` | Simple harmonic motion | engine: particle2d | spec: [ ] | PR: | review: 
 - [ ] `phy-blackbody` | Black-body radiation | engine: fnplot | spec: [ ] | PR: | review: 
@@ -132,7 +132,7 @@ Format: `id | title | engine | spec approved | PR | review`
 - [ ] `phy-motor-effect` | Motor effect and DC motor | engine: custom | spec: [x] (#9) | PR: building | review:
 - [ ] `phy-orbit-lab` | Orbit lab | engine: particle2d | spec: [ ] | PR: | review: 
 - [ ] `phy-photoelectric` | Photoelectric effect | engine: custom | spec: [x] (#9) | PR: building | review:
-- [ ] `phy-radioactive-decay` | Radioactive decay | engine: statsim | spec: [ ] | PR: | review: 
+- [ ] `phy-radioactive-decay` | Radioactive decay | engine: statsim | spec: [x] | PR: building (after Doppler) | review:
 - [ ] `phy-ray-box` | Ray box | engine: rays | spec: [x] | PR: building (after inclined plane) | review:
 - [ ] `phy-relative-velocity` | Relative velocity | engine: particle2d | spec: [ ] | PR: | review: 
 - [ ] `phy-relativity` | Special relativity | engine: custom | spec: [x] (#9) | PR: building (after Bohr) | review:
@@ -151,14 +151,14 @@ Format: `id | title | engine | spec approved | PR | review`
 - [ ] `me1-inverse-trig` | Inverse trig builder | engine: fnplot | spec: [ ] | PR: | review: 
 - [ ] `me1-pascal-binomial` | Pascal's triangle and the binomial theorem | engine: custom | spec: [ ] | PR: | review: 
 - [ ] `me1-substitution-areas` | Integration by substitution areas | engine: fnplot | spec: [ ] | PR: | review: 
-- [ ] `me2-conjugate-roots` | Conjugate root pairs | engine: argand | spec: [ ] | PR: | review: 
+- [ ] `me2-conjugate-roots` | Conjugate roots | engine: argand | spec: [x] | PR: building | review:
 - [ ] `me2-integration-by-parts` | Integration by parts | engine: fnplot | spec: [ ] | PR: | review: 
 - [ ] `me2-partial-fractions` | Partial fractions decomposer | engine: fnplot | spec: [ ] | PR: | review: 
-- [ ] `me2-proof-pictures` | Proof pictures | engine: custom | spec: [ ] | PR: | review: 
-- [ ] `phy-binding-energy` | Binding energy curve | engine: custom | spec: [ ] | PR: | review: 
-- [ ] `phy-doppler-beats` | Doppler and beats | engine: wave | spec: [ ] | PR: | review: 
+- [ ] `me2-proof-pictures` | Proof pictures | engine: custom | spec: [x] | PR: building (after conjugate roots) | review:
+- [ ] `phy-binding-energy` | Binding energy | engine: custom | spec: [x] | PR: building | review:
+- [ ] `phy-doppler-beats` | Doppler effect and beats | engine: wave | spec: [x] | PR: building | review:
 - [ ] `phy-heating-curves` | Heating curves | engine: fnplot | spec: [ ] | PR: | review: 
-- [ ] `phy-hr-diagram` | HR diagram explorer | engine: custom | spec: [ ] | PR: | review: 
+- [ ] `phy-hr-diagram` | HR diagram | engine: custom | spec: [x] | PR: building (after binding energy) | review:
 - [ ] `phy-magnetic-fields` | Magnetic fields | engine: field2d | spec: [ ] | PR: | review: 
 - [ ] `phy-work-energy-track` | Work-energy track | engine: particle2d | spec: [ ] | PR: | review: 
 
@@ -181,3 +181,4 @@ Tracked on each PR (reviewer comment `VERDICT: PASS/FAIL`) and in `docs/gates/ga
 - 2026-11-25 (overnight, 18:22 UTC): merged parser #5, specs me1 P0/P1 #16 and me2 P0/P1 #7 (Gate B), lead #35 (danger-text token, playlist notes, units ruling), #36 (number formatting robust over the whole double range; long readouts fit), #39 (44 px small buttons on touch). Lesson: retarget stacked PRs to main before merging their base (#22 was auto-closed; replaced by #31). Wave 2 started: statsim pages (sampling simulator P0, normal approx).
 - 2026-11-25 (overnight, about 18:40 UTC): engines merged: statsim (+ polish #30), wave #12, argand #13, statics #18, parser #5. Lead #43 merged (fixed 'null' shown in the header for non-founding users; readout unit reset; shots --steps). Wave 2 page PRs: sampling simulator #38 (P0), normal approx #42. Argand pages building. Merge script no longer switches branches in the main folder (it once left a lead commit on local main; recovered without loss).
 - 2026-11-25 (overnight, 18:45 UTC): merged rays engine #29, Physics A specs #17 + #32 (Gate B / phy part A approved), lead #45 (allow-list for one benign headless-WebGL warning) and **lead #47 (security: open redirect in safeNext; dot segments like /.//evil.example normalised to //evil.example; found by the #37 reviewer, fixed with regression tests; nothing was deployed)**. Merge script now confirms the merge on GitHub (it once reported a conflicted merge as merged; #32 was rebased and merged). Wave 2 builders started: double slit (P0) + wave machine, inclined plane + ray box, photoelectric + Bohr + relativity, motor + induction.
+- 2026-11-25 (overnight, 18:55 UTC): **first pages LIVE**: Sampling simulator (P0, #38) and Normal approximation (#42), both PASS with 0 fixes. Sign-in #37 merged. Gate B complete for Ext 2 (#21) and Physics (#9, #20). Lead #49: smoke test counts live entries (my status push for the live pages piped Playwright into grep, so a failing run didn't stop it; fixed within minutes, and status pushes now check the exit code). Builders started: conjugate roots + proof pictures, Doppler + decay, binding energy + HR diagram.
