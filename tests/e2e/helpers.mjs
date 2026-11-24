@@ -1,10 +1,18 @@
 // Shared e2e helpers.
 
+/**
+ * Benign browser messages that are not faults in our code. Keep this list tiny and exact.
+ * - Headless Chromium's WebGL performance hint when a canvas is read back (screenshots, three.js).
+ */
+export const BENIGN_CONSOLE = [/GPU stall due to ReadPixels/];
+
 /** Collect console errors and warnings, page errors and failed requests. Assert it is empty at the end. */
 export function watchConsole(page) {
   const problems = [];
   page.on('console', (msg) => {
-    if (msg.type() === 'error' || msg.type() === 'warning') problems.push(`${msg.type()}: ${msg.text()}`);
+    if (msg.type() !== 'error' && msg.type() !== 'warning') return;
+    if (BENIGN_CONSOLE.some((re) => re.test(msg.text()))) return;
+    problems.push(`${msg.type()}: ${msg.text()}`);
   });
   page.on('pageerror', (err) => problems.push(`pageerror: ${err.message}`));
   page.on('requestfailed', (req) => {

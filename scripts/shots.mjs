@@ -85,7 +85,9 @@ export async function shots({ ids = [], thumbs = false, steps = 0, outDir = path
         if (target.signedIn) await signIn(context);
         const page = await context.newPage();
         page.on('console', (m) => {
-          if (m.type() === 'error' || m.type() === 'warning') problems.push(`${target.id} [${vp.name}] ${m.type()}: ${m.text()}`);
+          if (m.type() !== 'error' && m.type() !== 'warning') return;
+          if (/GPU stall due to ReadPixels/.test(m.text())) return; // benign headless WebGL hint (see tests/e2e/helpers.mjs)
+          problems.push(`${target.id} [${vp.name}] ${m.type()}: ${m.text()}`);
         });
         page.on('pageerror', (e) => problems.push(`${target.id} [${vp.name}] pageerror: ${e.message}`));
         const url = target.interactive ? withFlags(target.path, 'test=1') : target.path;
