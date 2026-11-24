@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>materials engine demo · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!--
+    Engine demo page (guide §9.1): mounts the materials engine through the shell, one setup at a time.
+    Pick the setup with the hash: #tensile, #selection, #hardness or #fatigue-ndt. Not linked from the hub.
+  -->
+  <nav aria-label="Engine setups" class="mono" style="display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 24px; border-top: 1px solid var(--c-line); font-size: 14px;">
+    <span style="color: var(--c-muted);">materials setups:</span>
+    <a href="#tensile">#tensile</a>
+    <a href="#selection">#selection</a>
+    <a href="#hardness">#hardness</a>
+    <a href="#fatigue-ndt">#fatigue-ndt</a>
+  </nav>
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    const { meta } = await import('/assets/engines/materials/index.js');
+    const requested = location.hash.slice(1);
+    const setup = meta.setups.includes(requested) ? requested : meta.setups[0];
+    addEventListener('hashchange', () => location.reload());
+
+    const tensile = (material, extra = {}) => ({ material, section: 'round', diameter: 10, gaugeLength: 50, graph: 'stress-strain', zoom: 'full', runTime: 10, ...extra });
+    const pages = {
+      tensile: {
+        presets: {
+          default: tensile('structural-steel'),
+          'high-tensile': tensile('high-tensile-steel'),
+          copper: tensile('copper'),
+          aluminium: tensile('aluminium-2024'),
+          titanium: tensile('titanium-6al-4v'),
+          hdpe: tensile('hdpe'),
+          alumina: tensile('alumina'),
+          'cast-iron': tensile('grey-cast-iron'),
+          cfrp: tensile('cfrp'),
+          'load-extension': tensile('structural-steel', { graph: 'load-extension', section: 'rect', width: 12.5, thickness: 3 }),
+          'elastic-zoom': tensile('aluminium-2024', { zoom: 'start' }),
+          'ideal-brittle': tensile('custom', { customBehaviour: 'brittle', customE: 100, customUts: 500 }),
+        },
+        presetLabels: {
+          default: 'Structural steel (Grade 300)',
+          'high-tensile': 'High-tensile steel (4340)',
+          copper: 'Copper (annealed)',
+          aluminium: 'Aluminium 2024-T3',
+          titanium: 'Ti-6Al-4V',
+          hdpe: 'HDPE (polymer)',
+          alumina: 'Alumina (ceramic)',
+          'cast-iron': 'Grey cast iron',
+          cfrp: 'CFRP fabric',
+          'load-extension': 'Steel strip: load–extension',
+          'elastic-zoom': 'Aluminium: elastic region and 0.2% offset',
+          'ideal-brittle': 'Ideal brittle material',
+        },
+        controls: ['material', 'customBehaviour', 'customE', 'customYield', 'customUts', 'customElongation', 'section', 'diameter', 'width', 'thickness', 'gaugeLength', 'graph', 'zoom', 'showArea', 'runTime', 'timeScale'],
+        readouts: ['stress', 'strain', 'load', 'extension', 'modulus', 'yieldStrength', 'uts', 'elongation', 'toughness'],
+        assumptions: [
+          'Teaching model: the curve passes through sourced E, yield, UTS and elongation; its shape between them is modelled',
+          'Engineering stress and strain (original area and gauge length)',
+          'Necking and the steel yield plateau are schematic',
+          'Time-lapse: every test takes the run length',
+        ],
+      },
+      selection: {
+        presets: {
+          default: { strengthBasis: 'yield', chartMaterial: 'titanium-6al-4v', compareMaterial: 'structural-steel', guidelines: true, tieLoad: 100, tieLength: 2, factorOfSafety: 1 },
+          'aero-alloys': { strengthBasis: 'yield', chartMaterial: 'aluminium-2024', compareMaterial: 'titanium-6al-4v', guidelines: true, tieLoad: 100, tieLength: 2, factorOfSafety: 1.5 },
+          composite: { strengthBasis: 'uts', chartMaterial: 'cfrp', compareMaterial: 'aluminium-2024', guidelines: true, tieLoad: 100, tieLength: 2, factorOfSafety: 1.5 },
+        },
+        presetLabels: { default: 'Ti-6Al-4V against steel', 'aero-alloys': '2024-T3 against Ti-6Al-4V', composite: 'CFRP against 2024-T3 (UTS)' },
+        controls: ['strengthBasis', 'chartMaterial', 'compareMaterial', 'guidelines', 'tieLoad', 'tieLength', 'factorOfSafety'],
+        readouts: ['strength', 'density', 'specificStrength', 'tieMass', 'compareTieMass', 'massRatio'],
+        assumptions: ['Sourced typical or minimum values (sources in the CSV)', 'Brittle materials (hollow markers) plotted at their fracture strength', 'Tie rod in pure tension: A = nF/σ, m = ρAL'],
+      },
+      hardness: {
+        presets: {
+          default: { method: 'brinell', brinellLoad: 3000, ballDiameter: '10', indentDiameter: 4 },
+          vickers: { method: 'vickers', vickersLoad: 30, diagonal: 0.5 },
+          rockwell: { method: 'rockwell', rockwellScale: 'C', depth: 0.128 },
+          'brinell-invalid': { method: 'brinell', brinellLoad: 500, ballDiameter: '10', indentDiameter: 2 },
+        },
+        presetLabels: { default: 'Brinell: 3000 kgf, 10 mm ball', vickers: 'Vickers: 30 kgf', rockwell: 'Rockwell C', 'brinell-invalid': 'Brinell: impression too small' },
+        controls: ['method', 'brinellLoad', 'ballDiameter', 'indentDiameter', 'vickersLoad', 'diagonal', 'rockwellScale', 'depth'],
+        readouts: ['hb', 'hv', 'hr', 'forceN', 'impressionDepth'],
+        assumptions: ['F in kgf, as in the hardness formulas (1 kgf = 9.80665 N)', 'Indenter pictures magnified', 'Rockwell shown qualitatively: depths not to scale'],
+      },
+      'fatigue-ndt': {
+        presets: {
+          default: { fatigueView: 'fatigue', snCurves: 'both', runTime: 10 },
+          ndt: { fatigueView: 'ndt', ndtMethod: 'ultrasonic', flaw: 'internal-void', ndtMaterial: 'aluminium' },
+          'ndt-dye': { fatigueView: 'ndt', ndtMethod: 'dye', flaw: 'surface-crack', ndtMaterial: 'aluminium' },
+          'ndt-magnetic': { fatigueView: 'ndt', ndtMethod: 'magnetic', flaw: 'surface-crack', ndtMaterial: 'steel' },
+          'ndt-xray': { fatigueView: 'ndt', ndtMethod: 'xray', flaw: 'internal-void', ndtMaterial: 'steel' },
+          'ndt-cfrp': { fatigueView: 'ndt', ndtMethod: 'ultrasonic', flaw: 'delamination', ndtMaterial: 'cfrp' },
+          'ndt-visual': { fatigueView: 'ndt', ndtMethod: 'visual', flaw: 'subsurface-crack', ndtMaterial: 'steel' },
+        },
+        presetLabels: {
+          default: 'Fatigue crack growth',
+          ndt: 'Ultrasonic: internal void',
+          'ndt-dye': 'Dye penetrant: surface crack',
+          'ndt-magnetic': 'Magnetic particle on steel',
+          'ndt-xray': 'X-ray: internal void',
+          'ndt-cfrp': 'Ultrasonic: CFRP delamination',
+          'ndt-visual': 'Visual: hidden crack',
+        },
+        controls: ['fatigueView', 'snCurves', 'ndtMethod', 'flaw', 'ndtMaterial', 'runTime', 'timeScale'],
+        readouts: ['lifeUsed', 'crackRatio', 'methodsThatFind'],
+        assumptions: ['S–N and crack-growth graphs are schematic', 'Crack growth: Paris-law shape with m = 3', 'NDT capabilities simplified for teaching'],
+      },
+    };
+    const page = pages[setup];
+
+    mountInteractive({
+      id: 'dev-materials',
+      title: `materials · ${setup}`,
+      engine: () => import('/assets/engines/materials/index.js'),
+      setup,
+      presets: page.presets,
+      presetLabels: page.presetLabels,
+      controls: page.controls,
+      readouts: page.readouts,
+      assumptions: page.assumptions,
+      prompts: [],
+    });
+  </script>
+</body>
+</html>
