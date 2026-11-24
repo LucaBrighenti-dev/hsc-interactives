@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wave engine · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!--
+    Bare demo page for the wave engine (W1-E-wave). Pick a setup with #interference, #modulation,
+    #wave-machine or #doppler-beats. Not linked from the hub; real pages live in site/interactives/.
+  -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    const { meta } = await import('/assets/engines/wave/index.js');
+    const requested = location.hash.slice(1);
+    const setup = meta.setups.includes(requested) ? requested : meta.setups[0];
+    addEventListener('hashchange', () => location.reload());
+
+    const CONFIG = {
+      interference: {
+        presets: {
+          default: { aperture: 'double', wavelength: 600, slitSeparation: 0.25, slitWidth: 0.05, screenDistance: 2 },
+          single: { aperture: 'single', wavelength: 600, slitWidth: 0.1, screenDistance: 2 },
+          grating: { aperture: 'grating', wavelength: 500, linesPerMm: 600, illuminatedLines: 100, screenDistance: 1 },
+        },
+        presetLabels: { default: 'Double slit, 600 nm', single: 'Single slit, 0.1 mm', grating: 'Grating, 600 lines/mm' },
+        controls: ['aperture', 'wavelength', 'slitSeparation', 'slitWidth', 'linesPerMm', 'illuminatedLines', 'slitFraction', 'screenDistance', 'screenView', 'showEnvelope', 'showSmallAngle'],
+        readouts: ['fringeSpacing', 'firstOrderAngle', 'firstOrderPosition', 'smallAnglePosition', 'centralWidth', 'maxOrder'],
+        assumptions: ['Monochromatic, coherent light arriving as plane waves', 'Far-field pattern on a flat screen: y = L tan θ', 'Screen colours are approximate (CIE 1931 observer in sRGB)'],
+      },
+      modulation: {
+        presets: {
+          default: { modulation: 'am', messageShape: 'sine', carrierFrequency: 20, messageFrequency: 1, amIndex: 0.5 },
+          fm: { modulation: 'fm', messageShape: 'sine', carrierFrequency: 20, messageFrequency: 1, fmDeviation: 5 },
+          pm: { modulation: 'pm', messageShape: 'sine', carrierFrequency: 20, messageFrequency: 1, pmDeviation: 1.5 },
+          digital: { modulation: 'fm', messageShape: 'square', carrierFrequency: 20, messageFrequency: 1, fmDeviation: 6 },
+        },
+        presetLabels: { default: 'AM, m = 0.5', fm: 'FM, Δf = 5 Hz', pm: 'PM, Δφ = 1.5 rad', digital: 'FSK (FM of a square message)' },
+        controls: ['modulation', 'messageShape', 'carrierFrequency', 'messageFrequency', 'amIndex', 'fmDeviation', 'pmDeviation', 'traceWindow', 'showSpectrum', 'timeScale'],
+        readouts: ['modIndex', 'bandwidth', 'lowerSideband', 'upperSideband', 'instantaneousFrequency', 'time'],
+        assumptions: ['Amplitudes normalised to 1', 'Frequencies scaled down so each cycle is visible', 'FM and PM bandwidth by Carson’s rule'],
+      },
+      'wave-machine': {
+        presets: {
+          default: { waveType: 'transverse', amplitude: 0.4, frequency: 0.5, waveSpeed: 2 },
+          longitudinal: { waveType: 'longitudinal', amplitude: 0.3, frequency: 0.5, waveSpeed: 2 },
+          pulses: { waveType: 'superposition', superShape: 'pulses', amplitude: 0.5, amplitude2: -0.5, waveSpeed: 2 },
+          standing: { waveType: 'superposition', superShape: 'continuous', amplitude: 0.5, amplitude2: 0.5, frequency1: 0.5, frequency2: 0.5, direction2: 'left' },
+          string: { waveType: 'standing', boundary: 'string', harmonic: 3, mediumLength: 0.65, standingSpeed: 340 },
+          'closed-pipe': { waveType: 'standing', boundary: 'closed', harmonic: 1, mediumLength: 0.5, standingSpeed: 340 },
+          'open-pipe': { waveType: 'standing', boundary: 'open', harmonic: 2, mediumLength: 0.5, standingSpeed: 340 },
+        },
+        presetLabels: { default: 'Transverse wave', longitudinal: 'Longitudinal wave', pulses: 'Two pulses, one inverted', standing: 'Two waves, opposite directions', string: 'String, 3rd harmonic', 'closed-pipe': 'Closed pipe, 0.5 m', 'open-pipe': 'Open pipe, 2nd harmonic' },
+        controls: ['waveType', 'superShape', 'amplitude', 'frequency', 'frequency1', 'waveSpeed', 'amplitude2', 'frequency2', 'direction2', 'boundary', 'harmonic', 'mediumLength', 'standingSpeed', 'showParticles', 'timeScale'],
+        readouts: ['wavelength', 'period', 'waveFrequency', 'fundamental', 'time'],
+        assumptions: ['No damping or energy loss', 'Pipes: v = 340 m/s by default, no end correction', 'Standing waves slowed down; amplitude not to scale'],
+      },
+      'doppler-beats': {
+        presets: {
+          default: { dopplerMode: 'doppler', sourceFrequency: 500, sourceSpeed: 20, observerSpeed: 0, soundSpeed: 340 },
+          observer: { dopplerMode: 'doppler', sourceFrequency: 500, sourceSpeed: 0, observerSpeed: 20, soundSpeed: 340 },
+          fast: { dopplerMode: 'doppler', sourceFrequency: 500, sourceSpeed: 120, observerSpeed: 0, soundSpeed: 340 },
+          beats: { dopplerMode: 'beats', toneFrequency1: 440, toneFrequency2: 444 },
+        },
+        presetLabels: { default: 'Source approaching at 20 m/s', observer: 'Observer approaching at 20 m/s', fast: 'Fast source passing the observer', beats: 'Beats, 440 Hz and 444 Hz' },
+        controls: ['dopplerMode', 'sourceFrequency', 'sourceSpeed', 'observerSpeed', 'soundSpeed', 'toneFrequency1', 'toneFrequency2', 'beatWindow', 'playSound', 'timeScale'],
+        readouts: ['observedFrequency', 'frequencyShift', 'wavelengthAhead', 'wavelengthBehind', 'beatFrequency', 'beatPeriod', 'time'],
+        assumptions: ['Speed of sound v = 340 m/s in still air by default', 'Source and observer move along one line', 'Doppler motion shown 10 times slower than real time', 'Sound plays only after you turn it on'],
+      },
+    };
+
+    const c = CONFIG[setup];
+    await mountInteractive({
+      id: 'dev-wave',
+      title: `wave · ${setup}`,
+      engine: () => import('/assets/engines/wave/index.js'),
+      setup,
+      presets: c.presets,
+      presetLabels: c.presetLabels,
+      controls: c.controls,
+      readouts: c.readouts,
+      assumptions: c.assumptions,
+      prompts: [],
+    });
+
+    // Setup switcher (dev only): one link per setup, dropping the previous setup's query.
+    const nav = document.createElement('nav');
+    nav.className = 'panel';
+    nav.setAttribute('aria-label', 'Wave engine setups');
+    const head = document.createElement('div');
+    head.className = 'panel__head';
+    const h = document.createElement('h2');
+    h.className = 'panel__title';
+    h.textContent = 'Setups';
+    head.append(h);
+    const body = document.createElement('div');
+    body.className = 'panel__body cluster';
+    for (const s of meta.setups) {
+      const a = document.createElement('a');
+      a.href = `${location.pathname}#${s}`;
+      a.textContent = s;
+      a.className = s === setup ? 'btn btn--sm btn--primary' : 'btn btn--sm';
+      if (s === setup) a.setAttribute('aria-current', 'page');
+      body.append(a);
+    }
+    nav.append(head, body);
+    document.querySelector('.hsc-side')?.prepend(nav);
+  </script>
+</body>
+</html>
