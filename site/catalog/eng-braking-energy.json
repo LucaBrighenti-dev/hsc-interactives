@@ -1,0 +1,29 @@
+{
+  "id": "eng-braking-energy",
+  "kind": "page",
+  "title": "Braking energy",
+  "summary": "Stopping distance, work done by friction, heat into rotors.",
+  "subject": "eng",
+  "engine": "particle2d",
+  "setup": "braking",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/braking-energy.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Braking Systems",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Transport engineering and automation",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

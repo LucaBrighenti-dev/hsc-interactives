@@ -1,0 +1,29 @@
+{
+  "id": "eng-beam-lab",
+  "kind": "page",
+  "title": "Beam lab",
+  "summary": "Support reactions, shear force and bending moment diagrams, bending stress.",
+  "subject": "eng",
+  "engine": "statics",
+  "setup": "beam",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/beam-lab.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Civil Structures",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Civil and structural engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

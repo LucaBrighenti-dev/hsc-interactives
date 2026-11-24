@@ -1,0 +1,29 @@
+{
+  "id": "phy-hr-diagram",
+  "kind": "page",
+  "title": "HR diagram explorer",
+  "summary": "Stars by temperature and luminosity; main sequence, giants, white dwarfs.",
+  "subject": "phy",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/physics/hr-diagram.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 8: From the Universe to the Atom",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Matter, energy and the cosmos",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "eng-flight-forces",
+  "kind": "page",
+  "title": "Flight forces and stall",
+  "summary": "Lift, drag, thrust and weight in level flight, climb and descent; angle of attack to stall; L/D.",
+  "subject": "eng",
+  "engine": "aero",
+  "setup": "flight-forces",
+  "priority": "P0",
+  "status": "planned",
+  "path": "/interactives/engineering/flight-forces.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Aeronautical Engineering",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Aeronautical and aerospace engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Flight mechanics"
+    }
+  ]
+}

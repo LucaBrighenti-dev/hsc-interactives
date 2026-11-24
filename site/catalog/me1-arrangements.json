@@ -1,0 +1,23 @@
+{
+  "id": "me1-arrangements",
+  "kind": "page",
+  "title": "Arrangement builder",
+  "summary": "Arrangements with restrictions, together/apart, circular tables, pigeonhole demo.",
+  "subject": "me1",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/arrangements.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Combinatorics",
+      "focusArea": "Permutations and combinations",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

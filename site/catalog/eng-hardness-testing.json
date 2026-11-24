@@ -1,0 +1,30 @@
+{
+  "id": "eng-hardness-testing",
+  "kind": "page",
+  "title": "Hardness testing",
+  "summary": "Rockwell, Brinell and Vickers indenters compared.",
+  "subject": "eng",
+  "engine": "materials",
+  "setup": "hardness",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/engineering/hardness-testing.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Personal and Public Transport",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Transport engineering and automation",
+      "year": 12,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Testing of engineering materials"
+    }
+  ]
+}

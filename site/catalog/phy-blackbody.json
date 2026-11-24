@@ -1,0 +1,29 @@
+{
+  "id": "phy-blackbody",
+  "kind": "page",
+  "title": "Black-body radiation",
+  "summary": "Planck curves by temperature; Wien's displacement law.",
+  "subject": "phy",
+  "engine": "fnplot",
+  "setup": "blackbody",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/blackbody.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 7: The Nature of Light",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Nature of light",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

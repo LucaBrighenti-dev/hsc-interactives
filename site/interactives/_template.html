@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reference template · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!--
+    Reference page: copy this file to site/interactives/<folder>/<slug>.html for a new interactive.
+    The page only configures the shell (guide §5.2). id must equal the catalog fragment id.
+  -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    mountInteractive({
+      id: '_template',                                         // = catalog fragment id (this page has none)
+      title: 'Reference template',                             // only used when the id is not in the catalog
+      engine: () => import('/assets/engines/demo/index.js'),
+      setup: 'wave',
+      presets: {                                               // 'default' is required
+        default: { amplitude: 2, frequency: 0.5, phase: 0, duration: 10 },
+        'phase-shift': { amplitude: 2, frequency: 0.5, phase: 90, duration: 10 },
+        'fast-small': { amplitude: 1, frequency: 2, phase: 0, duration: 4, timeScale: 0.5 },
+      },
+      presetLabels: { default: 'Standard wave', 'phase-shift': 'Phase shifted by 90°', 'fast-small': 'Fast, small, slowed down' },
+      controls: ['amplitude', 'frequency', 'phase', 'phaseUnit', 'duration', 'showPhasor', 'phasorLabels', 'timeScale'],
+      readouts: ['period', 'y', 'v', 't'],
+      assumptions: ['Ideal sinusoid, no damping', 'φ measured anticlockwise from the positive x-axis'],
+      prompts: [
+        { kind: 'predict', text: 'If you double the frequency, what happens to the period?' },
+        { kind: 'observe', text: 'Set φ = 90°. Where does the graph start, and where is the phasor at t = 0?' },
+        { kind: 'explain', text: 'Why does the dashed line from the phasor tip always meet the graph at the same height?' },
+      ],
+      notes: '/content/notes/_template.md',
+    });
+  </script>
+</body>
+</html>

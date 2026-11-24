@@ -22,5 +22,5 @@ export const SECURITY_HEADERS = {
   'Content-Security-Policy': CSP,
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'X-Content-Type-Options': 'nosniff',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };

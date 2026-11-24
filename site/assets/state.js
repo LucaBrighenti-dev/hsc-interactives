@@ -183,6 +183,30 @@ export function toQuery(params, metaParams, setup, { preset = null, flags = {} }
   return q.toString();
 }
 
+/**
+ * Query string for a saved params object when the engine's meta is not loaded (dashboard links to saved
+ * scenarios and playlist items). Same encoding as toQuery; the page validates the values when it opens.
+ */
+export function genericQuery(params = {}, { preset = null, extra = {} } = {}) {
+  const q = new URLSearchParams();
+  if (preset && preset !== 'default') q.set('preset', preset);
+  for (const [key, value] of Object.entries(params)) {
+    if (RESERVED_KEYS.includes(key) || value === null || value === undefined) continue;
+    if (typeof value === 'boolean') q.set(key, value ? '1' : '0');
+    else if (typeof value === 'number') q.set(key, String(Number(value.toPrecision(12))));
+    else if (Array.isArray(value)) q.set(key, value.join(','));
+    else q.set(key, String(value));
+  }
+  for (const [key, value] of Object.entries(extra)) if (value !== null && value !== undefined) q.set(key, String(value));
+  return q.toString();
+}
+
+/** Join a catalog path (which may already carry ?preset=) with a query string. */
+export function withQuery(path, query) {
+  if (!query) return path;
+  return path + (path.includes('?') ? '&' : '?') + query;
+}
+
 /** Is a control visible given the current params? (spec.visibleWhen) */
 export function isVisible(spec, params) {
   if (!spec.visibleWhen) return true;

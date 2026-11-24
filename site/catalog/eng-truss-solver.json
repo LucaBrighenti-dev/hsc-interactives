@@ -1,0 +1,29 @@
+{
+  "id": "eng-truss-solver",
+  "kind": "page",
+  "title": "Truss solver",
+  "summary": "Place joints, members, supports and loads; method of joints; tension and compression by colour plus label.",
+  "subject": "eng",
+  "engine": "statics",
+  "setup": "truss",
+  "priority": "P0",
+  "status": "planned",
+  "path": "/interactives/engineering/truss-solver.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Civil Structures",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Civil and structural engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

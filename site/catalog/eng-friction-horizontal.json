@@ -1,0 +1,32 @@
+{
+  "id": "eng-friction-horizontal",
+  "kind": "listing",
+  "title": "Static friction on a horizontal plane",
+  "summary": "The friction lab at 0 degrees with g = 10 m/s^2.",
+  "subject": "eng",
+  "engine": "statics",
+  "setup": "incline",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/inclined-plane.html?preset=eng-horizontal",
+  "listingOf": "phy-inclined-plane",
+  "preset": "eng-horizontal",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Braking Systems",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Applied engineering analysis",
+      "year": 11,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Friction in mechanics"
+    }
+  ]
+}

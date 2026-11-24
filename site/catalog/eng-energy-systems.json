@@ -1,0 +1,22 @@
+{
+  "id": "eng-energy-systems",
+  "kind": "page",
+  "title": "Energy systems calculator",
+  "summary": "Solar, wind and storage efficiency chains.",
+  "subject": "eng",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/engineering/energy-systems.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Environmental engineering and energy systems",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

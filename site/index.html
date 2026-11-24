@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HSC Interactives Hub</title>
+  <meta name="description" content="Interactive simulations for NSW Stage 6 Extension Maths, Physics and Engineering Studies.">
+  <link rel="stylesheet" href="/assets/base.css">
+  <link rel="stylesheet" href="/assets/hub/hub.css">
+</head>
+<body class="hub">
+  <a class="skip-link" href="#hub-grid">Skip to the interactives</a>
+  <header class="site-header hub-header">
+    <a class="wordmark" href="/" data-site-name>HSC Interactives Hub</a>
+    <div class="hsc-user" data-user></div>
+  </header>
+  <main class="container hub-main">
+    <section class="hub-hero">
+      <h1 class="hub-greeting" data-greeting>Welcome</h1>
+      <p class="hub-sub muted" data-summary></p>
+    </section>
+    <section class="hub-filters" aria-label="Filter interactives">
+      <div class="hub-search">
+        <label class="sr-only" for="hub-search">Search interactives</label>
+        <input class="input" id="hub-search" type="search" placeholder="Search by topic, e.g. projectile, complex, truss" autocomplete="off">
+      </div>
+      <div class="cluster" data-subjects role="group" aria-label="Subjects"></div>
+    </section>
+    <div id="hub-grid" data-grid aria-live="polite"></div>
+  </main>
+  <footer class="site-footer hub-footer">
+    <span data-site-credit>Built by Luca Brighenti for UNSW Teach the Teachers 2026</span>
+    <span aria-hidden="true">·</span>
+    <a href="/privacy.html">Privacy</a>
+  </footer>
+  <script type="module" src="/assets/hub/hub.js"></script>
+</body>
+</html>

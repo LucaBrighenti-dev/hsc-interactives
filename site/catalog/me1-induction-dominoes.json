@@ -1,0 +1,23 @@
+{
+  "id": "me1-induction-dominoes",
+  "kind": "page",
+  "title": "Induction stepper",
+  "summary": "Base case, assumption and k + 1 step revealed line by line.",
+  "subject": "me1",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/induction-dominoes.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Proof",
+      "focusArea": "Proof by mathematical induction",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "eng-simple-machines",
+  "kind": "page",
+  "title": "Simple machines",
+  "summary": "Lever classes, pulleys, gears, screw threads; MA, VR and efficiency.",
+  "subject": "eng",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/simple-machines.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Engineered Products",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Applied engineering analysis",
+      "year": 11,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Mechanics of simple machines"
+    }
+  ]
+}

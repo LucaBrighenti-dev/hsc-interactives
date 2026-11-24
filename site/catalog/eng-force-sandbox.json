@@ -1,0 +1,30 @@
+{
+  "id": "eng-force-sandbox",
+  "kind": "page",
+  "title": "Force sandbox",
+  "summary": "Resolve components, resultant and equilibrant, concurrent forces, three-force rule.",
+  "subject": "eng",
+  "engine": "statics",
+  "setup": "concurrent",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/force-sandbox.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Engineering Fundamentals",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Applied engineering analysis",
+      "year": 11,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Equilibrium in mechanics"
+    }
+  ]
+}

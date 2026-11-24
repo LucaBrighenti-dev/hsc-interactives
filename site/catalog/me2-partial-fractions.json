@@ -1,0 +1,23 @@
+{
+  "id": "me2-partial-fractions",
+  "kind": "page",
+  "title": "Partial fractions decomposer",
+  "summary": "Decompose a rational function and graph each piece.",
+  "subject": "me2",
+  "engine": "fnplot",
+  "setup": "partial-fractions",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/maths-ext2/partial-fractions.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 2",
+      "version": "2024",
+      "area": "Calculus",
+      "focusArea": "Further integration",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

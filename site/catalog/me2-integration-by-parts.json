@@ -1,0 +1,23 @@
+{
+  "id": "me2-integration-by-parts",
+  "kind": "page",
+  "title": "Integration by parts",
+  "summary": "Integration by parts as an area picture; reduction formula stepper.",
+  "subject": "me2",
+  "engine": "fnplot",
+  "setup": "by-parts",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/maths-ext2/integration-by-parts.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 2",
+      "version": "2024",
+      "area": "Calculus",
+      "focusArea": "Further integration",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

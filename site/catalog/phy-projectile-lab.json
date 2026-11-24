@@ -1,0 +1,29 @@
+{
+  "id": "phy-projectile-lab",
+  "kind": "page",
+  "title": "Projectile lab",
+  "summary": "Launch angle and speed, max height, range, velocity components, optional air resistance.",
+  "subject": "phy",
+  "engine": "particle2d",
+  "setup": "projectile",
+  "priority": "P0",
+  "status": "planned",
+  "path": "/interactives/physics/projectile-lab.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 5: Advanced Mechanics",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Advanced mechanics",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

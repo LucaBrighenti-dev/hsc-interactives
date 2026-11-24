@@ -1,0 +1,21 @@
+{
+  "id": "phy-heating-curves",
+  "kind": "page",
+  "title": "Heating curves",
+  "summary": "Specific and latent heat; Newton's law of cooling. 2017 syllabus only until checked against 2025.",
+  "subject": "phy",
+  "engine": "fnplot",
+  "setup": "heating",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/physics/heating-curves.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 3: Waves and Thermodynamics",
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

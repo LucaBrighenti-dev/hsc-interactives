@@ -65,6 +65,16 @@ export function formatNumber(x, opts = {}) {
   return sign(s);
 }
 
+/**
+ * A value as entered, for labels that echo inputs ("y = 2 sin(…)", "θ = 30°"): up to 6 significant
+ * figures, trailing zeros dropped, true minus sign. Use formatNumber for computed results.
+ */
+export function formatPlain(x) {
+  if (!Number.isFinite(x)) return formatNumber(x);
+  const s = String(Number(x.toPrecision(6)));
+  return s.startsWith('-') ? MINUS + s.slice(1) : s;
+}
+
 /** "40.8 m", "45.0°", "4.80 mm". Units that attach without a space: °, %, ′, ″. */
 export function formatQuantity(value, unit = '', opts = {}) {
   const num = formatNumber(value, opts);

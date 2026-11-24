@@ -1,0 +1,23 @@
+{
+  "id": "me1-graph-transformer",
+  "kind": "page",
+  "title": "Graph transformer",
+  "summary": "y = 1/f(x), absolute-value graphs and f of absolute x, drawn beside f(x).",
+  "subject": "me1",
+  "engine": "fnplot",
+  "setup": "transform",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/graph-transformer.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Functions",
+      "focusArea": "Further work with functions",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "phy-doppler-beats",
+  "kind": "page",
+  "title": "Doppler and beats",
+  "summary": "Moving source and observer; beats from two close frequencies; optional audio.",
+  "subject": "phy",
+  "engine": "wave",
+  "setup": "doppler-beats",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/physics/doppler-beats.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 3: Waves and Thermodynamics",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Waves",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

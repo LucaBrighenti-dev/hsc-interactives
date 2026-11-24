@@ -1,0 +1,29 @@
+{
+  "id": "phy-work-energy-track",
+  "kind": "page",
+  "title": "Work-energy track",
+  "summary": "KE, GPE and work against friction as stacked bars on a roller track.",
+  "subject": "phy",
+  "engine": "particle2d",
+  "setup": "track",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/physics/work-energy-track.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 2: Dynamics",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Fundamentals of mechanics",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

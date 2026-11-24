@@ -1,0 +1,23 @@
+{
+  "id": "me1-inverse-trig",
+  "kind": "page",
+  "title": "Inverse trig builder",
+  "summary": "Restrict sin, cos and tan, invert them, and see their derivatives.",
+  "subject": "me1",
+  "engine": "fnplot",
+  "setup": "inverse-trig",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/inverse-trig.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Trigonometric functions",
+      "focusArea": "Inverse trigonometric functions",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

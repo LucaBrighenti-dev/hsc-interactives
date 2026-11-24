@@ -1,0 +1,23 @@
+{
+  "id": "me2-loci-painter",
+  "kind": "page",
+  "title": "Loci painter",
+  "summary": "Circles, rays and perpendicular bisectors shaded for modulus and argument conditions.",
+  "subject": "me2",
+  "engine": "argand",
+  "setup": "loci",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext2/loci-painter.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 2",
+      "version": "2024",
+      "area": "Complex numbers",
+      "focusArea": "Introduction to complex numbers",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

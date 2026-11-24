@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · HSC Interactives Hub</title>
+  <meta name="description" content="Interactive simulations for NSW Stage 6 Extension Maths, Physics and Engineering Studies.">
+  <link rel="stylesheet" href="/assets/base.css">
+  <link rel="stylesheet" href="/assets/signin/signin.css">
+</head>
+<body class="signin">
+  <main class="signin__main">
+    <section class="signin__intro">
+      <p class="signin__wordmark wordmark" data-site-name>HSC Interactives Hub</p>
+      <p class="signin__tagline" data-site-tagline>Interactive simulations for Extension Maths, Physics and Engineering Studies.</p>
+      <p class="eyebrow">NSW Stage 6 · 2011–2026 syllabuses</p>
+    </section>
+
+    <section class="signin__card panel" aria-labelledby="signin-title">
+      <h1 id="signin-title" class="signin__title">Sign in</h1>
+      <p class="signin__local" data-local-hint hidden></p>
+
+      <div class="stack">
+        <button class="btn btn--block" type="button" data-provider="azure">Continue with Microsoft</button>
+        <button class="btn btn--block" type="button" data-provider="google">Continue with Google</button>
+      </div>
+
+      <p class="divider-label">or</p>
+
+      <form class="stack" data-form="email" novalidate>
+        <div class="field">
+          <label class="field__label" for="email">Email</label>
+          <input class="input" id="email" name="email" type="email" autocomplete="email" placeholder="you@school.edu.au" required>
+        </div>
+        <button class="btn btn--primary btn--block" type="submit">Email me a sign-in link</button>
+      </form>
+
+      <p class="divider-label">Have an access code?</p>
+
+      <form class="signin__code" data-form="code" novalidate>
+        <label class="sr-only" for="code">Access code</label>
+        <input class="input input--code" id="code" name="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ACCESS CODE" maxlength="40">
+        <button class="btn" type="submit">Enter</button>
+      </form>
+
+      <p class="msg" data-message role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer class="signin__footer">
+    <span data-site-credit>Built by Luca Brighenti for UNSW Teach the Teachers 2026</span>
+    <span aria-hidden="true">·</span>
+    <a href="/privacy.html">Privacy</a>
+  </footer>
+
+  <script type="module" src="/assets/signin/signin.js"></script>
+</body>
+</html>

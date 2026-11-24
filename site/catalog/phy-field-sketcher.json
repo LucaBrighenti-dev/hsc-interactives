@@ -1,0 +1,29 @@
+{
+  "id": "phy-field-sketcher",
+  "kind": "page",
+  "title": "Electric field sketcher",
+  "summary": "Drag point charges and see field lines and equipotentials.",
+  "subject": "phy",
+  "engine": "field2d",
+  "setup": "charges",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/field-sketcher.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 4: Electricity and Magnetism",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Electricity and magnetism",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

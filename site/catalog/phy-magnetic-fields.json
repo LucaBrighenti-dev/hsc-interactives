@@ -1,0 +1,29 @@
+{
+  "id": "phy-magnetic-fields",
+  "kind": "page",
+  "title": "Magnetic fields",
+  "summary": "Field of a wire, loop and solenoid with a compass grid.",
+  "subject": "phy",
+  "engine": "field2d",
+  "setup": "magnetic",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/physics/magnetic-fields.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 4: Electricity and Magnetism",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Electricity and magnetism",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

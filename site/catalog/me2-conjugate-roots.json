@@ -1,0 +1,23 @@
+{
+  "id": "me2-conjugate-roots",
+  "kind": "page",
+  "title": "Conjugate root pairs",
+  "summary": "Drag real polynomial coefficients; complex roots stay mirrored across the real axis.",
+  "subject": "me2",
+  "engine": "argand",
+  "setup": "polynomial-roots",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/maths-ext2/conjugate-roots.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 2",
+      "version": "2024",
+      "area": "Complex numbers",
+      "focusArea": "Introduction to complex numbers",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

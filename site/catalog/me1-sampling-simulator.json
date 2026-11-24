@@ -1,0 +1,23 @@
+{
+  "id": "me1-sampling-simulator",
+  "kind": "page",
+  "title": "Sampling simulator",
+  "summary": "Bernoulli trials build a binomial histogram; sample means converge to normal as n grows.",
+  "subject": "me1",
+  "engine": "statsim",
+  "setup": "sampling",
+  "priority": "P0",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/sampling-simulator.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Statistical analysis",
+      "focusArea": "The binomial distribution and the sampling distribution of the mean",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

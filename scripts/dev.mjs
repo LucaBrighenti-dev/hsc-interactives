@@ -98,7 +98,7 @@ async function main() {
     const { build } = await import('./build.mjs');
     await build();
     await watch();
-  } else if (!fs.existsSync(path.join(DIST, 'index.html'))) {
+  } else if (!fs.existsSync(path.join(DIST, 'catalog.json'))) {
     console.error('dev: dist/ is missing. Run `npm run build` first.');
     process.exit(1);
   }

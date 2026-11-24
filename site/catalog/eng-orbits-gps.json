@@ -1,0 +1,30 @@
+{
+  "id": "eng-orbits-gps",
+  "kind": "page",
+  "title": "Orbits and GPS",
+  "summary": "LEO, MEO and GEO orbits; GPS trilateration from three satellites.",
+  "subject": "eng",
+  "engine": "particle2d",
+  "setup": "orbit-gps",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/orbits-gps.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Telecommunications Engineering",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Aeronautical and aerospace engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Aerospace positioning systems"
+    }
+  ]
+}
