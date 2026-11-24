@@ -1,7 +1,14 @@
 // Playwright: smoke and acceptance tests against a built dist/ (run `npm run build` first; `npm run check` does).
+import { createHash } from 'node:crypto';
 import { defineConfig } from '@playwright/test';
 
-const PORT = Number(process.env.E2E_PORT || 4173);
+// Each worktree gets its own port (derived from its folder), so agents running e2e in parallel never
+// reuse another worktree's server and test the wrong dist/. E2E_PORT overrides it.
+function worktreePort() {
+  const n = 4200 + (parseInt(createHash('sha1').update(process.cwd()).digest('hex').slice(0, 6), 16) % 1800);
+  return n === 5173 ? 5174 : n; // keep clear of the dev server
+}
+const PORT = Number(process.env.E2E_PORT) || worktreePort();
 
 export default defineConfig({
   testDir: 'tests/e2e',
