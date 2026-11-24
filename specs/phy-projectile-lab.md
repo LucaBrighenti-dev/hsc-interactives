@@ -21,7 +21,7 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 ## Learning goal
 Students treat projectile motion as two independent motions, constant horizontal velocity and constant vertical acceleration g, and use the equations of uniformly accelerated motion to predict time of flight, maximum height and range, including launches from a height. They see why complementary angles give equal ranges on level ground and how air resistance shortens and skews the path.
 
-Syllabus fit: 2017 Module 5 Advanced Mechanics (projectile motion); 2025 Year 12 focus area Advanced mechanics. The same page serves Mathematics Extension 1 (2024, Introduction to vectors: motion as a vector function of time, through the `me1-vectors` preset) and Mathematics Extension 2 (2024, Applications of calculus to mechanics: resisted motion, through the `me2-drag` preset).
+Syllabus fit: 2017 Module 5 Advanced Mechanics (projectile motion); 2025 Year 12 focus area Advanced mechanics. The same page serves Mathematics Extension 1 (2024, Introduction to vectors: motion as a vector function of time, through the `me1-vectors` preset) and Mathematics Extension 2 (2024, Applications of calculus to mechanics: resisted motion, through the `me2-drag` preset, which uses resistance proportional to velocity because that case has a closed-form solution students can check by hand; quadratic resistance stays available as an option).
 
 ## What the student sees
 Default view at 1920×1080, projector theme:
@@ -57,7 +57,8 @@ Drag model: the drag force is −kv (linear) or −k|v|v (quadratic), so the acc
 | --- | --- | --- |
 | default | u 20, θ 45, h 0, g 9.8, drag none, velocity on, components off | the standard 45° launch: R = 40.8 m |
 | me1-vectors | u 20, θ 30, h 0, g 9.8, drag none, velocity on, components on, keep paths off | Maths Ext 1 listing: the velocity vector and its components, with vₓ constant and v_y falling linearly |
-| me2-drag | u 30, θ 45, h 0, g 9.8, drag quadratic, m 1, k 0.02, compare with no drag on | Maths Ext 2 listing: quadratic resistance, a = −g − (k/m)\|v\|v, with the ideal path for comparison |
+| me2-drag | u 30, θ 45, h 0, g 9.8, drag linear, m 1, k 0.2, compare with no drag on | Maths Ext 2 listing: resistance kv, so a = −(k/m)v − g ĵ has closed-form solutions (terminal speed 49 m/s, greatest height 17.9 m, range 56.9 m against 91.8 m without drag), with the ideal path for comparison |
+| quadratic-drag | u 30, θ 45, h 0, g 9.8, drag quadratic, m 1, k 0.02, compare with no drag on | quadratic resistance kv², closer to real air drag at these speeds; the vertical launch has a closed form |
 | cliff | u 15, θ 0, h 20, g 9.8, drag none | horizontal launch from a 20 m cliff |
 | moon | u 20, θ 45, h 0, g 1.6, drag none | same launch on the Moon: R = 250 m |
 
@@ -84,11 +85,11 @@ Definitions: while the projectile flies, `flightTime`, `range` and `maxHeight` s
 2. Observe: launch at 30°, then at 60°, with "Keep earlier paths" on. Compare the ranges, maximum heights and flight times.
 3. Explain: turn on the velocity components and watch vₓ during the flight. Why does it never change, while v_y falls by 9.8 m/s every second?
 4. Predict: a ball is launched horizontally from a 20 m cliff at 15 m/s (the `cliff` preset). Will it land sooner or later than a ball simply dropped from the same cliff? Run it and compare the flight time with √(2h/g).
-5. Explain: switch on quadratic air resistance. Why is the path no longer symmetric, and why is the best angle now less than 45°?
+5. Explain: load `me2-drag` (resistance kv), then `quadratic-drag` (kv²). Why is the path no longer symmetric, and why is the best angle now less than 45°?
 
 ## Teacher notes outline
 - **Misconceptions to target:** the velocity is zero at the top (only v_y is); a horizontal "force of the throw" keeps acting after launch; heavier objects fall faster (no drag: mass does not matter); 45° is always best (not from a height, and not with drag); the horizontal and vertical motions affect each other.
-- **10-minute lesson flow:** (1) predict the best angle, test 30°, 45°, 60° (3 min); (2) components on: vₓ constant, v_y linear in time, zero at the top (2 min); (3) `cliff` preset: horizontal launch, compare with dropping (2 min); (4) `me2-drag` preset or drag on: path shortens and becomes asymmetric; discuss what the model leaves out (3 min).
+- **10-minute lesson flow:** (1) predict the best angle, test 30°, 45°, 60° (3 min); (2) components on: vₓ constant, v_y linear in time, zero at the top (2 min); (3) `cliff` preset: horizontal launch, compare with dropping (2 min); (4) `me2-drag` preset (kv): path shortens and becomes asymmetric; check the greatest height against the closed form; compare `quadratic-drag`; discuss what each model leaves out (3 min).
 - **Original HSC-style question idea:** A ball is kicked from the edge of a platform 12.0 m above level ground at 18.0 m/s, 35° above the horizontal. Ignoring air resistance and taking g = 9.8 m/s², calculate (a) its maximum height above the ground (17.4 m), (b) its time of flight (2.94 s), and (c) its range (43.3 m). (d) Explain qualitatively how air resistance would change the range and the angle for maximum range. (Write the full question and worked solution in the notes file.)
 
 ## Accessibility notes
@@ -116,7 +117,10 @@ Every number below comes from the formula and hand calculation shown here. With 
   Highest point: v_y = 0 at t = ln(1 + c u_y/g)/c = ln(1.144308)/0.1 = 1.34800 s, giving H = u_y/c − (g/c²) ln(1 + c u_y/g) = 141.421 − 980 × 0.134800 = **9.31769 m**.
   Landing: y(T) = 0 has no closed form; Newton's method from T₀ = 2u_y/g = 2.886 s gives T = **2.75941 s** (check: 1 − e^(−0.275941) = 0.241142, and 10 × (14.1421 + 98) × 0.241142 = 270.422 = 98 × 2.75941 ✓). R = (uₓ/c)(1 − e^(−cT)) = 141.421 × 0.241142 = **34.1026 m**.
 - **Check 9, mass and k scale together.** m = 2, k = 0.2: c = k/m = 0.1 s⁻¹ is unchanged, so the path is identical to Check 8: R = **34.1026 m**.
-- **Check 10, `me2-drag` preset launched vertically.** m = 1, k = 0.02, u = 30, θ = 90°, quadratic drag. Terminal speed V = √(mg/k) = √490 = 22.1359 m/s.
+- **Check 10, `me2-drag` preset (linear drag, the Ext 2 case).** m = 1, k = 0.2, u = 30, θ = 45°, so c = k/m = 0.2 s⁻¹ and uₓ = u_y = 21.2132 m/s. Terminal speed mg/k = 9.8/0.2 = 49 m/s. Using the solutions from Check 8:
+  Highest point at t = ln(1 + c u_y/g)/c = ln(1 + 0.2 × 21.2132/9.8)/0.2 = ln(1.432923)/0.2 = 0.359716/0.2 = 1.79858 s, with H = u_y/c − (g/c²) ln(1 + c u_y/g) = 106.066 − 245 × 0.359716 = 106.066 − 88.1304 = **17.9356 m** (22.96 m without drag).
+  Landing: Newton's method on y(T) = 0 from T₀ = 2u_y/g = 4.33 s gives T = **3.84197 s** (check: 1 − e^(−0.768395) = 0.536243, and 5 × (21.2132 + 49) × 0.536243 = 188.257 = 49 × 3.84197 ✓). R = (uₓ/c)(1 − e^(−cT)) = 106.066 × 0.536243 = **56.8772 m** (91.84 m without drag; the horizontal asymptote is uₓ/c = 106.066 m). Landing velocity: vₓ = uₓe^(−cT) = 21.2132 × 0.463757 = **9.83777 m/s**; v_y = (u_y + g/c)e^(−cT) − g/c = 70.2132 × 0.463757 − 49 = **−16.4381 m/s**.
+- **Check 11, `quadratic-drag` preset launched vertically.** m = 1, k = 0.02, u = 30, θ = 90°, quadratic drag. Terminal speed V = √(mg/k) = √490 = 22.1359 m/s.
   Up: dv/dt = −g(1 + v²/V²) gives H = (V²/2g) ln(1 + u²/V²) = 25 × ln(1 + 900/490) = 25 × ln 2.836735 = **26.0663 m**, reached at t_up = (V/g) atan(u/V) = 2.25877 × atan(1.355262) = 2.25877 × 0.935107 = 2.11219 s.
   Down: from rest, dv/dt = g(1 − v²/V²) gives y fallen = (V²/g) ln cosh(gt/V), so t_down = (V/g) acosh(e^(gH/V²)) = 2.25877 × acosh(√2.836735) = 2.25877 × acosh(1.684261) = 2.25877 × 1.111701 = 2.51108 s.
   Flight time T = 2.11219 + 2.51108 = **4.62327 s**. Impact speed from 1/v² = 1/u² + 1/V²: v = uV/√(u² + V²) = 30 × 22.1359/√1390 = **17.8120 m/s**. Range **0 m** (vertical launch).
@@ -143,7 +147,9 @@ Every number below comes from the formula and hand calculation shown here. With 
     "expect": { "maxHeight": { "value": 9.31769, "relTol": 0.001 }, "flightTime": { "value": 2.75941, "relTol": 0.001 }, "range": { "value": 34.1026, "relTol": 0.001 } } },
   { "name": "linear drag m 2, k 0.2 gives the same path", "params": { "speed": 20, "angle": 45, "height": 0, "g": 9.8, "drag": "linear", "mass": 2, "k": 0.2 }, "run": "complete",
     "expect": { "range": { "value": 34.1026, "relTol": 0.001 } } },
-  { "name": "me2-drag preset launched vertically", "preset": "me2-drag", "params": { "speed": 30, "angle": 90, "height": 0, "g": 9.8, "drag": "quadratic", "mass": 1, "k": 0.02 }, "run": "complete",
+  { "name": "me2-drag preset: linear drag in closed form", "preset": "me2-drag", "params": {}, "run": "complete",
+    "expect": { "maxHeight": { "value": 17.9356, "relTol": 0.001 }, "flightTime": { "value": 3.84197, "relTol": 0.001 }, "range": { "value": 56.8772, "relTol": 0.001 }, "vx": { "value": 9.83777, "relTol": 0.001 }, "vy": { "value": -16.4381, "relTol": 0.001 } } },
+  { "name": "quadratic-drag preset launched vertically", "preset": "quadratic-drag", "params": { "speed": 30, "angle": 90, "height": 0, "g": 9.8, "drag": "quadratic", "mass": 1, "k": 0.02 }, "run": "complete",
     "expect": { "maxHeight": { "value": 26.0663, "relTol": 0.001 }, "flightTime": { "value": 4.62327, "relTol": 0.001 }, "currentSpeed": { "value": 17.8120, "relTol": 0.001 }, "range": { "value": 0, "absTol": 1e-6 } } }
 ]
 ```
