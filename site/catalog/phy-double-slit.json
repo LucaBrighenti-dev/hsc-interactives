@@ -2,12 +2,12 @@
   "id": "phy-double-slit",
   "kind": "page",
   "title": "Double slit and diffraction grating",
-  "summary": "Wavelength, slit spacing and screen distance sliders with a live intensity pattern.",
+  "summary": "Single slit, double slit and diffraction grating: change the wavelength, slit spacing and screen distance and watch the fringes, intensity graph, missing orders and small-angle estimate respond.",
   "subject": "phy",
   "engine": "wave",
   "setup": "interference",
   "priority": "P0",
-  "status": "planned",
+  "status": "review",
   "path": "/interactives/physics/double-slit.html",
   "syllabus": [
     {
@@ -34,5 +34,6 @@
       "url": "https://curriculum.nsw.edu.au/learning-areas/science/physics-11-12-2025/content/year-12/fae0634d66",
       "verified": true
     }
-  ]
+  ],
+  "thumbnail": "/assets/thumbs/phy-double-slit.png"
 }

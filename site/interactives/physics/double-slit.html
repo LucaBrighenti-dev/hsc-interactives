@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Double slit and diffraction grating · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!-- Spec: specs/phy-double-slit.md (wave / interference, a static setup). -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    mountInteractive({
+      id: 'phy-double-slit',
+      engine: () => import('/assets/engines/wave/index.js'),
+      setup: 'interference',
+      presets: {
+        default: { aperture: 'double', wavelength: 600, slitSeparation: 0.25, slitWidth: 0.05, screenDistance: 2, screenView: 'auto', showEnvelope: true, showSmallAngle: true },
+        'red-laser': { aperture: 'double', wavelength: 650, slitSeparation: 0.5, slitWidth: 0.05, screenDistance: 3, screenView: 'auto' },
+        grating: { aperture: 'grating', wavelength: 500, linesPerMm: 600, illuminatedLines: 100, slitFraction: 0.2, screenDistance: 2, screenView: 'auto' },
+        'sharp-grating': { aperture: 'grating', wavelength: 500, linesPerMm: 600, illuminatedLines: 1000, slitFraction: 0.2, screenDistance: 2, screenView: 'auto' },
+        'single-slit': { aperture: 'single', wavelength: 600, slitWidth: 0.05, screenDistance: 2, screenView: 'auto' },
+      },
+      presetLabels: {
+        default: 'Young’s double slit, 600 nm',
+        'red-laser': 'Red laser pointer, 650 nm',
+        grating: 'Grating, 600 lines/mm, 500 nm',
+        'sharp-grating': 'Grating with 1000 slits lit',
+        'single-slit': 'Single slit, 0.05 mm wide',
+      },
+      controls: ['aperture', 'wavelength', 'slitSeparation', 'slitWidth', 'linesPerMm', 'illuminatedLines', 'slitFraction', 'screenDistance', 'screenView', 'showEnvelope', 'showSmallAngle'],
+      readouts: ['firstOrderAngle', 'firstOrderPosition', 'smallAnglePosition', 'fringeSpacing', 'centralWidth', 'maxOrder'],
+      assumptions: [
+        'Monochromatic, coherent light; slits lit equally',
+        'Screen far from the slits (L ≫ d): far-field pattern',
+        'Positions use y = L tan θ; the ticks show the small-angle estimate',
+        'Intensity relative to the central maximum; set-up diagram not to scale',
+      ],
+      prompts: [
+        { kind: 'predict', text: 'If you halve the slit separation d, what happens to the fringe spacing? Predict, then try it.' },
+        { kind: 'observe', text: 'In the grating scenario, compare the first-order position y₁ (0.629 m) with its small-angle estimate λL/d (0.600 m). Then go back to the double slit and compare them again. Why is the approximation excellent for the double slit but 5% out for the grating?' },
+        { kind: 'explain', text: 'In the standard pattern the 5th bright fringe on each side is missing. Turn on the single-slit envelope and explain why, using d = 5a.' },
+        { kind: 'predict', text: 'In the grating scenario, raise the number of slits lit from 100 to 1000. Will the bright lines move, or only get narrower? Try it and read the central width.' },
+        { kind: 'explain', text: 'At 600 lines/mm, why are there exactly three orders each side for 500 nm light but only two for 700 nm? Which colour is deviated most, and why does a grating spread white light into a spectrum with red furthest out?' },
+      ],
+      notes: '/content/notes/phy-double-slit.md',
+    });
+  </script>
+</body>
+</html>
