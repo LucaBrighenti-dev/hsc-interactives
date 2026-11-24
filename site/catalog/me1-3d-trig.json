@@ -1,0 +1,23 @@
+{
+  "id": "me1-3d-trig",
+  "kind": "page",
+  "title": "3D trigonometry scenes",
+  "summary": "Rotatable towers, ramps and prisms with angle-of-elevation problems.",
+  "subject": "me1",
+  "engine": "space3d",
+  "setup": "trig3d",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/3d-trig.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Trigonometric functions",
+      "focusArea": "Further trigonometry",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

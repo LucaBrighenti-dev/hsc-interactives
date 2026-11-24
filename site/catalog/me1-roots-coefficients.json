@@ -1,0 +1,23 @@
+{
+  "id": "me1-roots-coefficients",
+  "kind": "page",
+  "title": "Roots and coefficients",
+  "summary": "Drag roots; watch the sum, pairwise sum and product of roots update; multiplicity shapes.",
+  "subject": "me1",
+  "engine": "fnplot",
+  "setup": "polynomial",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/roots-coefficients.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Functions",
+      "focusArea": "Polynomials",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

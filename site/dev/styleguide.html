@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Styleguide · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+  <style>
+    .sg { padding-block: 48px 96px; display: grid; gap: 64px; }
+    .sg h2 { font-family: var(--f-mono); font-size: var(--t-14); font-weight: 600; text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--c-accent); padding-bottom: 12px; border-bottom: var(--border); margin-bottom: 24px; }
+    .sg h3 { font-size: var(--t-16); font-weight: 600; margin-bottom: 12px; color: var(--c-muted); }
+    .sg-swatches { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .sg-swatch { border: var(--border); }
+    .sg-swatch__chip { height: 72px; border-bottom: var(--border); }
+    .sg-swatch__meta { padding: 8px 10px; font-family: var(--f-mono); font-size: 12px; line-height: 1.5; }
+    .sg-swatch__meta span { display: block; color: var(--c-muted); }
+    .sg-type { display: grid; gap: 20px; }
+    .sg-type__row { display: grid; grid-template-columns: 180px 1fr; gap: 24px; align-items: baseline; }
+    .sg-grid2 { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
+    .sg-box { background: var(--c-surface); border: var(--border); padding: 24px; display: grid; gap: 20px; }
+    .sg-stage { border: var(--border); }
+    .sg-stage__canvas { position: relative; height: 360px; background: var(--k-bg); }
+    .sg-stage__canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .sg-stage__label { padding: 8px 12px; font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; color: var(--c-muted); background: var(--c-surface); border-top: var(--border); }
+    .sg-icons { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+    .sg-icon { display: flex; align-items: center; gap: 10px; padding: 10px; border: var(--border); font-family: var(--f-mono); font-size: 12px; color: var(--c-muted); }
+    .sg-icon svg { color: var(--c-text); flex: none; }
+    .sg-rules { columns: 2 320px; column-gap: 48px; color: var(--c-muted); }
+    .sg-rules li { break-inside: avoid; margin-bottom: 8px; }
+    @media (max-width: 699px) {
+      .sg-type__row { grid-template-columns: 1fr; gap: 4px; }
+      .sg-type__row .wordmark { font-size: 44px !important; }
+      .sg-type__row .display { font-size: 30px !important; }
+      .sg-grid2 { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="wordmark" href="/">HSC Interactives Hub</a>
+    <span class="eyebrow">Styleguide · dev</span>
+  </header>
+  <main class="container sg" id="sg"></main>
+  <script type="module" src="/dev/styleguide.js"></script>
+</body>
+</html>

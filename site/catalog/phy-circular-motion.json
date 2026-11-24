@@ -1,0 +1,29 @@
+{
+  "id": "phy-circular-motion",
+  "kind": "page",
+  "title": "Circular motion and banked tracks",
+  "summary": "Forces in circular motion, design speed of a banked track, torque.",
+  "subject": "phy",
+  "engine": "particle2d",
+  "setup": "circular",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/circular-motion.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 5: Advanced Mechanics",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Advanced mechanics",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

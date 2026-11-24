@@ -1,0 +1,23 @@
+{
+  "id": "me1-parametric-tracer",
+  "kind": "page",
+  "title": "Parametric tracer",
+  "summary": "A t slider traces lines, parabolas and circles; eliminate t step by step.",
+  "subject": "me1",
+  "engine": "fnplot",
+  "setup": "parametric",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/parametric-tracer.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Functions",
+      "focusArea": "Further work with functions",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

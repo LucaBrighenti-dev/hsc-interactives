@@ -1,0 +1,23 @@
+{
+  "id": "me2-3d-lines-spheres",
+  "kind": "page",
+  "title": "3D lines and spheres",
+  "summary": "Vector equation of a line; intersecting, parallel and skew pairs; sphere-line intersections.",
+  "subject": "me2",
+  "engine": "space3d",
+  "setup": "lines-spheres",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext2/3d-lines-spheres.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 2",
+      "version": "2024",
+      "area": "Vectors",
+      "focusArea": "Further work with vectors",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "eng-tensile-test",
+  "kind": "page",
+  "title": "Tensile test machine",
+  "summary": "Load-extension to stress-strain for steel, copper, aluminium, polymer and ceramic; E, yield, UTS, toughness.",
+  "subject": "eng",
+  "engine": "materials",
+  "setup": "tensile",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/tensile-test.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Engineered Products",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Applied engineering analysis",
+      "year": 11,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Mechanical strength of materials"
+    }
+  ]
+}

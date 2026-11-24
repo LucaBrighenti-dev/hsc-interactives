@@ -1,0 +1,29 @@
+{
+  "id": "phy-motor-effect",
+  "kind": "page",
+  "title": "Motor effect and DC motor",
+  "summary": "Force on a conductor, torque against angle, the commutator.",
+  "subject": "phy",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/motor-effect.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 6: Electromagnetism",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Electromagnetism",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

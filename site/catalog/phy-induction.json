@@ -1,0 +1,29 @@
+{
+  "id": "phy-induction",
+  "kind": "page",
+  "title": "Faraday and Lenz",
+  "summary": "Magnet through a coil with flux and emf graphs; transformer turns ratio.",
+  "subject": "phy",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/induction.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 6: Electromagnetism",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Electromagnetism",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

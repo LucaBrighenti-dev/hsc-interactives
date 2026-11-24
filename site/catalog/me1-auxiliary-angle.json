@@ -1,0 +1,23 @@
+{
+  "id": "me1-auxiliary-angle",
+  "kind": "page",
+  "title": "Auxiliary angle",
+  "summary": "a sin x + b cos x collapses into R sin(x + alpha), with the triangle shown.",
+  "subject": "me1",
+  "engine": "fnplot",
+  "setup": "auxiliary",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/auxiliary-angle.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Trigonometric functions",
+      "focusArea": "Further trigonometry",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "eng-orthographic-trainer",
+  "kind": "page",
+  "title": "Orthogonal projection trainer",
+  "summary": "Rotate a 3D part and build third-angle views to AS 1100.",
+  "subject": "eng",
+  "engine": "space3d",
+  "setup": "orthographic",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/orthographic-trainer.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Engineering Fundamentals",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Technical graphics and communication",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

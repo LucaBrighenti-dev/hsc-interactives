@@ -1,0 +1,23 @@
+{
+  "id": "me1-inequality-line",
+  "kind": "page",
+  "title": "Inequality number line",
+  "summary": "Quadratic and rational inequalities with critical points and test regions.",
+  "subject": "me1",
+  "engine": "fnplot",
+  "setup": "inequality",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/inequality-line.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Functions",
+      "focusArea": "Further work with functions",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "me1-substitution-areas",
+  "kind": "page",
+  "title": "Integration by substitution areas",
+  "summary": "Equal areas under f(g(x))g'(x) and under f(u).",
+  "subject": "me1",
+  "engine": "fnplot",
+  "setup": "substitution",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/substitution-areas.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Calculus",
+      "focusArea": "Further calculus skills",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

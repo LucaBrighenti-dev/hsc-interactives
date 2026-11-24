@@ -1,0 +1,29 @@
+{
+  "id": "phy-motion-graphs",
+  "kind": "page",
+  "title": "Motion graphs lab",
+  "summary": "Drive a cart and watch s-t, v-t and a-t live; graph-matching challenge.",
+  "subject": "phy",
+  "engine": "particle2d",
+  "setup": "cart",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/motion-graphs.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 1: Kinematics",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Fundamentals of mechanics",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

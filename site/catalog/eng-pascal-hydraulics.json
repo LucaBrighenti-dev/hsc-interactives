@@ -1,0 +1,30 @@
+{
+  "id": "eng-pascal-hydraulics",
+  "kind": "page",
+  "title": "Pascal's principle",
+  "summary": "Hydraulic press and aircraft hydraulics force calculator.",
+  "subject": "eng",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/pascal-hydraulics.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Aeronautical Engineering",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Aeronautical and aerospace engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Propulsion and measurement systems"
+    }
+  ]
+}

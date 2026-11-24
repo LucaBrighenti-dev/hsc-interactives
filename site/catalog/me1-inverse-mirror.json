@@ -1,0 +1,23 @@
+{
+  "id": "me1-inverse-mirror",
+  "kind": "page",
+  "title": "Inverse function mirror",
+  "summary": "Reflect in y = x and drag the domain restriction until the inverse is a function.",
+  "subject": "me1",
+  "engine": "fnplot",
+  "setup": "inverse",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/inverse-mirror.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Functions",
+      "focusArea": "Further work with functions",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

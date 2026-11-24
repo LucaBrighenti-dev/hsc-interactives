@@ -1,0 +1,29 @@
+{
+  "id": "phy-ray-box",
+  "kind": "page",
+  "title": "Ray box",
+  "summary": "Snell's law, critical angle, total internal reflection into an optical fibre.",
+  "subject": "phy",
+  "engine": "rays",
+  "setup": "ray-box",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/ray-box.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 3: Waves and Thermodynamics",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Waves",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

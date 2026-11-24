@@ -1,0 +1,23 @@
+{
+  "id": "me2-resisted-motion",
+  "kind": "page",
+  "title": "Resisted motion",
+  "summary": "Horizontal and vertical motion with kv and kv^2 resistance; terminal velocity.",
+  "subject": "me2",
+  "engine": "particle2d",
+  "setup": "resisted-1d",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext2/resisted-motion.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 2",
+      "version": "2024",
+      "area": "Mechanics",
+      "focusArea": "Applications of calculus to mechanics",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

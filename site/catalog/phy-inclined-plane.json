@@ -1,0 +1,29 @@
+{
+  "id": "phy-inclined-plane",
+  "kind": "page",
+  "title": "Inclined plane and friction",
+  "summary": "Free body diagram, components, static vs kinetic friction; angle 0 gives the horizontal plane.",
+  "subject": "phy",
+  "engine": "statics",
+  "setup": "incline",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/inclined-plane.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 2: Dynamics",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Fundamentals of mechanics",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

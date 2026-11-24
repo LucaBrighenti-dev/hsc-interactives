@@ -1,0 +1,30 @@
+{
+  "id": "eng-materials-selection",
+  "kind": "page",
+  "title": "Materials selection chart",
+  "summary": "Strength vs density for Ti-6Al-4V, 2024 Al, high-tensile steel and CFRP; strength-to-weight calculator.",
+  "subject": "eng",
+  "engine": "materials",
+  "setup": "selection",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/materials-selection.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Aeronautical Engineering",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Aeronautical and aerospace engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Properties of engineering materials"
+    }
+  ]
+}

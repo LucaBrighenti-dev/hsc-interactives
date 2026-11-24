@@ -1,0 +1,32 @@
+{
+  "id": "eng-fibre-optics",
+  "kind": "listing",
+  "title": "Optical fibre",
+  "summary": "The ray box with the optical fibre preset.",
+  "subject": "eng",
+  "engine": "rays",
+  "setup": "ray-box",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/ray-box.html?preset=eng-fibre",
+  "listingOf": "phy-ray-box",
+  "preset": "eng-fibre",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Telecommunications Engineering",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Aeronautical and aerospace engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Application of materials"
+    }
+  ]
+}

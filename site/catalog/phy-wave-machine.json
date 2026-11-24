@@ -1,0 +1,29 @@
+{
+  "id": "phy-wave-machine",
+  "kind": "page",
+  "title": "Wave machine",
+  "summary": "Transverse and longitudinal waves, superposition, standing waves on strings and in pipes.",
+  "subject": "phy",
+  "engine": "wave",
+  "setup": "wave-machine",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/wave-machine.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 3: Waves and Thermodynamics",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Waves",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

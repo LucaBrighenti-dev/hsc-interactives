@@ -1,0 +1,106 @@
+/*
+ * Design tokens (guide §6.1). Locked after Gate A: change only through a lead task.
+ * Rules: no box-shadow, no gradients, no glow, no blur. Sharp frames. Hover changes border or text colour only.
+ * Chrome (header, panels, dashboard) is always graphite. The stage ("canvas") follows data-theme:
+ *   projector (default): light, for classroom projectors
+ *   dark:                stage uses chrome colours
+ */
+:root {
+  /* chrome: graphite, matte, flat */
+  --c-bg: #0F1012;
+  --c-surface: #17181B;
+  --c-surface-2: #1F2024;
+  --c-line: #2C2E33;
+  --c-line-strong: #43464D;
+  --c-text: #ECEDEE;
+  --c-muted: #9DA1A8;
+  --c-accent: #FF4F00;
+  --c-on-accent: #0F1012;
+  --c-danger: #E5484D;
+  --c-ok: #3DD68C;
+  --c-scrim: rgba(15, 16, 18, 0.72);
+
+  /* projector canvas (light) */
+  --k-bg: #F6F6F4;
+  --k-panel: #FFFFFF;
+  --k-ink: #121316;
+  --k-muted: #4A4D53;
+  --k-grid: #DADAD6;
+  --k-axis: #6B6E74;
+  --k-accent: #FF4F00;
+  --k-accent-text: #B83A00; /* use for small text on the light stage */
+
+  /* data series, colour-blind aware (Okabe–Ito based); accent first */
+  --s1: #FF4F00;
+  --s2: #0072B2;
+  --s3: #009E73;
+  --s4: #CC79A7;
+  --s5: #121316;
+  --s6: #E69F00;
+
+  /* type */
+  --f-display: 'Archivo', system-ui, sans-serif; /* always with font-stretch: var(--f-display-stretch) */
+  --f-display-stretch: 125%;
+  --f-body: 'Inter', system-ui, sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --t-12: 12px;
+  --t-14: 14px;
+  --t-16: 16px;
+  --t-18: 18px;
+  --t-24: 24px;
+  --t-32: 32px;
+  --t-48: 48px;
+  --t-72: 72px;
+  --t-stage-min: 18px; /* smallest text drawn inside a stage at 1920×1080 */
+  --tracking-label: 0.04em;
+
+  /* space (4 px base) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* frames */
+  --radius: 0;
+  --radius-input: 2px;
+  --border: 1px solid var(--c-line);
+  --focus-ring: 2px solid var(--c-accent);
+  --focus-offset: 2px;
+  --touch: 44px;
+
+  /* layout (guide §6.3) */
+  --header-h: 56px;
+  --tagstrip-h: 32px;
+  --embedbar-h: 28px;
+  --panel-w: 340px;
+
+  /* motion */
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --dur: 180ms;
+
+  color-scheme: dark;
+}
+
+/* Dark stage: the canvas takes the chrome colours. Series 2 and 5 change for contrast on dark. */
+[data-theme="dark"] {
+  --k-bg: #17181B;
+  --k-panel: #1F2024;
+  --k-ink: #ECEDEE;
+  --k-muted: #B4B8BE;
+  --k-grid: #2C2E33;
+  --k-axis: #9DA1A8;
+  --k-accent: #FF4F00;
+  --k-accent-text: #FF6A26;
+  --s2: #56B4E9;
+  --s5: #ECEDEE;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur: 0ms;
+  }
+}

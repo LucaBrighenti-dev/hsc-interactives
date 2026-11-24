@@ -1,0 +1,30 @@
+{
+  "id": "eng-descriptive-geometry",
+  "kind": "page",
+  "title": "Descriptive geometry",
+  "summary": "True length and true shape by auxiliary views; transition-piece developments.",
+  "subject": "eng",
+  "engine": "space3d",
+  "setup": "descriptive",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/engineering/descriptive-geometry.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Aeronautical Engineering",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Aeronautical and aerospace engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Descriptive geometry"
+    }
+  ]
+}

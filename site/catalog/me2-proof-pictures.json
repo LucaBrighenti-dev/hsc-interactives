@@ -1,0 +1,23 @@
+{
+  "id": "me2-proof-pictures",
+  "kind": "page",
+  "title": "Proof pictures",
+  "summary": "AM-GM and inequality proofs as geometric pictures; contrapositive and contradiction toggler.",
+  "subject": "me2",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/maths-ext2/proof-pictures.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 2",
+      "version": "2024",
+      "area": "Proof",
+      "focusArea": "The nature of proof",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

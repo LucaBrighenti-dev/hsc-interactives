@@ -1,0 +1,23 @@
+{
+  "id": "me1-normal-approx",
+  "kind": "page",
+  "title": "Normal approximation to the binomial",
+  "summary": "Overlay the normal curve on a binomial; continuity correction toggle.",
+  "subject": "me1",
+  "engine": "statsim",
+  "setup": "normal-approx",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/normal-approx.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Statistical analysis",
+      "focusArea": "The binomial distribution and the sampling distribution of the mean",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

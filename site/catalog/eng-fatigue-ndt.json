@@ -1,0 +1,30 @@
+{
+  "id": "eng-fatigue-ndt",
+  "kind": "page",
+  "title": "Fatigue and NDT methods",
+  "summary": "Crack growth to failure; visual, dye penetrant, X-ray, ultrasonic and magnetic particle testing compared.",
+  "subject": "eng",
+  "engine": "materials",
+  "setup": "fatigue-ndt",
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/engineering/fatigue-ndt.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Aeronautical Engineering",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Aeronautical and aerospace engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Degradation of materials"
+    }
+  ]
+}

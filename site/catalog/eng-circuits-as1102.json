@@ -1,0 +1,25 @@
+{
+  "id": "eng-circuits-as1102",
+  "kind": "listing",
+  "title": "Circuits with AS 1102 symbols",
+  "summary": "The circuit builder with AS 1102 symbols.",
+  "subject": "eng",
+  "engine": "circuit",
+  "setup": "builder",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/circuit-builder.html?preset=eng-as1102",
+  "listingOf": "phy-circuit-builder",
+  "preset": "eng-as1102",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Applied engineering analysis",
+      "year": 11,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Electronic concepts"
+    }
+  ]
+}

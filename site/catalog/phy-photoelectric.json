@@ -1,0 +1,29 @@
+{
+  "id": "phy-photoelectric",
+  "kind": "page",
+  "title": "Photoelectric effect",
+  "summary": "Frequency, intensity, work function and stopping voltage.",
+  "subject": "phy",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/photoelectric.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 7: The Nature of Light",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Nature of light",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

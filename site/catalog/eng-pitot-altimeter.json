@@ -1,0 +1,30 @@
+{
+  "id": "eng-pitot-altimeter",
+  "kind": "page",
+  "title": "Pitot-static and altimeter",
+  "summary": "Airspeed from total minus static pressure; altitude from static pressure.",
+  "subject": "eng",
+  "engine": "aero",
+  "setup": "pitot-static",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/pitot-altimeter.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Aeronautical Engineering",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Aeronautical and aerospace engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Propulsion and measurement systems"
+    }
+  ]
+}

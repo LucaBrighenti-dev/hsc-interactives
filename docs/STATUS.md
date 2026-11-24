@@ -3,12 +3,12 @@
 Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this file. Sessions resume from the first open box.
 
 - **Current wave:** 0
-- **Contracts:** DRAFT (locked at Gate A)
+- **Contracts:** READY FOR GATE A (guide §5 incl. §5.10; locked when Luca approves)
 - **Auth mode:** local (switch to supabase after H3–H5)
 
 ## Gates
 
-- [ ] **Gate A**: Luca approves Wave 0 foundations and contracts (`docs/gates/gate-a.md`)
+- [ ] **Gate A**: Luca approves Wave 0 foundations and contracts (`docs/gates/gate-a.md`): **waiting on Luca**. PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/1 (CI green)
 - [ ] **Gate B / me1**: Maths Ext 1 specs approved
 - [ ] **Gate B / me2**: Maths Ext 2 specs approved
 - [ ] **Gate B / phy**: Physics specs approved
@@ -17,7 +17,7 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 ## Human tasks (Luca, guide §14)
 
-- [ ] H1 GitHub repo, `gh auth login`, `main` protected
+- [x] H1 GitHub repo, `gh auth login`, `main` protected: https://github.com/LucaBrighenti-dev/hsc-interactives (public; `main` requires the CI check "build, test, e2e, screenshots"; admins may push `status:` commits)
 - [ ] H2 Render static site connected (`render.yaml`)
 - [ ] H3 Supabase project (Sydney), migration run, URL + anon key in `config.js`
 - [ ] H4 Google + Microsoft providers, magic links, anonymous sign-ins, redirect URLs
@@ -28,22 +28,22 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 ## Wave 0: Foundations (lead, sequential, guide §7)
 
-- [ ] W0-01 Repo scaffold
-- [ ] W0-02 Build, vendor and dev scripts
-- [ ] W0-03 Tokens, base CSS, fonts, styleguide
-- [ ] W0-04 UI components
-- [ ] W0-05 Utilities (state, csv, format)
-- [ ] W0-06 Reference engine `demo`
-- [ ] W0-07 Shell + `_template.html`
-- [ ] W0-08 Auth (functional) + sign-in + onboarding + privacy draft
-- [ ] W0-09 Supabase migration
-- [ ] W0-10 Catalog schema + generation from backlog
-- [ ] W0-11 Dashboard v0
-- [ ] W0-12 Tests (node --test, Playwright, shots)
-- [ ] W0-13 Acceptance runner
-- [ ] W0-14 CI + GitHub templates + create-issues script
-- [ ] W0-15 `render.yaml`
-- [ ] W0-16 Gate A report, then stop
+- [x] W0-01 Repo scaffold
+- [x] W0-02 Build, vendor and dev scripts
+- [x] W0-03 Tokens, base CSS, fonts, styleguide
+- [x] W0-04 UI components
+- [x] W0-05 Utilities (state, csv, format)
+- [x] W0-06 Reference engine `demo`
+- [x] W0-07 Shell + `_template.html`
+- [x] W0-08 Auth (functional) + sign-in + onboarding + privacy draft
+- [x] W0-09 Supabase migration
+- [x] W0-10 Catalog schema + generation from backlog
+- [x] W0-11 Dashboard v0
+- [x] W0-12 Tests (node --test, Playwright, shots)
+- [x] W0-13 Acceptance runner
+- [x] W0-14 CI + GitHub templates + create-issues script
+- [x] W0-15 `render.yaml`
+- [x] W0-16 Gate A report, then stop
 
 ## Wave 1: parallel tracks (after Gate A, guide §9)
 
@@ -169,3 +169,6 @@ Tracked on each PR (reviewer comment `VERDICT: PASS/FAIL`) and in `docs/gates/ga
 ## Log
 
 - 2026-11-25: Starter kit created from the master plan. Wave 0 not started.
+- 2026-11-25: Wave 0 complete on local branch `w0/foundations` (git initialised locally; no GitHub remote yet). `npm run check` passes: 34 unit tests, 27 browser tests, 4 acceptance checks on the reference template. Gate A report written; waiting on Luca for Gate A and H1 (GitHub repo, push, PR so CI runs).
+- 2026-11-25: Luca's answers applied: root guide copy deleted; one access code `TTT2026` for everyone (no class codes, no request restriction); privacy contact added. Starting H1 (GitHub) with Luca.
+- 2026-11-25: H1 done: public repo LucaBrighenti-dev/hsc-interactives created, `main` and `w0/foundations` pushed, PR #1 opened, CI green on first run (screenshots artifact attached), `main` protected. Next: Luca approves Gate A, then merge PR #1 and start Wave 1. H2 (Render) after PR #1 merges, because `main` has no site until then.

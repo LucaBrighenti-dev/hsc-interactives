@@ -1,0 +1,39 @@
+/* Dashboard v0 (W0-11). W1-HUB owns this folder and builds the full dashboard (guide §6.5). */
+.hub { display: flex; flex-direction: column; min-height: 100dvh; }
+.hub-header { position: sticky; top: 0; z-index: 10; background: var(--c-bg); }
+.hub-header .hsc-user { margin-left: auto; }
+.hub-main { flex: 1; padding-block: var(--sp-12) var(--sp-16); display: grid; gap: var(--sp-8); }
+.hub-greeting { font-size: clamp(28px, 4vw, var(--t-48)); text-transform: uppercase; letter-spacing: 0.01em; line-height: 1.05; }
+.hub-sub { margin-top: var(--sp-2); font-size: var(--t-18); }
+.hub-filters { display: grid; gap: var(--sp-4); grid-template-columns: minmax(260px, 480px) 1fr; align-items: center; }
+.hub-filters .cluster { justify-content: flex-end; }
+
+.hub-section { display: grid; gap: var(--sp-4); }
+.hub-section + .hub-section { margin-top: var(--sp-12); }
+.hub-section__head { display: flex; align-items: baseline; gap: var(--sp-3); padding-bottom: var(--sp-3); border-bottom: var(--border); }
+.hub-section__title { font-family: var(--f-display); font-stretch: var(--f-display-stretch); font-weight: 800; font-size: var(--t-24); text-transform: uppercase; }
+.hub-grid { display: grid; gap: var(--sp-4); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+.hub-card {
+  position: relative; display: flex; flex-direction: column;
+  background: var(--c-surface); border: var(--border); color: var(--c-text); text-decoration: none;
+  transition: border-color var(--dur) var(--ease);
+}
+a.hub-card:hover { border-color: var(--c-accent); color: var(--c-text); }
+.hub-card__thumb { aspect-ratio: 16 / 9; background: var(--c-bg); border-bottom: var(--border); overflow: hidden; }
+.hub-card__thumb img, .hub-card__thumb svg { width: 100%; height: 100%; object-fit: cover; }
+.hub-card__body { display: grid; gap: var(--sp-2); padding: var(--sp-4); flex: 1; align-content: start; }
+.hub-card__title { font-size: var(--t-18); font-weight: 600; line-height: 1.25; }
+.hub-card__summary { font-size: var(--t-14); color: var(--c-muted); line-height: 1.45; }
+.hub-card__tags { font-family: var(--f-mono); font-size: var(--t-12); text-transform: uppercase; letter-spacing: var(--tracking-label); color: #7E828A; line-height: 1.5; }
+.hub-card__badge { position: absolute; top: var(--sp-3); left: var(--sp-3); background: var(--c-bg); }
+.hub-card.is-soon .hub-card__title { color: #C9CBCF; }
+
+.hub-empty { padding: var(--sp-12) 0; color: var(--c-muted); font-size: var(--t-18); }
+.hub-footer { display: flex; gap: var(--sp-2); justify-content: center; }
+
+@media (max-width: 899px) {
+  .hub-main { padding-block: var(--sp-8) var(--sp-12); }
+  .hub-filters { grid-template-columns: 1fr; }
+  .hub-filters .cluster { justify-content: flex-start; }
+}

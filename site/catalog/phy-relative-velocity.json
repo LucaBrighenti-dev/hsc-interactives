@@ -1,0 +1,29 @@
+{
+  "id": "phy-relative-velocity",
+  "kind": "page",
+  "title": "Relative velocity",
+  "summary": "Boat crossing a river, plane in a crosswind.",
+  "subject": "phy",
+  "engine": "particle2d",
+  "setup": "relative-velocity",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/relative-velocity.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 1: Kinematics",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Fundamentals of mechanics",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

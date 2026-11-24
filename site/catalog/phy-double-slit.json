@@ -1,0 +1,29 @@
+{
+  "id": "phy-double-slit",
+  "kind": "page",
+  "title": "Double slit and diffraction grating",
+  "summary": "Wavelength, slit spacing and screen distance sliders with a live intensity pattern.",
+  "subject": "phy",
+  "engine": "wave",
+  "setup": "interference",
+  "priority": "P0",
+  "status": "planned",
+  "path": "/interactives/physics/double-slit.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 7: The Nature of Light",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Nature of light",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

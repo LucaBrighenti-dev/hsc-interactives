@@ -1,0 +1,23 @@
+{
+  "id": "me1-pascal-binomial",
+  "kind": "page",
+  "title": "Pascal's triangle and the binomial theorem",
+  "summary": "Pascal's triangle linked to expansion coefficients; general-term finder.",
+  "subject": "me1",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/pascal-binomial.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Combinatorics",
+      "focusArea": "The binomial theorem",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

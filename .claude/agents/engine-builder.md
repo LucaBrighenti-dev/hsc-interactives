@@ -10,6 +10,7 @@ Read first:
 1. `CLAUDE.md`
 2. `docs/IMPLEMENTATION_GUIDE.md` §2 (rules), §5.1 (engine contract), §6.6 (drawing rules), §9.1 (your engine's row and its setup coverage)
 3. `site/assets/engines/demo/` and `tests/engines/demo.test.mjs`: the golden example to copy.
+4. `site/assets/engine-kit.js` and guide §5.10: use `createLoop`, `createEmitter`, `createSurface`, `readPalette` and the drawing helpers instead of writing your own. `tests/engines/_contract.test.mjs` checks your meta and `model.js` automatically.
 
 Do:
 1. Put all maths and physics in `model.js`. It must be pure, deterministic and importable in Node, with no DOM.

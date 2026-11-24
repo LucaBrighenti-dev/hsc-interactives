@@ -1,0 +1,30 @@
+{
+  "id": "eng-modulation-lab",
+  "kind": "page",
+  "title": "Modulation lab",
+  "summary": "AM, FM and phase modulation waveforms.",
+  "subject": "eng",
+  "engine": "wave",
+  "setup": "modulation",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/modulation-lab.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Telecommunications Engineering",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Aeronautical and aerospace engineering",
+      "year": 12,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Aerospace positioning systems"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "me1-solids-revolution",
+  "kind": "page",
+  "title": "Solids of revolution",
+  "summary": "Spin a region about either axis, show disc slices and the volume integral.",
+  "subject": "me1",
+  "engine": "space3d",
+  "setup": "revolution",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/maths-ext1/solids-revolution.html",
+  "syllabus": [
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Calculus",
+      "focusArea": "Further applications of calculus",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "phy-relativity",
+  "kind": "page",
+  "title": "Special relativity",
+  "summary": "Light clock time dilation and length contraction.",
+  "subject": "phy",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/physics/relativity.html",
+  "syllabus": [
+    {
+      "course": "Physics",
+      "version": "2017",
+      "area": "Module 7: The Nature of Light",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Physics",
+      "version": "2025",
+      "focusArea": "Nature of light",
+      "year": 12,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

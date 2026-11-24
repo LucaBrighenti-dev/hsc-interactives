@@ -1,0 +1,29 @@
+{
+  "id": "eng-isometric-grid",
+  "kind": "page",
+  "title": "Isometric sketching grid",
+  "summary": "Isometric grid with snap for practice sketches.",
+  "subject": "eng",
+  "engine": "custom",
+  "setup": null,
+  "priority": "P2",
+  "status": "planned",
+  "path": "/interactives/engineering/isometric-grid.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Engineering Fundamentals",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Technical graphics and communication",
+      "year": 11,
+      "outcomes": [],
+      "verified": false
+    }
+  ]
+}

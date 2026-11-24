@@ -65,8 +65,8 @@ Commands (defined in W0-01/W0-02):
 | `npm run build` | Clean `dist/`, copy `site/`, merge + validate catalog fragments into `dist/catalog.json`, copy/bundle vendor libs and fonts |
 | `npm test` | `node --test tests/engines` |
 | `npm run test:e2e` | Playwright smoke + acceptance tests against a built `dist/` |
-| `npm run shots [-- <id>]` | Screenshots of every non-planned page (or one id) at 1920×1080, 1180×820, 390×844 into `test-results/shots/<id>/` |
-| `npm run generate` | Create missing catalog fragments, spec stubs and notes stubs from `docs/backlog.json` (idempotent) |
+| `npm run shots [-- <id>] [-- --thumbs]` | Screenshots of every non-planned page (or one id), plus the sign-in, dashboard, privacy, styleguide and template pages, at 1920×1080, 1180×820, 390×844 into `test-results/shots/<id>/`. `--thumbs` also writes `site/assets/thumbs/<id>.png` |
+| `npm run generate [-- --check]` | Create missing catalog fragments, spec stubs and notes stubs from `docs/backlog.json` (idempotent). `--check` exits 1 if anything is out of date (`npm test` runs the same check) |
 | `npm run create-issues [-- --apply]` | One GitHub issue per backlog page via `gh` (dry run unless `--apply`) |
 | `npm run check` | build + test + test:e2e |
 
@@ -291,7 +291,7 @@ export const SITE_NAME = 'HSC Interactives Hub';      // placeholder until Luca 
 export const AUTH_MODE = 'local';                     // 'local' until Supabase is configured (human task H3)
 export const SUPABASE_URL = '';
 export const SUPABASE_ANON_KEY = '';                  // public anon key only; never the service_role key
-export const LOCAL_ACCESS_CODES = ['TTT2026', 'CLASS2026'];
+export const LOCAL_ACCESS_CODES = [{ code: 'TTT2026', kind: 'event' }];   // one shared code (see §5.10)
 ```
 
 **Local mode** stores the session and all data in `localStorage` under `hsc:*` keys, accepts any provider click as a signed-in local user, accepts `LOCAL_ACCESS_CODES`, and simulates email by signing in immediately. Every feature must work end to end in local mode, so agents never need credentials.
@@ -385,6 +385,50 @@ window.__hsc = {
 ### 5.9 Teacher notes (`site/content/notes/<id>.md`)
 
 Fixed headings, in this order: `## Misconceptions`, `## 10-minute lesson flow`, `## Try this: answers`, `## Original HSC-style question` (with `### Worked solution`), `## Assumptions and limits`, `## Syllabus links` (links to NESA pages, never quoted text).
+
+Maths in notes: `$...$` inline and `$$...$$` display (KaTeX); `\$` for a literal dollar. `npm test` checks the headings of every notes file that is not a stub.
+
+### 5.10 Wave 0 additions (part of the contract from Gate A)
+
+Wave 0 made these additions and clarifications while building §5.1–§5.9. Each is backwards compatible with the text above; `docs/gates/gate-a.md` lists them with reasons.
+
+**Engines (§5.1)**
+- **Engine kit.** `site/assets/engine-kit.js` (lead-owned) gives every engine the §5.1 rules: `createLoop` (fixed step + accumulator, `timeScale` clamped 0.25–2, pauses while `document.hidden`), `createEmitter` (`outputs` throttled to 10 Hz, plus `outputsNow`), `createSurface` (canvas, DPR capped at 2), `readPalette`, `font`, `stageFontPx`, `label`, `arrow`, `niceTicks`, `viewport`, `axisMargins`, `drawAxes` (with `layer: 'under' | 'over'`), `pointerDrag`, `ensureFonts`. Engines must use the loop and emitter rather than their own.
+- Engine files import shared modules by **relative** path (`'../../engine-kit.js'`, `'../../state.js'`) so Node can import `index.js` for contract tests. Nothing may touch the DOM at import time.
+- `meta.staticSetups` (optional): setups with no time evolution; the shell hides play, step and reset for them.
+- `meta.stepSize` (optional, default 1): fixed steps per press of the shell's Step button.
+- Param types: `number` (`min`, `max`, `step`, optional `integer`), `boolean`, `enum` (`options: [[value, label], …]`, values are strings), `string` (`maxLength`, default 200; optional `pattern`), `list` (numbers; optional `min`, `max`, `minItems`, `maxItems`). Any param may have `setups`, `visibleWhen: { key: value | [values] }`, `help`, and for enums `widget: 'segmented' | 'select'` (default: segmented for up to three options). Param keys are camelCase and must not be a reserved URL key (`preset`, `embed`, `theme`, `test`, `present`, `playlist`, `i`).
+- Outputs may have `setups`. `unit` is required (`''` when dimensionless).
+- `step(n)` stops early when the scenario completes. Optional `describe()` returns a sentence for the stage's `aria-label`.
+- `setTheme(theme)`: the shell sets `data-theme` on `<html>` first; engines re-read colours with `readPalette`.
+- `tests/engines/_contract.test.mjs` checks every engine automatically: files and exports, meta shape, valid defaults, `timeScale` on time-based engines, a pure `model.js`, and no `eval`/`Function`/remote imports.
+
+**Pages (§5.2)**
+- Optional config: `title` (used only when the id has no catalog entry) and `presetLabels: { name: 'Label' }` for the Scenario menu (shown when there is more than one preset).
+- Extra keys: `T` toggles the stage theme, `N` opens teacher notes. The panel's **Reset values** button restores the current preset.
+- Embed mode hides share, save and teacher notes (the embed view is for students); CSV stays.
+- `?playlist=<id>&i=<n>` navigation is implemented in the shell header, using `listPlaylists()` and the catalog.
+- Saved scenarios store `engine.getParams()` only. `state.js` exports `genericQuery(params)` and `withQuery(path, query)` for building links when the engine's meta isn't loaded (dashboard).
+
+**Catalog (§5.3)**
+- `dist/catalog.json` is `{ generated, count, entries }`, sorted by subject, priority, then title.
+- `setup` is `null` for custom pages. A syllabus tag may carry `url` (a NESA page); otherwise the tag strip links to the course page. `thumbnail` is added by the page's task once `npm run shots -- <id> --thumbs` has written it.
+- Files whose names start with `_` in `site/catalog/` are not fragments.
+
+**Specs and acceptance (§5.4)**
+- A check may set `"preset": "<name>"` to load that preset first. Every param in `params` must be accepted unchanged by the engine (a clamp fails the check), and `"run": "complete"` must actually complete.
+- Spec frontmatter from `npm run generate` also lists `page` and the `listings` whose presets the page must define.
+- `specs/_demo.md` is the reference spec for `_template.html`; the runner always includes it.
+
+**Auth (§5.6, §5.7)**
+- `LOCAL_ACCESS_CODES` is `[{ code, kind }]`, mirroring the `access_codes` table. There is **one shared access code, `TTT2026`**, for teachers and their classes (Luca, 25 Nov). It also gives the Founding Educator badge. The `kind` column stays so more codes could be added later without a schema change.
+- Extra exports: `redeemAccessCode(code)` (a teacher signed in with Microsoft or Google enters the access code for the Founding Educator badge), `deleteAccount()`, `safeNext(path)`, `onAuthChange(fn)`, `authMode`.
+- `signInWithProvider(p, { next })` resolves `{ signedIn }` (local) or `{ redirecting }` (Supabase). `signInWithEmail(email, { next })` resolves `{ signedIn }` (local) or `{ sent }` (Supabase). Errors are thrown with messages safe to show a teacher.
+- Session kinds in local mode match Supabase (`oauth`, `email`, `code`).
+- Any signed-in session, including an access-code session, can create requests and vote.
+- The migration adds explicit grants (no `anon` access), column-level grants so `founding` is never writable from the browser, length and value checks, indexes, `(select auth.uid())` in policies, `search_path = ''` on security-definer functions, and `delete_my_account()`.
+
+**Test hooks (§5.8)**: `runUntilComplete` returns `{ steps, complete }`; `window.__hsc.meta` gives `{ name, version, setup }`.
 
 ---
 
@@ -648,7 +692,7 @@ Run `npm run create-issues -- --apply` once (after Gate B) so every page has a G
 
 | Path | Owner |
 | --- | --- |
-| `CLAUDE.md`, `docs/IMPLEMENTATION_GUIDE.md`, `specs/_TEMPLATE.md`, `site/catalog/_schema.json`, `site/assets/{tokens.css,base.css,shell.js,state.js,csv.js,format.js,config.js}`, `site/assets/ui/**`, `scripts/**`, `.github/**`, `render.yaml` | Lead tasks only (locked after Gate A) |
+| `CLAUDE.md`, `docs/IMPLEMENTATION_GUIDE.md`, `specs/_TEMPLATE.md`, `specs/_demo.md`, `site/catalog/_schema.json`, `site/assets/{tokens.css,base.css,shell.js,state.js,csv.js,format.js,config.js,engine-kit.js,markdown.js}`, `site/assets/ui/**`, `site/assets/engines/demo/**`, `site/interactives/_template.html`, `site/content/notes/_template.md`, `site/dev/styleguide.*`, `scripts/**`, `tests/lib/**`, `tests/e2e/**`, `tests/engines/_*.test.mjs`, `tests/engines/demo.test.mjs`, `playwright.config.mjs`, `.github/**`, `.claude/agents/**`, `render.yaml` | Lead tasks only (locked after Gate A) |
 | `docs/STATUS.md`, `docs/gates/gate-c-queue.md` | Orchestrator only |
 | `site/assets/engines/<name>/**`, `tests/engines/<name>.test.mjs`, `site/dev/engines/<name>.html` | That engine's task (one at a time) |
 | `site/signin.html`, `site/privacy.html`, `site/assets/signin/**`, `auth.js` internals, `supabase/**` | W1-AUTH |
@@ -671,7 +715,7 @@ Claude Code must not do these; it asks Luca and waits. Track them as H1–H8 in 
 - **H2 Render:** New → Blueprint (uses `render.yaml`), or a Static Site with build `npm ci && npm run build` and publish directory `dist`. Turn on pull request previews if your plan has them.
 - **H3 Supabase project:** region Sydney (ap-southeast-2). Run `supabase/migrations/0001_init.sql` in the SQL editor. Put the Project URL and the **anon public** key into `site/assets/config.js` and set `AUTH_MODE = 'supabase'`. Never commit the service-role key.
 - **H4 Sign-in providers:** Google (Google Cloud OAuth client) and Microsoft (Entra app registration, multi-tenant so any school's Microsoft 365 works). Enable email magic links and anonymous sign-ins. Set Site URL and redirect URLs (Render URL, `http://localhost:5173`).
-- **H5 Access codes:** insert your codes, e.g. `insert into access_codes values ('TTT2026','event',true), ('CLASS2026','class',true);`.
+- **H5 Access codes:** insert your codes, `insert into public.access_codes (code, kind) values ('TTT2026', 'event');` (one shared code).
 - **H6 Test a real NSW Department Microsoft account** and a Google account before the event.
 - **H7 Name and branding:** final `SITE_NAME`; confirm UNSW logo use and the privacy statement with the event organisers.
 - **H8 Gates:** approve Gate A, Gate B per subject, and Gate C merges.

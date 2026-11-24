@@ -1,0 +1,30 @@
+{
+  "id": "eng-moments",
+  "kind": "page",
+  "title": "Moments and equilibrium",
+  "summary": "Clockwise-positive moments and beam reactions.",
+  "subject": "eng",
+  "engine": "statics",
+  "setup": "moments",
+  "priority": "P1",
+  "status": "planned",
+  "path": "/interactives/engineering/moments.html",
+  "syllabus": [
+    {
+      "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Engineering Fundamentals",
+      "outcomes": [],
+      "verified": false
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Applied engineering analysis",
+      "year": 11,
+      "outcomes": [],
+      "verified": false,
+      "subtopic": "Equilibrium in mechanics"
+    }
+  ]
+}
