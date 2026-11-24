@@ -51,6 +51,8 @@ How the engine computes (static setup):
 | decreasing | f(u) = √u, g(x) = 1 − x², 0 to 1, 4 strips | The u-limits run from 1 down to 0: the area is −2/3 |
 | cosine-square | f(u) = cos u, g(x) = x², 0 to √(π/2), 6 strips | ∫ 2x cos(x²) dx = sin(π/2) − sin 0 = 1 |
 
+Bounds such as π/2, e and √(π/2) are set to their exact values (1.5707963267948966, 2.718281828459045, 1.2533141373155001). They are not multiples of the slider step: the number field shows the exact value and the slider handle sits at the nearest step. The engine never snaps a value to the step.
+
 ## Readouts
 | Output | Label | Unit | Sig figs |
 | --- | --- | --- | --- |

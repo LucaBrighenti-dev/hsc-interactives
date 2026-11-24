@@ -55,15 +55,15 @@ The expansion is (p xᵅ + q xᵝ)ⁿ. Examples: (x + 1)ⁿ is p = 1, α = 1, q 
 ## Readouts
 | Output | Label | Unit | Sig figs |
 | --- | --- | --- | --- |
-| binom | ⁿCₖ | | exact integer (`integer: true`) |
-| termCoeff | Coefficient of Tₖ₊₁ | | exact integer (`integer: true`) |
-| termPower | Power of x in Tₖ₊₁ | | exact integer |
-| rowSum | Row sum 2ⁿ | | exact integer (`integer: true`) |
-| coeffSum | Sum of all coefficients (p + q)ⁿ | | exact integer (`integer: true`) |
-| pascalLeft | ⁿ⁻¹Cₖ₋₁ (above left) | | exact integer |
-| pascalRight | ⁿ⁻¹Cₖ (above right) | | exact integer |
-| targetK | k for the x^r term | | exact integer |
-| targetCoeff | Coefficient of x^r | | exact integer (`integer: true`) |
+| binom | ⁿCₖ | | integer (`integer: true`) |
+| termCoeff | Coefficient of Tₖ₊₁ | | integer (`integer: true`) |
+| termPower | Power of x in Tₖ₊₁ | | integer (`integer: true`) |
+| rowSum | Row sum 2ⁿ | | integer (`integer: true`) |
+| coeffSum | Sum of all coefficients (p + q)ⁿ | | integer (`integer: true`) |
+| pascalLeft | ⁿ⁻¹Cₖ₋₁ (above left) | | integer (`integer: true`) |
+| pascalRight | ⁿ⁻¹Cₖ (above right) | | integer (`integer: true`) |
+| targetK | k for the x^r term | | integer (`integer: true`) |
+| targetCoeff | Coefficient of x^r | | integer (`integer: true`) |
 
 - binom = ⁿCₖ; termCoeff = ⁿCₖ pⁿ⁻ᵏ qᵏ; termPower = α(n − k) + βk; rowSum = 2ⁿ; coeffSum = (p + q)ⁿ.
 - pascalLeft = ⁿ⁻¹Cₖ₋₁ and pascalRight = ⁿ⁻¹Cₖ, with ᵐCⱼ = 0 when j < 0 or j > m (so pascalLeft + pascalRight = binom for n ≥ 1).
