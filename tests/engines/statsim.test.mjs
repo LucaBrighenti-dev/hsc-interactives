@@ -37,6 +37,8 @@ import {
   halvingTimes,
   measuredHalfLife,
 } from '../../site/assets/engines/statsim/model.js';
+import { meta } from '../../site/assets/engines/statsim/index.js';
+import { formatProbability } from '../../site/assets/engines/statsim/view.js';
 
 const close = (actual, expected, tol, msg) => assert.ok(Math.abs(actual - expected) <= tol, `${msg ?? ''} expected ${expected} ± ${tol}, got ${actual}`);
 const rel = (actual, expected, r, msg) => close(actual, expected, Math.abs(expected) * r, msg);
@@ -310,6 +312,34 @@ test('discrete populations: bins hold whole lattice points k/n, never on a bin e
   }
 });
 
+test('zoomed discrete axis: at least 3 lattice steps 1/n either side of μ (within the support)', () => {
+  for (const name of ['bernoulli', 'die', 'skewed']) {
+    for (const p of [0.01, 0.05, 0.3, 0.5, 0.99]) {
+      for (const n of [1, 2, 3, 5, 13, 40, 100]) {
+        const params = { ...SAMPLING_DEFAULTS, population: name, p, n, meansAxis: 'zoom' };
+        const pop = samplingPopulation(params);
+        const { view } = samplingBins(params, pop);
+        const lo = Math.max(pop.values[0], pop.mean - 3 / n);
+        const hi = Math.min(pop.values[pop.values.length - 1], pop.mean + 3 / n);
+        for (let j = Math.ceil(lo * n - 1e-9); j <= Math.floor(hi * n + 1e-9); j++) {
+          assert.ok(j / n > view[0] && j / n < view[1], `${name} p=${p} n=${n}: mean ${j}/${n} is off the zoomed axis [${view}]`);
+        }
+      }
+    }
+  }
+});
+
+test('zoomed Bernoulli p = 0.01, n = 2: every possible mean (0, 1/2, 1) is in its own bin on the axis', () => {
+  // σ/√n = √(0.0099/2) ≈ 0.07 is far below the lattice step 1/2, so μ ± 4.5σ/√n alone would show one bin.
+  const params = { ...SAMPLING_DEFAULTS, population: 'bernoulli', p: 0.01, n: 2, samples: 3000, meansAxis: 'zoom', seed: 8 };
+  const s = advanceSampling(createSampling(params), params, 3000);
+  assert.ok(s.bins.count >= 3, `bins: ${s.bins.count}`);
+  assert.equal(s.under + s.over, 0, 'nothing beyond the axis');
+  const binOf = (x) => Math.floor((x - s.bins.start) / s.bins.width);
+  assert.equal(new Set([0, 0.5, 1].map(binOf)).size, 3);
+  assert.ok(s.hist[binOf(0.5)] > 0, 'x̄ = 1/2 occurs (P = 2 × 0.01 × 0.99 ≈ 0.02) and is counted');
+});
+
 test('binomial mode bins are the integers 0..n (one per value)', () => {
   const params = { ...SAMPLING_DEFAULTS, mode: 'binomial', population: 'bernoulli', n: 8, p: 0.5 };
   const bins = samplingBins(params, samplingPopulation(params));
@@ -391,6 +421,27 @@ test('normal approximation: P(X ≥ k) and P(X = k), with and without the correc
   assert.equal(normalApprox({ trials: n, prob: p, k: 20, event: 'eq', continuity: false }).approx, 0);
 });
 
+test('stage probabilities: 4 decimal places, true minus sign, never "−0.0000"', () => {
+  assert.equal(formatProbability(0.60800), '0.6080');
+  assert.equal(formatProbability(-0.0116), '−0.0116');
+  assert.equal(formatProbability(1), '1.0000');
+  assert.equal(formatProbability(0), '0.0000');
+  assert.equal(formatProbability(-0), '0.0000');
+  assert.equal(formatProbability(-4.07e-5), '0.0000');
+  assert.equal(formatProbability(-4.9e-5), '0.0000');
+  assert.equal(formatProbability(-6e-5), '−0.0001');
+  assert.equal(formatProbability(4.07e-5), '0.0000');
+  assert.equal(formatProbability(NaN), '—');
+  // B(100, 0.5), P(X ≥ 55): exact 0.18410 (cumulative binomial table: P(X ≤ 54) = 0.81590) and normal
+  // 1 − Φ(0.9) = 0.18406 (table Φ(0.9) = 0.81594), so the error is about −4e-5: it must not show as −0.0000.
+  const r = normalApprox({ trials: 100, prob: 0.5, k: 55, event: 'ge', continuity: true });
+  close(r.exact, 0.1841, 5e-5);
+  close(r.approx, 0.18406, 1e-5);
+  assert.ok(r.error < 0 && r.error > -5e-5, `error ${r.error}`);
+  assert.equal(formatProbability(r.error), '0.0000');
+  assert.equal(formatProbability(r.exact), '0.1841');
+});
+
 test('normal approximation: the event covers the right values of k', () => {
   const le = normalApprox({ trials: 10, prob: 0.5, k: 3, event: 'le', continuity: true });
   assert.deepEqual([le.kFrom, le.kTo], [0, 3]);
@@ -466,4 +517,76 @@ test('measured half-life: linear interpolation of the first fall to N₀/2', () 
   const times = halvingTimes([1000, 700, 490, 343, 240, 168, 118], 1000, 3);
   close(times[0], 2 - (500 - 490) / (700 - 490), 1e-12);
   assert.equal(times.length, 3);
+});
+
+// ---------------------------------------------------------------- outputs and readouts
+
+/** Model outputs for a setup, keyed as meta.outputs (normal-approx readouts are fields of normalApprox). */
+function outputsFor(setup, state, params) {
+  if (setup === 'sampling') return samplingOutputs(state, params);
+  if (setup === 'decay') return decayOutputs(state, params);
+  return normalApprox(params);
+}
+
+const outputKeys = (setup) => Object.entries(meta.outputs).filter(([, o]) => !o.setups || o.setups.includes(setup));
+const COUNTS = ['count', 'latestX', 't', 'remaining', 'decayed', 'lastDecays'];
+
+test('every output in meta is produced by the model for its setup', () => {
+  const decay = { nuclei: 100, halfLife: 10, duration: 60, seed: 1 };
+  const runs = {
+    sampling: [createSampling(SAMPLING_DEFAULTS), SAMPLING_DEFAULTS],
+    decay: [createDecay(decay), decay],
+    'normal-approx': [null, { trials: 20, prob: 0.3, k: 6, event: 'le', continuity: true }],
+  };
+  for (const setup of meta.setups) {
+    const out = outputsFor(setup, ...runs[setup]);
+    for (const [key] of outputKeys(setup)) assert.ok(key in out, `${setup}: output "${key}" is missing from the model`);
+  }
+});
+
+test('counts are flagged integer (readouts show "344", not "344.0") and are always whole numbers', () => {
+  for (const key of COUNTS) assert.equal(meta.outputs[key].integer, true, `${key} should be integer`);
+  const seen = new Set();
+  const check = (setup, out) => {
+    for (const [key, spec] of outputKeys(setup)) {
+      const v = out[key];
+      if (!spec.integer || v === null) continue;
+      assert.ok(Number.isInteger(v), `${setup}: integer output "${key}" = ${v}`);
+      seen.add(key);
+    }
+  };
+  for (const mode of ['binomial', 'means']) {
+    for (const population of ['die', 'exponential']) {
+      const params = { ...SAMPLING_DEFAULTS, mode, population, n: 7, samples: 50, seed: 3 };
+      const s = createSampling(params);
+      check('sampling', samplingOutputs(s, params));
+      for (let i = 0; i < 50; i++) check('sampling', samplingOutputs(advanceSampling(s, params, 1), params));
+    }
+  }
+  for (const halfLife of [1, 2.5, 10, 37.5]) {
+    const params = { nuclei: 700, halfLife, duration: 40, seed: 4 };
+    const s = createDecay(params);
+    check('decay', decayOutputs(s, params));
+    while (!decayComplete(s, params)) check('decay', decayOutputs(advanceDecay(s, params, 1), params));
+  }
+  for (const key of COUNTS) assert.ok(seen.has(key), `${key} was never checked`);
+});
+
+test('the latest statistic: X (whole) in Bernoulli-trial mode, x̄ (not rounded) in sample-means mode', () => {
+  const bin = { ...SAMPLING_DEFAULTS, mode: 'binomial', population: 'bernoulli', n: 20, samples: 10, seed: 6 };
+  const none = samplingOutputs(createSampling(bin), bin);
+  assert.deepEqual([none.latest, none.latestX, none.latestMean], [null, null, null]);
+  const b = samplingOutputs(advanceSampling(createSampling(bin), bin, 3), bin);
+  assert.ok(Number.isInteger(b.latestX) && b.latestX >= 0 && b.latestX <= 20);
+  assert.equal(b.latestX, b.latest);
+  assert.equal(b.latestMean, null);
+  const means = { ...SAMPLING_DEFAULTS, mode: 'means', population: 'exponential', n: 10, samples: 10, seed: 6 };
+  const m = samplingOutputs(advanceSampling(createSampling(means), means, 3), means);
+  assert.equal(m.latestX, null);
+  assert.equal(m.latestMean, m.latest);
+  assert.ok(!Number.isInteger(m.latestMean), 'an exponential sample mean is not a whole number');
+  // x̄ and the other real-valued results must never be rounded to whole numbers by the readout.
+  for (const key of ['latest', 'latestMean', 'simMean', 'simSD', 'theoryMean', 'theorySD', 'theoryRemaining', 'measuredHalfLife']) {
+    assert.ok(!meta.outputs[key].integer, `${key} must not be integer`);
+  }
 });

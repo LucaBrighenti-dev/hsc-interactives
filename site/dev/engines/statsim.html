@@ -29,8 +29,8 @@
         },
         presetLabels: { default: 'Exponential population, n = 10', binomial: 'Bernoulli trials: B(20, 0.3)', 'die-means': 'Means of 5 dice', 'skewed-n30': 'Skewed population, n = 30, zoomed' },
         controls: ['mode', 'population', 'p', 'rate', 'n', 'samples', 'drawRate', 'meansAxis', 'yScale', 'showCurve', 'seed', 'timeScale'],
-        readouts: ['latest', 'simMean', 'simSD', 'theoryMean', 'theorySD'],
-        assumptions: ['Draws are independent', 'Seeded random numbers (mulberry32)', 'Simulated SD uses the n − 1 divisor'],
+        readouts: ['count', 'latestX', 'latestMean', 'simMean', 'simSD', 'theoryMean', 'theorySD'],
+        assumptions: ['Draws are independent', 'Seeded random numbers (mulberry32)', 'Simulated SD divides by (number of samples − 1)'],
       },
       'normal-approx': {
         presets: { default: {}, 'n100': { trials: 100, prob: 0.5, k: 55, event: 'ge' } },

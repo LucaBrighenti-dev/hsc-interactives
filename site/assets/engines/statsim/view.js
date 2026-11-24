@@ -1,16 +1,24 @@
 // statsim view: drawing only. Reads model state; never changes it.
 // Colour code on every stage: orange = random draws (simulated), blue = theory. Second cues: filled bars
-// vs a line (with ring markers for a pmf), solid vs dashed, filled vs hollow squares, plus a legend.
+// vs a line (with ring markers for a pmf), solid vs dashed, filled vs hollow vs crossed squares, plus a legend.
 import { createSurface, readPalette, stageFontPx, axisMargins, viewport, label, arrow, niceTicks, font, drawAxes, tickText } from '../../engine-kit.js';
-import { formatNumber, formatPlain } from '../../format.js';
+import { formatNumber, formatPlain, formatInteger, MINUS } from '../../format.js';
 import { normalPdf, binomialPmf, samplingTheory, decayTheory, decayProbability, halvingTimes, decaySteps, DECAY_DT } from './model.js';
 
 const f3 = (x) => formatNumber(x, { sigfigs: 3 });
 const f4 = (x) => formatNumber(x, { sigfigs: 4 });
-const int = (x) => formatNumber(x, { sigfigs: Math.max(1, String(Math.round(Math.abs(x))).length) });
+const int = formatInteger; // counts: "344", "10 000"
 
-/** Probability to 4 decimal places (the precision of a classroom table), with a true minus sign. */
-const p4 = (x) => (x < 0 ? '−' : '') + Math.abs(x).toFixed(4);
+/**
+ * Probability to 4 decimal places (the precision of a classroom table), with a true minus sign. It is
+ * rounded first, so a tiny negative error such as −4.07 × 10⁻⁵ shows as "0.0000", never "−0.0000".
+ */
+export function formatProbability(x) {
+  if (!Number.isFinite(x)) return formatNumber(x);
+  const digits = Math.abs(x).toFixed(4);
+  return x < 0 && digits !== '0.0000' ? MINUS + digits : digits;
+}
+const p4 = formatProbability;
 
 /** Short description of the population being sampled. */
 export function populationLabel(params) {
@@ -67,14 +75,15 @@ export function createView(stage, setup) {
     ctx.fillStyle = pal.bg;
     ctx.fillRect(x - 4, y - px * 0.75, total + 8, px * 1.5);
     items.forEach((it, i) => {
-      swatch(ctx, it.kind, x, y, sw, px, it.colour);
+      swatch(ctx, it.kind, x, y, sw, px, it.colour, it.width);
       text(it.text, x + sw + gap, y, { px, baseline: 'middle', colour: pal.ink });
       x += widths[i] + between;
     });
     return total;
   }
 
-  function swatch(ctx, kind, x, y, sw, px, colour) {
+  /** kinds: bar, hollow (bar outline), square, box (square outline), crossed (box with a cross), hatch, line, dashed, ring. */
+  function swatch(ctx, kind, x, y, sw, px, colour, width = 2) {
     const h = Math.round(px * 0.8);
     ctx.save();
     ctx.lineWidth = 3;
@@ -85,7 +94,21 @@ export function createView(stage, setup) {
       ctx.lineWidth = 2;
       ctx.strokeRect(x + sw * 0.2 + 1, y - h / 2 + 1, sw * 0.6 - 2, h - 2);
     } else if (kind === 'square') ctx.fillRect(x + sw / 2 - h / 2, y - h / 2, h, h);
-    else if (kind === 'hatch') {
+    else if (kind === 'box' || kind === 'crossed') {
+      ctx.lineWidth = width;
+      const d = h - width;
+      const x0 = x + sw / 2 - h / 2 + width / 2;
+      const y0 = y - h / 2 + width / 2;
+      ctx.strokeRect(x0, y0, d, d);
+      if (kind === 'crossed') {
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x0 + d, y0 + d);
+        ctx.moveTo(x0 + d, y0);
+        ctx.lineTo(x0, y0 + d);
+        ctx.stroke();
+      }
+    } else if (kind === 'hatch') {
       ctx.lineWidth = 1.5;
       ctx.strokeRect(x + 1, y - h / 2, sw - 2, h);
       ctx.beginPath();
@@ -127,8 +150,10 @@ export function createView(stage, setup) {
   }
 
   /**
-   * Axes for a plot whose y-axis sits on the left edge and x-axis on the bottom edge (histograms: the
-   * x range may straddle zero, where the kit's drawAxes would put the y-axis mid-plot).
+   * Axes pinned to the left and bottom edges with caller-chosen ticks. The kit's drawAxes (with
+   * xAxisAt 'bottom', yAxisAt 'left') picks its own ticks, but histograms need ticks only where values
+   * can occur (whole X, no "−0.2" under proportions), whole-number count ticks (no "2.5" on a
+   * frequency axis), and x tick labels that give way to the x title on the same row.
    */
   function edgeAxes(vp, { px, layer, xTicks, yTicks: allY, fmtX = tickText, fmtY = tickText, xTitle, yTitle, xLabels = true }) {
     const { ctx } = surface;
@@ -853,24 +878,42 @@ export function createView(stage, setup) {
     const rows = Math.ceil(n0 / cols);
     const cell = Math.max(1, Math.floor(side / cols));
     const gap = cell >= 9 ? 2 : cell >= 5 ? 1 : 0;
+    const size = cell - gap; // drawn size of one nucleus
     const gx = pad;
     const gy = pad + rowH;
-    const hollow = cell - gap >= 6;
+    // Shape as well as colour: undecayed = filled orange square; decayed in the last step = ink box with a
+    // cross ('large' cells) or an ink outline ('small'); decayed earlier = thin grey outline ('large') or a
+    // faint fill. Ink sits at the far end of the lightness scale from the background in both themes. Only
+    // 'tiny' cells (under 3 px, phones with thousands of nuclei) fall back to fills.
+    const tier = size >= 6 ? 'large' : size >= 3 ? 'small' : 'tiny';
+    const freshW = tier === 'large' ? (size >= 12 ? 2 : 1.5) : 1;
     const { status, step } = state;
     const paths = { parent: new Path2D(), fresh: new Path2D(), old: new Path2D() };
     for (let i = 0; i < n0; i++) {
       const X = gx + (i % cols) * cell;
       const Y = gy + Math.floor(i / cols) * cell;
       const s = status[i];
-      const kind = s === 0 ? 'parent' : s === step ? 'fresh' : 'old';
-      if (kind === 'old' && hollow) paths.old.rect(X + 1, Y + 1, cell - gap - 2, cell - gap - 2);
-      else paths[kind].rect(X, Y, cell - gap, cell - gap);
+      if (s === 0) paths.parent.rect(X, Y, size, size);
+      else if (s === step) {
+        if (tier === 'tiny') {
+          paths.fresh.rect(X, Y, size, size);
+          continue;
+        }
+        const o = freshW / 2;
+        const d = size - freshW;
+        paths.fresh.rect(X + o, Y + o, d, d);
+        if (tier === 'large') {
+          paths.fresh.moveTo(X + o, Y + o);
+          paths.fresh.lineTo(X + o + d, Y + o + d);
+          paths.fresh.moveTo(X + o + d, Y + o);
+          paths.fresh.lineTo(X + o, Y + o + d);
+        }
+      } else if (tier === 'large') paths.old.rect(X + 0.5, Y + 0.5, size - 1, size - 1);
+      else paths.old.rect(X, Y, size, size);
     }
     ctx.fillStyle = accent;
     ctx.fill(paths.parent);
-    ctx.fillStyle = pal.ink;
-    ctx.fill(paths.fresh);
-    if (hollow) {
+    if (tier === 'large') {
       ctx.strokeStyle = pal.axis;
       ctx.lineWidth = 1;
       ctx.stroke(paths.old);
@@ -878,14 +921,22 @@ export function createView(stage, setup) {
       ctx.fillStyle = pal.grid;
       ctx.fill(paths.old);
     }
+    if (tier === 'tiny') {
+      ctx.fillStyle = pal.ink;
+      ctx.fill(paths.fresh);
+    } else {
+      ctx.strokeStyle = pal.ink;
+      ctx.lineWidth = freshW;
+      ctx.stroke(paths.fresh);
+    }
     const gridW = cols * cell;
     const gridH = rows * cell;
     text(compact ? `N₀ = ${int(n0)}` : `${int(n0)} NUCLEI`, gx, pad + rowH / 2, { px, kind: 'strong', baseline: 'middle' });
-    // Legend under the grid.
+    // Legend under the grid: the same shapes as the cells, drawn larger.
     const items = [
       { kind: 'square', colour: accent, text: 'Undecayed' },
-      { kind: hollow ? 'hollow' : 'square', colour: hollow ? pal.axis : pal.grid, text: 'Decayed' },
-      { kind: 'square', colour: pal.ink, text: compact ? 'Just now' : 'In the last step' },
+      tier === 'large' ? { kind: 'box', colour: pal.axis, width: 1.5, text: 'Decayed' } : { kind: 'square', colour: pal.grid, text: 'Decayed' },
+      { kind: { large: 'crossed', small: 'box', tiny: 'square' }[tier], colour: pal.ink, width: 2, text: compact ? 'Just now' : 'In the last step' },
     ];
     if (compact) {
       items.push({ kind: 'line', colour: accent, text: 'Simulated N' });
@@ -902,7 +953,9 @@ export function createView(stage, setup) {
     const duration = decaySteps(params) * DECAY_DT;
     const vp = viewport({ x: [0, duration], y: [0, n0 * 1.08], rect });
     const fmtCount = (v) => tickText(v);
-    drawAxes(ctx, vp, pal, { px, layer: 'under', xCount: Math.max(3, Math.min(8, Math.floor(rect.w / (px * 4)))), yCount: Math.max(2, Math.min(5, Math.floor(rect.h / (px * 2.4)))) });
+    // A time series: axes pinned to the plot's left and bottom edges.
+    const axisOpts = { px, xAxisAt: 'bottom', yAxisAt: 'left', xCount: Math.max(3, Math.min(8, Math.floor(rect.w / (px * 4)))), yCount: Math.max(2, Math.min(5, Math.floor(rect.h / (px * 2.4)))) };
+    drawAxes(ctx, vp, pal, { ...axisOpts, layer: 'under' });
     ctx.save();
     ctx.beginPath();
     ctx.rect(rect.x, rect.y - 4, rect.w + 4, rect.h + 4);
@@ -968,15 +1021,7 @@ export function createView(stage, setup) {
       const y = Math.min(rect.y + rect.h - px * 1.6, lastY + px + 8);
       text(lab, right ? lastX + 12 : lastX - 12 - w, y, { px, kind: 'strong', colour: pal.accentText, box: pal.bg, padding: 3 });
     }
-    drawAxes(ctx, vp, pal, {
-      px,
-      layer: 'over',
-      xTitle: 't (s)',
-      yTitle: 'N remaining',
-      formatY: fmtCount,
-      xCount: Math.max(3, Math.min(8, Math.floor(rect.w / (px * 4)))),
-      yCount: Math.max(2, Math.min(5, Math.floor(rect.h / (px * 2.4)))),
-    });
+    drawAxes(ctx, vp, pal, { ...axisOpts, layer: 'over', xTitle: 't (s)', yTitle: 'N remaining', formatY: fmtCount });
     // Header over the graph: the decay rule and the legend.
     const p = decayProbability(params.halfLife);
     const rule = compact ? `p = ${f3(p)} per ${DECAY_DT} s` : `Each ${DECAY_DT} s step: p = 1 − 2^(−1/${formatPlain(params.halfLife)}) = ${f3(p)}`;
