@@ -17,10 +17,8 @@ export function superscript(n) {
 /** Round to `n` significant figures, returning a number. */
 export function roundSig(x, n = 3) {
   if (!Number.isFinite(x) || x === 0) return x;
-  const e = Math.floor(Math.log10(Math.abs(x)));
-  const factor = 10 ** (n - 1 - e);
-  // Divide by the reciprocal for large factors to avoid float noise (e.g. 0.1 * 3).
-  return factor >= 1 ? Math.round(x * factor) / factor : Math.round(x / (1 / factor)) * (1 / factor);
+  // toPrecision rounds correctly across the whole double range, including subnormals (≈1e-310).
+  return Number(x.toPrecision(n));
 }
 
 function group(intDigits) {
@@ -41,22 +39,18 @@ export function formatNumber(x, opts = {}) {
   const ax = Math.abs(x);
   if (ax === 0) return (0).toPrecision(sigfigs);
 
-  let e = Math.floor(Math.log10(ax));
-  let mant = ax / 10 ** e;
-  // Rounding can carry into a new power of ten (9.996 → 10.0).
-  if (Number(mant.toPrecision(sigfigs)) >= 10) {
-    e += 1;
-    mant /= 10;
-  }
-  const rounded = roundSig(ax, sigfigs);
+  // toExponential gives a correctly rounded mantissa and exponent for every double, including
+  // carries into the next power of ten (9.996 → "1.00e+1") and subnormals, without overflow.
+  const [mant, expStr] = ax.toExponential(Math.max(0, sigfigs - 1)).split('e');
+  const e = Number(expStr);
+  const rounded = Number(`${mant}e${expStr}`);
 
   if (rounded >= sciAbove || rounded < sciBelow) {
-    const m = mant.toPrecision(sigfigs);
-    return sign(`${m} × 10${superscript(e)}`);
+    return sign(`${mant} × 10${superscript(e)}`);
   }
   let s;
   if (e >= sigfigs - 1) {
-    s = group(Math.round(rounded).toFixed(0));
+    s = group(rounded.toFixed(0));
   } else {
     const decimals = sigfigs - 1 - e;
     const [int, frac] = rounded.toFixed(decimals).split('.');

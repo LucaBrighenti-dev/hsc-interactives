@@ -25,6 +25,9 @@ export function readout({ label, unit = '', sigfigs = 3, format }) {
       text = text.number;
     }
     if (number.textContent !== text) number.textContent = text;
+    // Long values (scientific notation) shrink so they never spill into the next readout.
+    root.classList.toggle('is-long', text.length > 9 && text.length <= 13);
+    root.classList.toggle('is-xlong', text.length > 13);
     root.dataset.value = typeof value === 'number' ? String(value) : '';
     return text;
   };

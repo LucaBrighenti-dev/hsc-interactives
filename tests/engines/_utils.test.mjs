@@ -36,6 +36,18 @@ test('formatNumber: minus sign, grouping and scientific notation', () => {
   assert.equal(formatNumber(40.816, { sigfigs: 5 }), '40.816');
 });
 
+test('formatNumber and roundSig survive the whole double range (no throw, no NaN)', () => {
+  assert.equal(formatNumber(1e-310), '1.00 × 10⁻³¹⁰');
+  assert.equal(formatNumber(-5e-324), `${MINUS}4.94 × 10⁻³²⁴`);
+  assert.equal(formatNumber(1.7e308), '1.70 × 10³⁰⁸');
+  assert.equal(roundSig(1e-310, 3), 1e-310);
+  assert.equal(roundSig(1.2345e300, 2), 1.2e300);
+  for (let k = -323; k <= 308; k += 7) {
+    const s = formatNumber(3.14159 * 10 ** k);
+    assert.ok(!/NaN|undefined/.test(s), `bad output at 1e${k}: ${s}`);
+  }
+});
+
 test('roundSig', () => {
   assert.equal(roundSig(40.816, 3), 40.8);
   assert.equal(roundSig(22632, 3), 22600);
