@@ -1,8 +1,9 @@
 // Dashboard (W1-HUB, guide §6.5 and §9.3), end to end in local auth mode: filters and search with the URL
 // round trip, subject chips saved to the profile, live cards, saved scenarios, playlists in sequence,
 // requests and votes, the account area, account deletion, and layout at every size.
-// No page is live yet, so tests that need live cards inject them into /catalog.json, pointing at the
-// reference template (a page and a listing with a preset).
+// Tests that need known live cards mock /catalog.json: exactly two entries are live, pointing at the
+// reference template (a page and a listing with a preset), and everything else is coming soon, however
+// many pages are really live. Tests without the mock make no assumption about live counts.
 import { test, expect } from '@playwright/test';
 import { watchConsole, signInLocal, hscReady, overflowsX } from './helpers.mjs';
 
@@ -23,7 +24,11 @@ async function withLiveEntries(page) {
     } catch {
       return; // the test finished while this request was in flight
     }
-    for (const entry of catalog.entries) if (LIVE[entry.id]) Object.assign(entry, { status: 'live' }, LIVE[entry.id]);
+    // The mock decides every status, so these tests don't depend on how many pages are really live.
+    for (const entry of catalog.entries) {
+      if (LIVE[entry.id]) Object.assign(entry, { status: 'live' }, LIVE[entry.id]);
+      else if (entry.status === 'live') entry.status = 'planned';
+    }
     await route.fulfill({ response, json: catalog }).catch(() => {});
   });
 }
@@ -85,6 +90,7 @@ function seedWorkspace() {
 test('filters and search narrow the grid, live in the URL and survive a reload', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   const problems = watchConsole(page);
+  await withLiveEntries(page); // fixed statuses: Projectile lab is the only live Physics entry
   await signInLocal(page, { subjects: ['phy'] });
   await page.goto('/');
   await hubReady(page);
@@ -122,12 +128,14 @@ test('filters and search narrow the grid, live in the URL and survive a reload',
   await expect(page.locator('.hub-card')).toHaveCount(26);
   await expect(page.getByLabel('Search interactives')).toBeFocused();
 
-  // A–Z: one section per status, each sorted by title.
+  // A–Z: "Ready to use" then "Coming soon", each sorted by title.
   await page.getByRole('radio', { name: 'A–Z' }).click();
   await expect(page).toHaveURL(/view=az/);
-  await expect(page.locator('.hub-section__title')).toHaveText(['Coming soon']);
-  const titles = await page.locator('.hub-card__title').allTextContents();
-  expect(titles).toEqual([...titles].sort((a, b) => a.localeCompare(b, 'en-AU')));
+  await expect(page.locator('.hub-section__title')).toHaveText(['Ready to use', 'Coming soon']);
+  await expect(page.locator('.hub-section').first().locator('.hub-card__title')).toHaveText(['Projectile lab']);
+  const soonTitles = await page.locator('.hub-section').nth(1).locator('.hub-card__title').allTextContents();
+  expect(soonTitles).toHaveLength(25);
+  expect(soonTitles).toEqual([...soonTitles].sort((a, b) => a.localeCompare(b, 'en-AU')));
 
   // No match: a friendly empty state that offers to request it.
   await page.getByLabel('Search interactives').fill('wormholes');
@@ -243,8 +251,14 @@ test('live cards open their page, listings carry their preset, and live cards co
   await signInLocal(page);
   await page.goto('/');
   await hubReady(page);
-  await expect(page.locator('.hub-card.is-live')).toHaveCount(2);
-  await expect(page.locator('[data-summary]')).toContainText('2 ready to use, 74 more on the way.');
+  // Counts come from the mocked catalog (the page's own fetch goes through the same mock).
+  const mocked = await page.evaluate(() => fetch('/catalog.json').then((r) => r.json()));
+  const live = mocked.entries.filter((e) => e.status === 'live').length;
+  expect(live).toBe(Object.keys(LIVE).length);
+  await expect(page.locator('.hub-card')).toHaveCount(mocked.entries.length);
+  await expect(page.locator('.hub-card.is-live')).toHaveCount(live);
+  await expect(page.locator('.hub-card.is-soon')).toHaveCount(mocked.entries.length - live);
+  await expect(page.locator('[data-summary]')).toContainText(`${live} ready to use, ${mocked.entries.length - live} more on the way.`);
 
   // Live first within its subject (Projectile lab would otherwise sort after Double slit).
   const physics = page.getByRole('region', { name: 'Physics', exact: true });
@@ -259,7 +273,7 @@ test('live cards open their page, listings carry their preset, and live cards co
   await expect(page.locator('main')).not.toContainText(/\bP[012]\b/);
 
   await page.getByLabel('Status', { exact: true }).selectOption('live');
-  await expect(page.locator('.hub-card')).toHaveCount(2);
+  await expect(page.locator('.hub-card')).toHaveCount(live);
   await page.getByRole('link', { name: 'Projectile motion with vectors' }).click();
   await expect(page).toHaveURL(/\/interactives\/_template\.html\?preset=phase-shift/);
   await page.waitForLoadState('networkidle');
