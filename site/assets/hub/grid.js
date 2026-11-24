@@ -19,10 +19,10 @@ import {
 
 /**
  * @param {{ filtersEl: HTMLElement, resultsEl: HTMLElement, gridEl: HTMLElement, entries: object[],
- *   filters: object, onSubjectsChange: (ids: string[]) => void, onAddToPlaylist: (entry) => void,
+ *   filters: object, profileSubjects: () => string[], onSubjectsChange: (ids: string[]) => void, onAddToPlaylist: (entry) => void,
  *   onRequest: (draft: { topic?: string, subject?: string }) => void }} opts
  */
-export function mountCatalog({ filtersEl, resultsEl, gridEl, entries, filters, onSubjectsChange, onAddToPlaylist, onRequest }) {
+export function mountCatalog({ filtersEl, resultsEl, gridEl, entries, filters, profileSubjects = () => [], onSubjectsChange, onAddToPlaylist, onRequest }) {
   const f = { ...filters };
   const total = entries.length;
 
@@ -54,7 +54,7 @@ export function mountCatalog({ filtersEl, resultsEl, gridEl, entries, filters, o
     id: 'hub-search',
     class: 'input hub-search__input',
     type: 'search',
-    placeholder: 'Try projectile, complex or truss',
+    placeholder: 'Try orbit, complex, truss',
     autocomplete: 'off',
     spellcheck: 'false',
     maxlength: '100',
@@ -157,7 +157,7 @@ export function mountCatalog({ filtersEl, resultsEl, gridEl, entries, filters, o
   }
 
   function syncUrl() {
-    const query = filtersToQuery(f);
+    const query = filtersToQuery(f, profileSubjects());
     const url = `${location.pathname}${query ? `?${query}` : ''}${location.hash}`;
     if (url !== `${location.pathname}${location.search}${location.hash}`) history.replaceState(history.state, '', url);
   }
@@ -195,7 +195,19 @@ export function mountCatalog({ filtersEl, resultsEl, gridEl, entries, filters, o
     const q = f.q.trim();
     const actions = [];
     if (hasNarrowing(f)) actions.push(button({ label: 'Clear filters', icon: 'close', onClick: () => clearFilters() }));
-    if (f.subjects.length) actions.push(button({ label: 'Show all subjects', variant: 'ghost', onClick: () => setSubjects([], true) }));
+    // Widening the view after a search that found nothing is temporary: the profile's subjects stay as they are.
+    if (f.subjects.length) {
+      actions.push(
+        button({
+          label: 'Show all subjects',
+          variant: 'ghost',
+          onClick: () => {
+            setSubjects([], false);
+            allChip.focus();
+          },
+        }),
+      );
+    }
     actions.push(button({ label: q ? `Request “${q.length > 40 ? `${q.slice(0, 40)}…` : q}”` : 'Request an interactive', icon: 'plus', variant: 'ghost', onClick: () => onRequest({ topic: q, subject: f.subjects[0] }) }));
     return emptyState('Nothing matches that yet.', 'Try a different word or widen the filters. If it isn’t on the map, ask for it: the most-voted requests shape what gets built next.', actions);
   }
@@ -207,11 +219,12 @@ export function mountCatalog({ filtersEl, resultsEl, gridEl, entries, filters, o
   }
 
   let savedTimer = 0;
+  /** `fromUser`: a chip was pressed, so the choice is saved to the profile (before the URL is written). */
   function setSubjects(ids, fromUser) {
     f.subjects = SUBJECTS.map((s) => s.id).filter((id) => ids.includes(id));
+    if (fromUser) onSubjectsChange(f.subjects);
     render();
     if (fromUser) {
-      onSubjectsChange(f.subjects);
       savedNote.textContent = 'Saved to your profile';
       clearTimeout(savedTimer);
       savedTimer = setTimeout(() => {

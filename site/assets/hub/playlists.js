@@ -67,6 +67,7 @@ export function playlistsPanel(ctx) {
     play?.setAttribute('aria-label', `Open in sequence: ${p.title}`);
     const edit = button({ label: 'Edit', icon: 'notes', onClick: () => openEditor(p) });
     edit.setAttribute('aria-label', `Edit playlist: ${p.title}`);
+    edit.dataset.act = 'edit';
     return el(
       'li',
       { class: 'hub-item', data: { id: p.id } },
@@ -97,6 +98,7 @@ export function playlistsPanel(ctx) {
         create.setBusy(true);
         try {
           const saved = await savePlaylist({ title, items: firstItem ? [firstItem] : [] });
+          panel.expand();
           dlg.close();
           await reload();
           openEditor(saved);
@@ -289,7 +291,15 @@ export function playlistsPanel(ctx) {
       ),
       actions: [deleteBtn, done, openLink],
       onClose: () => {
-        chain.then(() => reload());
+        chain
+          .then(() => reload())
+          .then(() => {
+            // The dialog hands focus back to the Edit button, which the reload has just replaced:
+            // put it on this playlist's new Edit button (or the panel heading if it's gone).
+            const active = document.activeElement;
+            if (active && active !== document.body && active.isConnected) return;
+            (panel.body.querySelector(`.hub-item[data-id="${CSS.escape(current.id)}"] [data-act="edit"]`) ?? panel.toggle).focus();
+          });
       },
     }).open();
     dlg.el.classList.add('hub-editor-dialog');
@@ -316,6 +326,7 @@ export function playlistsPanel(ctx) {
       btn.classList.add('is-busy');
       try {
         await savePlaylist({ ...p, items: [...p.items, item] });
+        panel.expand();
         dlg.close();
         await reload();
         toast(`Added to “${p.title}” as step ${p.items.length + 1}.`, { kind: 'ok' });
@@ -349,6 +360,7 @@ export function playlistsPanel(ctx) {
         createBtn.setBusy(true);
         try {
           await savePlaylist({ title, items: [item] });
+          panel.expand();
           dlg.close();
           await reload();
           toast(`Started “${title}” with ${label}.`, { kind: 'ok' });

@@ -7,7 +7,7 @@
 //   scenarios.js  playlists.js  requests.js  account.js   the workspace panels and dialogs
 //   common.js     links, collapsible panels, confirm dialogs
 //   placeholder.js  generated card pictures
-import { requireSession, getProfile, saveProfile, signOut } from '../auth.js';
+import { requireSession, getSession, getProfile, saveProfile, signOut } from '../auth.js';
 import { SITE_NAME, SITE_CREDIT } from '../config.js';
 import { el, clear, button, toast } from '../ui/index.js';
 import { readFilters } from './filters.js';
@@ -18,16 +18,33 @@ import { playlistsPanel } from './playlists.js';
 import { requestsPanel } from './requests.js';
 import { openAccount } from './account.js';
 
-const session = await requireSession();
+// The dashboard has no embed mode: requireSession() returns null for ?embed=1 without checking, so look
+// for a session directly and send anyone without one to the sign-in page.
+const session = (await requireSession()) ?? (await getSession().catch(() => null));
+if (!session) {
+  location.replace(`/signin.html?next=${encodeURIComponent('/')}`);
+  await new Promise(() => {});
+}
 const [profileRaw, catalog] = await Promise.all([
   getProfile().catch(() => null),
   fetch('/catalog.json')
     .then((r) => (r.ok ? r.json() : { entries: [] }))
     .catch(() => ({ entries: [] })),
 ]);
-const entries = catalog.entries ?? [];
-const profile = { displayName: '', school: '', subjects: [], ...(profileRaw ?? {}) };
+const entries = Array.isArray(catalog?.entries) ? catalog.entries : [];
+
+/** A stored profile may have been hand-edited or come from an older version: keep only well-formed fields. */
+function cleanProfile(p) {
+  const text = (v) => (typeof v === 'string' ? v : '');
+  return {
+    displayName: text(p?.displayName),
+    school: text(p?.school),
+    subjects: Array.isArray(p?.subjects) ? p.subjects.filter((s) => typeof s === 'string') : [],
+  };
+}
+const profile = cleanProfile(profileRaw);
 let founding = Boolean(session?.founding || profileRaw?.founding);
+const sessionName = typeof session?.user?.name === 'string' ? session.user.name : '';
 
 document.title = SITE_NAME;
 document.querySelector('[data-site-name]').textContent = SITE_NAME;
@@ -47,7 +64,7 @@ const ctx = {
   defaultSubject: () => catalogView?.filters.subjects[0] ?? profile.subjects[0],
   addToPlaylist: (item, label) => playlists.addToPlaylist(item, label),
   onProfileSaved(saved, nowFounding) {
-    Object.assign(profile, { displayName: saved.displayName ?? '', school: saved.school ?? '', subjects: saved.subjects ?? [] });
+    Object.assign(profile, cleanProfile(saved));
     founding = nowFounding;
     renderHeader();
     renderHero();
@@ -58,7 +75,7 @@ const ctx = {
 // ---- Header: name, account, sign out ----
 const userArea = document.querySelector('[data-user]');
 function renderHeader() {
-  const name = profile.displayName || session?.user?.name || (session?.user?.kind === 'code' ? 'Class session' : 'Signed in');
+  const name = profile.displayName || sessionName || (session?.user?.kind === 'code' ? 'Class session' : 'Signed in');
   clear(userArea).append(
     el('span', { class: 'hsc-user__name', text: name }),
     button({ label: 'Account', icon: 'user', onClick: () => openAccount(ctx) }),
@@ -86,7 +103,7 @@ function renderHero() {
   const now = new Date();
   const hour = now.getHours();
   const part = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-  const who = greetName(profile.displayName || session?.user?.name);
+  const who = greetName(profile.displayName || sessionName);
   document.querySelector('[data-greeting]').textContent = who ? `${part}, ${who}` : part;
   clear(document.querySelector('[data-hero-eyebrow]')).append(
     el('span', { text: now.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' }) }),
@@ -112,6 +129,7 @@ const catalogView = mountCatalog({
   gridEl: document.querySelector('[data-grid]'),
   entries,
   filters: readFilters(location.search, profile.subjects),
+  profileSubjects: () => profile.subjects,
   onSubjectsChange: (ids) => {
     profile.subjects = ids;
     const next = { displayName: profile.displayName, school: profile.school, subjects: ids };

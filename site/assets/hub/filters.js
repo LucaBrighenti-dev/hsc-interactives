@@ -3,6 +3,7 @@
 // URL keys (all optional):
 //   q=<words>            search
 //   subject=me1,phy      subject ids; the shell's breadcrumb links use ?subject=<one id>
+//   subject=all          every subject, whatever the profile says (a view widened without saving it)
 //   syllabus=2025        syllabus version
 //   focus=<name>         focus area (old-syllabus module or new focus area), by name
 //   status=live|soon     Live or Coming soon
@@ -33,24 +34,25 @@ export function emptyFilters() {
 }
 
 function cleanSubjects(list) {
-  const set = new Set(list.filter((s) => SUBJECT_IDS.includes(s)));
+  const set = new Set((Array.isArray(list) ? list : []).filter((s) => SUBJECT_IDS.includes(s)));
   return SUBJECT_IDS.filter((s) => set.has(s)); // always in the canonical order
 }
 
 /**
  * Read filters from a query string. Subjects come from the URL when it names at least one valid
- * subject, otherwise from `fallbackSubjects` (the profile).
+ * subject (or says `all`), otherwise from `fallbackSubjects` (the profile).
  * @returns {ReturnType<typeof emptyFilters> & { subjectsFromUrl: boolean }}
  */
 export function readFilters(search, fallbackSubjects = []) {
   const p = new URLSearchParams(search);
+  const all = p.get('subject') === 'all';
   const fromUrl = cleanSubjects((p.get('subject') ?? '').split(','));
   const syllabus = p.get('syllabus') ?? '';
   const status = p.get('status') ?? '';
   return {
     q: (p.get('q') ?? '').slice(0, MAX_Q),
-    subjects: fromUrl.length ? fromUrl : cleanSubjects(fallbackSubjects ?? []),
-    subjectsFromUrl: fromUrl.length > 0,
+    subjects: all ? [] : fromUrl.length ? fromUrl : cleanSubjects(fallbackSubjects),
+    subjectsFromUrl: all || fromUrl.length > 0,
     syllabus: VERSIONS.some(([v]) => v === syllabus) ? syllabus : '',
     focus: (p.get('focus') ?? '').trim().slice(0, MAX_FOCUS),
     status: status === 'live' || status === 'soon' ? status : '',
@@ -58,11 +60,16 @@ export function readFilters(search, fallbackSubjects = []) {
   };
 }
 
-/** Query string for the filters (no leading "?"). Commas in the subject list stay readable. */
-export function filtersToQuery(f) {
+/**
+ * Query string for the filters (no leading "?"). Commas in the subject list stay readable.
+ * `profileSubjects`: when the view shows every subject but the profile names some, the link says
+ * `subject=all`, so it shows the same thing to whoever opens it.
+ */
+export function filtersToQuery(f, profileSubjects = []) {
   const p = new URLSearchParams();
   if (f.q.trim()) p.set('q', f.q.trim());
   if (f.subjects.length) p.set('subject', f.subjects.join(','));
+  else if (cleanSubjects(profileSubjects).length) p.set('subject', 'all');
   if (f.syllabus) p.set('syllabus', f.syllabus);
   if (f.focus) p.set('focus', f.focus);
   if (f.status) p.set('status', f.status);

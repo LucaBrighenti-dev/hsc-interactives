@@ -15,15 +15,43 @@ const LIVE = {
 
 async function withLiveEntries(page) {
   await page.route('**/catalog.json', async (route) => {
-    const response = await route.fetch();
-    const catalog = await response.json();
+    let response;
+    let catalog;
+    try {
+      response = await route.fetch();
+      catalog = await response.json();
+    } catch {
+      return; // the test finished while this request was in flight
+    }
     for (const entry of catalog.entries) if (LIVE[entry.id]) Object.assign(entry, { status: 'live' }, LIVE[entry.id]);
-    await route.fulfill({ response, json: catalog });
+    await route.fulfill({ response, json: catalog }).catch(() => {});
   });
 }
 
 /** The dashboard sets body[data-ready] once the catalogue and every panel have loaded. */
 const hubReady = (page) => page.waitForSelector('body[data-ready="true"]');
+
+/**
+ * Filter labels that don't fit: each visible select's chosen option and the search placeholder, measured
+ * in the control's own font against its content box. [] when every label is whole.
+ */
+const cutLabels = (page) =>
+  page.evaluate(async () => {
+    await document.fonts.ready;
+    const ctx = document.createElement('canvas').getContext('2d');
+    const out = [];
+    const check = (node, text) => {
+      const cs = getComputedStyle(node);
+      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      const need = ctx.measureText(text).width;
+      const room = node.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      if (need > room) out.push(`${node.id} "${text}" needs ${Math.ceil(need)} px, has ${Math.floor(room)} px`);
+    };
+    for (const sel of document.querySelectorAll('.hub-filters select')) if (sel.offsetParent) check(sel, sel.selectedOptions[0]?.textContent ?? '');
+    const search = document.getElementById('hub-search');
+    if (!search.value) check(search, search.placeholder);
+    return out;
+  });
 const stored = (page, key) => page.evaluate((k) => JSON.parse(localStorage.getItem(k)), key);
 const PROFILE = 'hsc:profile:local-google';
 
@@ -149,10 +177,62 @@ test('the subject chips are saved to the profile', async ({ page }, testInfo) =>
   await expect(subjects.getByRole('button', { name: 'Physics' })).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('.hub-section__title')).toHaveText(['Maths Extension 1', 'Maths Extension 2']);
 
-  // "All subjects" clears the choice.
+  // Widening the view from a search that found nothing is temporary: the profile keeps its subjects,
+  // and the link says "all" so it shows the same view to whoever opens it.
+  await page.getByLabel('Search interactives').fill('wormholes');
+  await page.getByRole('button', { name: 'Show all subjects' }).click();
+  await expect(subjects.getByRole('button', { name: 'All subjects' })).toBeFocused();
+  await expect(subjects.getByRole('button', { name: 'All subjects' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/\/\?q=wormholes&subject=all$/);
+  await expect(page.locator('.hub-saved')).toHaveText('');
+  await page.getByLabel('Search interactives').fill('');
+  await expect(page.locator('.hub-section')).toHaveCount(4);
+  expect((await stored(page, PROFILE)).subjects).toEqual(['me1', 'me2']);
+  await page.reload();
+  await hubReady(page);
+  await expect(page.locator('.hub-section')).toHaveCount(4);
+
+  // Pressing the "All subjects" chip is a choice, so it is saved.
+  await page.goto('/');
+  await hubReady(page);
+  await expect(page.locator('.hub-section')).toHaveCount(2);
   await subjects.getByRole('button', { name: 'All subjects' }).click();
   await expect(page.locator('.hub-section')).toHaveCount(4);
   await expect.poll(async () => (await stored(page, PROFILE)).subjects).toEqual([]);
+  await expect(page).toHaveURL(/\/$/);
+  expect(problems).toEqual([]);
+});
+
+test('a malformed stored profile does not stop the dashboard', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  const problems = watchConsole(page);
+  await page.addInitScript(() => {
+    localStorage.setItem('hsc:session', JSON.stringify({ user: { id: 'local-google', kind: 'oauth', provider: 'google', email: null, name: 'Test Teacher' } }));
+    localStorage.setItem('hsc:profile:local-google', JSON.stringify({ displayName: ['not', 'text'], school: null, subjects: 'phy', founding: false }));
+  });
+  await page.goto('/');
+  await hubReady(page);
+  await expect(page.locator('.hub-section')).toHaveCount(4);
+  await expect(page.locator('[data-greeting]')).toHaveText(/^Good (morning|afternoon|evening)/);
+  await page.getByRole('button', { name: 'Request an interactive' }).click();
+  await expect(page.getByRole('dialog', { name: 'Request an interactive' }).getByLabel('Subject')).toHaveValue('phy');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Account' }).click();
+  const account = page.getByRole('dialog', { name: 'Your account' });
+  await expect(account.getByRole('group', { name: 'Subjects you teach' }).getByRole('button', { pressed: true })).toHaveCount(0);
+  expect(problems).toEqual([]);
+});
+
+test('the dashboard has no embed mode: /?embed=1 still needs a session', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  const problems = watchConsole(page);
+  await page.goto('/?embed=1');
+  await expect(page).toHaveURL(/\/signin\.html\?next=%2F$/);
+  await signInLocal(page);
+  await page.goto('/?embed=1');
+  await hubReady(page);
+  await expect(page.getByRole('button', { name: 'Account' })).toBeVisible();
+  await expect(page.locator('.hub-side .msg--error')).toHaveCount(0);
   expect(problems).toEqual([]);
 });
 
@@ -182,6 +262,7 @@ test('live cards open their page, listings carry their preset, and live cards co
   await expect(page.locator('.hub-card')).toHaveCount(2);
   await page.getByRole('link', { name: 'Projectile motion with vectors' }).click();
   await expect(page).toHaveURL(/\/interactives\/_template\.html\?preset=phase-shift/);
+  await page.waitForLoadState('networkidle');
   expect(problems).toEqual([]);
 });
 
@@ -289,6 +370,8 @@ test('playlists: create, add from the picker and a card, reorder, add a note, op
   await note.fill('Ask for the components first');
   await note.press('Enter');
   await editor.getByRole('button', { name: 'Done' }).click();
+  // The panel re-renders after the editor closes; focus goes back to this playlist's Edit button.
+  await expect(panel.getByRole('button', { name: 'Edit playlist: Projectiles, lesson 3' })).toBeFocused();
   await expect(panel.locator('.hub-preview__title')).toHaveText(['Projectile motion with vectors', 'Projectile lab']);
   await expect(panel.locator('.hub-preview__note')).toHaveText(['Ask for the components first']);
   const [saved] = await stored(page, 'hsc:playlists:local-google');
@@ -375,6 +458,31 @@ test('requests: ask for an interactive, then vote and unvote; the list is sorted
   expect(problems).toEqual([]);
 });
 
+test('requests: the top five come first, and "Show all" keeps keyboard focus', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  const problems = watchConsole(page);
+  await signInLocal(page);
+  await page.addInitScript(() => {
+    if (localStorage.getItem('hsc:requests')) return;
+    const rows = Array.from({ length: 7 }, (_, i) => ({ id: `r${i}`, userId: `t${i}`, subject: 'phy', topic: `Topic ${i}`, details: null, createdAt: `2026-11-1${i}T09:00:00.000Z` }));
+    localStorage.setItem('hsc:requests', JSON.stringify(rows));
+    // Request i has i votes.
+    localStorage.setItem('hsc:votes', JSON.stringify(rows.flatMap((r, i) => Array.from({ length: i }, (_, k) => ({ requestId: r.id, userId: `v${k}` })))));
+  });
+  await page.goto('/');
+  await hubReady(page);
+  const panel = page.getByRole('region', { name: 'Requests' });
+  await expect(panel.locator('.hub-request__topic')).toHaveText(['Topic 6', 'Topic 5', 'Topic 4', 'Topic 3', 'Topic 2']);
+  await panel.getByRole('button', { name: 'Show all 7 requests' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(panel.locator('.hub-request')).toHaveCount(7);
+  await expect(panel.getByRole('button', { name: 'Show the top 5' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(panel.locator('.hub-request')).toHaveCount(5);
+  await expect(panel.getByRole('button', { name: 'Show all 7 requests' })).toBeFocused();
+  expect(problems).toEqual([]);
+});
+
 test('the account area edits the profile and adds the Founding Educator badge', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   const problems = watchConsole(page);
@@ -452,6 +560,34 @@ test('delete account: confirmed in a modal, removes everything, then goes to sig
   expect(problems).toEqual([]);
 });
 
+// Laptops and projectors between the tablet and full-HD layouts, where the catalogue shares the row with
+// the 400 px workspace column: 1280×720 (a projector mode, or a 1080p laptop at 150 % scaling), 1366×768,
+// 1440×900 (MacBook Air), 1536×864 (1080p at 125 %), plus 1024×768 and 1200 px (where the layout switches).
+test('the filter bar keeps whole labels at laptop and projector sizes', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  const problems = watchConsole(page);
+  await withLiveEntries(page);
+  await signInLocal(page, { founding: true, name: 'Ms Rivera' });
+  await page.addInitScript(seedWorkspace);
+  await page.goto('/');
+  await hubReady(page);
+  for (const [width, height] of [
+    [1280, 720],
+    [1366, 768],
+    [1440, 900],
+    [1536, 864],
+    [1200, 800],
+    [1024, 768],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await expect.poll(() => cutLabels(page), { message: `filter labels at ${width}×${height}` }).toEqual([]);
+    expect(await overflowsX(page), `sideways scroll at ${width}×${height}`).toBe(false);
+    // Every filter is on screen without unfolding anything.
+    for (const id of ['#hub-search', '#hub-syllabus', '#hub-focus', '#hub-status']) await expect(page.locator(id)).toBeVisible();
+  }
+  expect(problems).toEqual([]);
+});
+
 // Every size: the dashboard with saved data, every panel and the filters open, then the playlist editor.
 test('the full dashboard fits every screen: no sideways scroll, 44 px targets, no console errors', async ({ page }) => {
   const problems = watchConsole(page);
@@ -481,6 +617,7 @@ test('the full dashboard fits every screen: no sideways scroll, 44 px targets, n
     }, root);
   expect(await overflowsX(page)).toBe(false);
   expect(await tooSmall('.hub-header, .hub-main')).toEqual([]);
+  expect(await cutLabels(page)).toEqual([]);
 
   // The playlist editor at this size.
   await page.getByRole('button', { name: 'Edit playlist: Year 12 projectiles, lesson 3' }).click();

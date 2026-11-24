@@ -38,17 +38,19 @@ export function requestsPanel(ctx) {
     const shown = showAll ? list : list.slice(0, TOP);
     panel.body.append(el('ol', { class: 'hub-requests', role: 'list' }, shown.map(row)));
     if (list.length > TOP) {
-      panel.body.append(
-        button({
-          label: showAll ? `Show the top ${TOP}` : `Show all ${list.length} requests`,
-          variant: 'ghost',
-          block: true,
-          onClick: () => {
-            showAll = !showAll;
-            render();
-          },
-        }),
-      );
+      const toggleAll = button({
+        label: showAll ? `Show the top ${TOP}` : `Show all ${list.length} requests`,
+        variant: 'ghost',
+        block: true,
+        onClick: () => {
+          showAll = !showAll;
+          render();
+          // The button is rebuilt: keep keyboard focus on it.
+          panel.body.querySelector('[data-act="toggle-all"]')?.focus();
+        },
+      });
+      toggleAll.dataset.act = 'toggle-all';
+      panel.body.append(toggleAll);
     }
     if (focusId) panel.body.querySelector(`.hub-vote[data-id="${CSS.escape(focusId)}"]`)?.focus();
   }
