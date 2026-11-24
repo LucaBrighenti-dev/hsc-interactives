@@ -402,7 +402,7 @@ Wave 0 made these additions and clarifications while building §5.1–§5.9. Eac
 - Any param's `help` text is shown under its control and linked with `aria-describedby`.
 - The stage element is `role="group"` with `aria-roledescription="simulation"` and the `aria-label` (§6.7 said `role="img"`, which hides interactive children such as editors and in-stage buttons). Engines may put focusable controls inside the stage.
 - Event `'params'` (no payload needed): an engine that changes its own params (a dragged point or handle) emits it after `setParams`-equivalent changes, and the shell resyncs the controls, the URL and the share link.
-- `drawAxes` options `xAxisAt: 'zero' | 'bottom'` and `yAxisAt: 'zero' | 'left'` pin an axis to the plot edge (histograms, time series); the default places each axis at zero when zero is in range.
+- `drawAxes` options `xAxisAt: 'zero' | 'bottom'` and `yAxisAt: 'zero' | 'left'` pin an axis to the plot edge (histograms, time series); the default places each axis at zero when zero is in range. `titles: 'outside'` draws the axis titles beyond the plot (x below the ticks, y above the top-left) so they never cover data; pair it with `axisMargins(px, { titles: 'outside' })`.
 - `step(n)` stops early when the scenario completes. Optional `describe()` returns a sentence for the stage's `aria-label`.
 - `setTheme(theme)`: the shell sets `data-theme` on `<html>` first; engines re-read colours with `readPalette`.
 - `tests/engines/_contract.test.mjs` checks every engine automatically: files and exports, meta shape, valid defaults, `timeScale` on time-based engines, a pure `model.js`, and no `eval`/`Function`/remote imports.
