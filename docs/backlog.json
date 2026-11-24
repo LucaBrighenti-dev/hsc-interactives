@@ -1,0 +1,2047 @@
+{
+  "_note": "Source of truth for every interactive. Wave 0 generates catalog fragments, spec stubs and STATUS rows from this file. Syllabus tags start unverified; the syllabus-tagger verifies them and adds outcome codes.",
+  "pages": [
+    {
+      "id": "me1-graph-transformer",
+      "kind": "page",
+      "title": "Graph transformer",
+      "subject": "me1",
+      "engine": "fnplot",
+      "setup": "transform",
+      "priority": "P1",
+      "path": "/interactives/maths-ext1/graph-transformer.html",
+      "summary": "y = 1/f(x), absolute-value graphs and f of absolute x, drawn beside f(x).",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Functions",
+          "focusArea": "Further work with functions",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-inverse-mirror",
+      "kind": "page",
+      "title": "Inverse function mirror",
+      "subject": "me1",
+      "engine": "fnplot",
+      "setup": "inverse",
+      "priority": "P1",
+      "path": "/interactives/maths-ext1/inverse-mirror.html",
+      "summary": "Reflect in y = x and drag the domain restriction until the inverse is a function.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Functions",
+          "focusArea": "Further work with functions",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-parametric-tracer",
+      "kind": "page",
+      "title": "Parametric tracer",
+      "subject": "me1",
+      "engine": "fnplot",
+      "setup": "parametric",
+      "priority": "P1",
+      "path": "/interactives/maths-ext1/parametric-tracer.html",
+      "summary": "A t slider traces lines, parabolas and circles; eliminate t step by step.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Functions",
+          "focusArea": "Further work with functions",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-inequality-line",
+      "kind": "page",
+      "title": "Inequality number line",
+      "subject": "me1",
+      "engine": "fnplot",
+      "setup": "inequality",
+      "priority": "P2",
+      "path": "/interactives/maths-ext1/inequality-line.html",
+      "summary": "Quadratic and rational inequalities with critical points and test regions.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Functions",
+          "focusArea": "Further work with functions",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-roots-coefficients",
+      "kind": "page",
+      "title": "Roots and coefficients",
+      "subject": "me1",
+      "engine": "fnplot",
+      "setup": "polynomial",
+      "priority": "P1",
+      "path": "/interactives/maths-ext1/roots-coefficients.html",
+      "summary": "Drag roots; watch the sum, pairwise sum and product of roots update; multiplicity shapes.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Functions",
+          "focusArea": "Polynomials",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-auxiliary-angle",
+      "kind": "page",
+      "title": "Auxiliary angle",
+      "subject": "me1",
+      "engine": "fnplot",
+      "setup": "auxiliary",
+      "priority": "P1",
+      "path": "/interactives/maths-ext1/auxiliary-angle.html",
+      "summary": "a sin x + b cos x collapses into R sin(x + alpha), with the triangle shown.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Trigonometric functions",
+          "focusArea": "Further trigonometry",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-3d-trig",
+      "kind": "page",
+      "title": "3D trigonometry scenes",
+      "subject": "me1",
+      "engine": "space3d",
+      "setup": "trig3d",
+      "priority": "P1",
+      "path": "/interactives/maths-ext1/3d-trig.html",
+      "summary": "Rotatable towers, ramps and prisms with angle-of-elevation problems.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Trigonometric functions",
+          "focusArea": "Further trigonometry",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-inverse-trig",
+      "kind": "page",
+      "title": "Inverse trig builder",
+      "subject": "me1",
+      "engine": "fnplot",
+      "setup": "inverse-trig",
+      "priority": "P2",
+      "path": "/interactives/maths-ext1/inverse-trig.html",
+      "summary": "Restrict sin, cos and tan, invert them, and see their derivatives.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Trigonometric functions",
+          "focusArea": "Inverse trigonometric functions",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-arrangements",
+      "kind": "page",
+      "title": "Arrangement builder",
+      "subject": "me1",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P2",
+      "path": "/interactives/maths-ext1/arrangements.html",
+      "summary": "Arrangements with restrictions, together/apart, circular tables, pigeonhole demo.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Combinatorics",
+          "focusArea": "Permutations and combinations",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-pascal-binomial",
+      "kind": "page",
+      "title": "Pascal's triangle and the binomial theorem",
+      "subject": "me1",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P2",
+      "path": "/interactives/maths-ext1/pascal-binomial.html",
+      "summary": "Pascal's triangle linked to expansion coefficients; general-term finder.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Combinatorics",
+          "focusArea": "The binomial theorem",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-induction-dominoes",
+      "kind": "page",
+      "title": "Induction stepper",
+      "subject": "me1",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P2",
+      "path": "/interactives/maths-ext1/induction-dominoes.html",
+      "summary": "Base case, assumption and k + 1 step revealed line by line.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Proof",
+          "focusArea": "Proof by mathematical induction",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-vector-playground",
+      "kind": "page",
+      "title": "Vector playground",
+      "subject": "me1",
+      "engine": "space3d",
+      "setup": "vectors",
+      "priority": "P1",
+      "path": "/interactives/maths-ext1/vector-playground.html",
+      "summary": "2D and 3D vectors: add, scale, dot product, projection.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Vectors",
+          "focusArea": "Introduction to vectors",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-substitution-areas",
+      "kind": "page",
+      "title": "Integration by substitution areas",
+      "subject": "me1",
+      "engine": "fnplot",
+      "setup": "substitution",
+      "priority": "P2",
+      "path": "/interactives/maths-ext1/substitution-areas.html",
+      "summary": "Equal areas under f(g(x))g'(x) and under f(u).",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Calculus",
+          "focusArea": "Further calculus skills",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-slope-fields",
+      "kind": "page",
+      "title": "Slope fields",
+      "subject": "me1",
+      "engine": "field2d",
+      "setup": "slope-field",
+      "priority": "P0",
+      "path": "/interactives/maths-ext1/slope-fields.html",
+      "summary": "Draw dy/dx = f(x, y), click to launch solution curves; logistic and cooling presets.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Calculus",
+          "focusArea": "Further applications of calculus",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-solids-revolution",
+      "kind": "page",
+      "title": "Solids of revolution",
+      "subject": "me1",
+      "engine": "space3d",
+      "setup": "revolution",
+      "priority": "P1",
+      "path": "/interactives/maths-ext1/solids-revolution.html",
+      "summary": "Spin a region about either axis, show disc slices and the volume integral.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Calculus",
+          "focusArea": "Further applications of calculus",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-sampling-simulator",
+      "kind": "page",
+      "title": "Sampling simulator",
+      "subject": "me1",
+      "engine": "statsim",
+      "setup": "sampling",
+      "priority": "P0",
+      "path": "/interactives/maths-ext1/sampling-simulator.html",
+      "summary": "Bernoulli trials build a binomial histogram; sample means converge to normal as n grows.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Statistical analysis",
+          "focusArea": "The binomial distribution and the sampling distribution of the mean",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me1-normal-approx",
+      "kind": "page",
+      "title": "Normal approximation to the binomial",
+      "subject": "me1",
+      "engine": "statsim",
+      "setup": "normal-approx",
+      "priority": "P1",
+      "path": "/interactives/maths-ext1/normal-approx.html",
+      "summary": "Overlay the normal curve on a binomial; continuity correction toggle.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Statistical analysis",
+          "focusArea": "The binomial distribution and the sampling distribution of the mean",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me2-argand-explorer",
+      "kind": "page",
+      "title": "Argand explorer",
+      "subject": "me2",
+      "engine": "argand",
+      "setup": "operations",
+      "priority": "P0",
+      "path": "/interactives/maths-ext2/argand-explorer.html",
+      "summary": "Multiplication as rotate-and-scale, de Moivre power spirals, nth roots of unity.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 2",
+          "version": "2024",
+          "area": "Complex numbers",
+          "focusArea": "Introduction to complex numbers",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me2-loci-painter",
+      "kind": "page",
+      "title": "Loci painter",
+      "subject": "me2",
+      "engine": "argand",
+      "setup": "loci",
+      "priority": "P1",
+      "path": "/interactives/maths-ext2/loci-painter.html",
+      "summary": "Circles, rays and perpendicular bisectors shaded for modulus and argument conditions.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 2",
+          "version": "2024",
+          "area": "Complex numbers",
+          "focusArea": "Introduction to complex numbers",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me2-conjugate-roots",
+      "kind": "page",
+      "title": "Conjugate root pairs",
+      "subject": "me2",
+      "engine": "argand",
+      "setup": "polynomial-roots",
+      "priority": "P2",
+      "path": "/interactives/maths-ext2/conjugate-roots.html",
+      "summary": "Drag real polynomial coefficients; complex roots stay mirrored across the real axis.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 2",
+          "version": "2024",
+          "area": "Complex numbers",
+          "focusArea": "Introduction to complex numbers",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me2-shm",
+      "kind": "page",
+      "title": "Simple harmonic motion",
+      "subject": "me2",
+      "engine": "particle2d",
+      "setup": "shm",
+      "priority": "P1",
+      "path": "/interactives/maths-ext2/shm.html",
+      "summary": "Point on a rotating circle drives x(t); v squared against x and phase plots.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 2",
+          "version": "2024",
+          "area": "Mechanics",
+          "focusArea": "Applications of calculus to mechanics",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me2-resisted-motion",
+      "kind": "page",
+      "title": "Resisted motion",
+      "subject": "me2",
+      "engine": "particle2d",
+      "setup": "resisted-1d",
+      "priority": "P1",
+      "path": "/interactives/maths-ext2/resisted-motion.html",
+      "summary": "Horizontal and vertical motion with kv and kv^2 resistance; terminal velocity.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 2",
+          "version": "2024",
+          "area": "Mechanics",
+          "focusArea": "Applications of calculus to mechanics",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me2-3d-lines-spheres",
+      "kind": "page",
+      "title": "3D lines and spheres",
+      "subject": "me2",
+      "engine": "space3d",
+      "setup": "lines-spheres",
+      "priority": "P1",
+      "path": "/interactives/maths-ext2/3d-lines-spheres.html",
+      "summary": "Vector equation of a line; intersecting, parallel and skew pairs; sphere-line intersections.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 2",
+          "version": "2024",
+          "area": "Vectors",
+          "focusArea": "Further work with vectors",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me2-partial-fractions",
+      "kind": "page",
+      "title": "Partial fractions decomposer",
+      "subject": "me2",
+      "engine": "fnplot",
+      "setup": "partial-fractions",
+      "priority": "P2",
+      "path": "/interactives/maths-ext2/partial-fractions.html",
+      "summary": "Decompose a rational function and graph each piece.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 2",
+          "version": "2024",
+          "area": "Calculus",
+          "focusArea": "Further integration",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me2-integration-by-parts",
+      "kind": "page",
+      "title": "Integration by parts",
+      "subject": "me2",
+      "engine": "fnplot",
+      "setup": "by-parts",
+      "priority": "P2",
+      "path": "/interactives/maths-ext2/integration-by-parts.html",
+      "summary": "Integration by parts as an area picture; reduction formula stepper.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 2",
+          "version": "2024",
+          "area": "Calculus",
+          "focusArea": "Further integration",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me2-proof-pictures",
+      "kind": "page",
+      "title": "Proof pictures",
+      "subject": "me2",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P2",
+      "path": "/interactives/maths-ext2/proof-pictures.html",
+      "summary": "AM-GM and inequality proofs as geometric pictures; contrapositive and contradiction toggler.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 2",
+          "version": "2024",
+          "area": "Proof",
+          "focusArea": "The nature of proof",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-motion-graphs",
+      "kind": "page",
+      "title": "Motion graphs lab",
+      "subject": "phy",
+      "engine": "particle2d",
+      "setup": "cart",
+      "priority": "P1",
+      "path": "/interactives/physics/motion-graphs.html",
+      "summary": "Drive a cart and watch s-t, v-t and a-t live; graph-matching challenge.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 1: Kinematics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Fundamentals of mechanics",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-relative-velocity",
+      "kind": "page",
+      "title": "Relative velocity",
+      "subject": "phy",
+      "engine": "particle2d",
+      "setup": "relative-velocity",
+      "priority": "P1",
+      "path": "/interactives/physics/relative-velocity.html",
+      "summary": "Boat crossing a river, plane in a crosswind.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 1: Kinematics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Fundamentals of mechanics",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-inclined-plane",
+      "kind": "page",
+      "title": "Inclined plane and friction",
+      "subject": "phy",
+      "engine": "statics",
+      "setup": "incline",
+      "priority": "P1",
+      "path": "/interactives/physics/inclined-plane.html",
+      "summary": "Free body diagram, components, static vs kinetic friction; angle 0 gives the horizontal plane.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 2: Dynamics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Fundamentals of mechanics",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-collisions",
+      "kind": "page",
+      "title": "Collisions",
+      "subject": "phy",
+      "engine": "particle2d",
+      "setup": "collisions",
+      "priority": "P1",
+      "path": "/interactives/physics/collisions.html",
+      "summary": "1D and 2D collisions with momentum and kinetic energy bars; elasticity slider.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 2: Dynamics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Fundamentals of mechanics",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-work-energy-track",
+      "kind": "page",
+      "title": "Work-energy track",
+      "subject": "phy",
+      "engine": "particle2d",
+      "setup": "track",
+      "priority": "P2",
+      "path": "/interactives/physics/work-energy-track.html",
+      "summary": "KE, GPE and work against friction as stacked bars on a roller track.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 2: Dynamics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Fundamentals of mechanics",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-wave-machine",
+      "kind": "page",
+      "title": "Wave machine",
+      "subject": "phy",
+      "engine": "wave",
+      "setup": "wave-machine",
+      "priority": "P1",
+      "path": "/interactives/physics/wave-machine.html",
+      "summary": "Transverse and longitudinal waves, superposition, standing waves on strings and in pipes.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 3: Waves and Thermodynamics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Waves",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-doppler-beats",
+      "kind": "page",
+      "title": "Doppler and beats",
+      "subject": "phy",
+      "engine": "wave",
+      "setup": "doppler-beats",
+      "priority": "P2",
+      "path": "/interactives/physics/doppler-beats.html",
+      "summary": "Moving source and observer; beats from two close frequencies; optional audio.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 3: Waves and Thermodynamics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Waves",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-ray-box",
+      "kind": "page",
+      "title": "Ray box",
+      "subject": "phy",
+      "engine": "rays",
+      "setup": "ray-box",
+      "priority": "P1",
+      "path": "/interactives/physics/ray-box.html",
+      "summary": "Snell's law, critical angle, total internal reflection into an optical fibre.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 3: Waves and Thermodynamics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Waves",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-heating-curves",
+      "kind": "page",
+      "title": "Heating curves",
+      "subject": "phy",
+      "engine": "fnplot",
+      "setup": "heating",
+      "priority": "P2",
+      "path": "/interactives/physics/heating-curves.html",
+      "summary": "Specific and latent heat; Newton's law of cooling. 2017 syllabus only until checked against 2025.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 3: Waves and Thermodynamics",
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-field-sketcher",
+      "kind": "page",
+      "title": "Electric field sketcher",
+      "subject": "phy",
+      "engine": "field2d",
+      "setup": "charges",
+      "priority": "P1",
+      "path": "/interactives/physics/field-sketcher.html",
+      "summary": "Drag point charges and see field lines and equipotentials.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 4: Electricity and Magnetism",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Electricity and magnetism",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-circuit-builder",
+      "kind": "page",
+      "title": "Circuit builder",
+      "subject": "phy",
+      "engine": "circuit",
+      "setup": "builder",
+      "priority": "P1",
+      "path": "/interactives/physics/circuit-builder.html",
+      "summary": "Series and parallel circuits, Ohm's law, Kirchhoff's laws, power.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 4: Electricity and Magnetism",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Electricity and magnetism",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-magnetic-fields",
+      "kind": "page",
+      "title": "Magnetic fields",
+      "subject": "phy",
+      "engine": "field2d",
+      "setup": "magnetic",
+      "priority": "P2",
+      "path": "/interactives/physics/magnetic-fields.html",
+      "summary": "Field of a wire, loop and solenoid with a compass grid.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 4: Electricity and Magnetism",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Electricity and magnetism",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-projectile-lab",
+      "kind": "page",
+      "title": "Projectile lab",
+      "subject": "phy",
+      "engine": "particle2d",
+      "setup": "projectile",
+      "priority": "P0",
+      "path": "/interactives/physics/projectile-lab.html",
+      "summary": "Launch angle and speed, max height, range, velocity components, optional air resistance.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 5: Advanced Mechanics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Advanced mechanics",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-circular-motion",
+      "kind": "page",
+      "title": "Circular motion and banked tracks",
+      "subject": "phy",
+      "engine": "particle2d",
+      "setup": "circular",
+      "priority": "P1",
+      "path": "/interactives/physics/circular-motion.html",
+      "summary": "Forces in circular motion, design speed of a banked track, torque.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 5: Advanced Mechanics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Advanced mechanics",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-orbit-lab",
+      "kind": "page",
+      "title": "Orbit lab",
+      "subject": "phy",
+      "engine": "particle2d",
+      "setup": "orbit",
+      "priority": "P1",
+      "path": "/interactives/physics/orbit-lab.html",
+      "summary": "Kepler's laws, orbital energy, escape velocity.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 5: Advanced Mechanics",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Advanced mechanics",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-charged-particles",
+      "kind": "page",
+      "title": "Charged particles in fields",
+      "subject": "phy",
+      "engine": "particle2d",
+      "setup": "charged",
+      "priority": "P1",
+      "path": "/interactives/physics/charged-particles.html",
+      "summary": "Parallel plates, circular paths in B fields, velocity selector.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 6: Electromagnetism",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Electromagnetism",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-motor-effect",
+      "kind": "page",
+      "title": "Motor effect and DC motor",
+      "subject": "phy",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P1",
+      "path": "/interactives/physics/motor-effect.html",
+      "summary": "Force on a conductor, torque against angle, the commutator.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 6: Electromagnetism",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Electromagnetism",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-induction",
+      "kind": "page",
+      "title": "Faraday and Lenz",
+      "subject": "phy",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P1",
+      "path": "/interactives/physics/induction.html",
+      "summary": "Magnet through a coil with flux and emf graphs; transformer turns ratio.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 6: Electromagnetism",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Electromagnetism",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-double-slit",
+      "kind": "page",
+      "title": "Double slit and diffraction grating",
+      "subject": "phy",
+      "engine": "wave",
+      "setup": "interference",
+      "priority": "P0",
+      "path": "/interactives/physics/double-slit.html",
+      "summary": "Wavelength, slit spacing and screen distance sliders with a live intensity pattern.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 7: The Nature of Light",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Nature of light",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-blackbody",
+      "kind": "page",
+      "title": "Black-body radiation",
+      "subject": "phy",
+      "engine": "fnplot",
+      "setup": "blackbody",
+      "priority": "P1",
+      "path": "/interactives/physics/blackbody.html",
+      "summary": "Planck curves by temperature; Wien's displacement law.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 7: The Nature of Light",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Nature of light",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-photoelectric",
+      "kind": "page",
+      "title": "Photoelectric effect",
+      "subject": "phy",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P1",
+      "path": "/interactives/physics/photoelectric.html",
+      "summary": "Frequency, intensity, work function and stopping voltage.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 7: The Nature of Light",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Nature of light",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-relativity",
+      "kind": "page",
+      "title": "Special relativity",
+      "subject": "phy",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P1",
+      "path": "/interactives/physics/relativity.html",
+      "summary": "Light clock time dilation and length contraction.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 7: The Nature of Light",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Nature of light",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-bohr-spectra",
+      "kind": "page",
+      "title": "Bohr atom and hydrogen spectrum",
+      "subject": "phy",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P1",
+      "path": "/interactives/physics/bohr-spectra.html",
+      "summary": "Electron transitions mapped to spectral lines (Rydberg).",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 8: From the Universe to the Atom",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Matter, energy and the cosmos",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-radioactive-decay",
+      "kind": "page",
+      "title": "Radioactive decay",
+      "subject": "phy",
+      "engine": "statsim",
+      "setup": "decay",
+      "priority": "P1",
+      "path": "/interactives/physics/radioactive-decay.html",
+      "summary": "Random-decay grid; the half-life curve emerging from the noise.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 8: From the Universe to the Atom",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Matter, energy and the cosmos",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-hr-diagram",
+      "kind": "page",
+      "title": "HR diagram explorer",
+      "subject": "phy",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P2",
+      "path": "/interactives/physics/hr-diagram.html",
+      "summary": "Stars by temperature and luminosity; main sequence, giants, white dwarfs.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 8: From the Universe to the Atom",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Matter, energy and the cosmos",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "phy-binding-energy",
+      "kind": "page",
+      "title": "Binding energy curve",
+      "subject": "phy",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P2",
+      "path": "/interactives/physics/binding-energy.html",
+      "summary": "Binding energy per nucleon with fission and fusion regions.",
+      "syllabus": [
+        {
+          "course": "Physics",
+          "version": "2017",
+          "area": "Module 8: From the Universe to the Atom",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Physics",
+          "version": "2025",
+          "focusArea": "Matter, energy and the cosmos",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-truss-solver",
+      "kind": "page",
+      "title": "Truss solver",
+      "subject": "eng",
+      "engine": "statics",
+      "setup": "truss",
+      "priority": "P0",
+      "path": "/interactives/engineering/truss-solver.html",
+      "summary": "Place joints, members, supports and loads; method of joints; tension and compression by colour plus label.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Civil Structures",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Civil and structural engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-beam-lab",
+      "kind": "page",
+      "title": "Beam lab",
+      "subject": "eng",
+      "engine": "statics",
+      "setup": "beam",
+      "priority": "P1",
+      "path": "/interactives/engineering/beam-lab.html",
+      "summary": "Support reactions, shear force and bending moment diagrams, bending stress.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Civil Structures",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Civil and structural engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-flight-forces",
+      "kind": "page",
+      "title": "Flight forces and stall",
+      "subject": "eng",
+      "engine": "aero",
+      "setup": "flight-forces",
+      "priority": "P0",
+      "path": "/interactives/engineering/flight-forces.html",
+      "summary": "Lift, drag, thrust and weight in level flight, climb and descent; angle of attack to stall; L/D.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Aeronautical Engineering",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Aeronautical and aerospace engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Flight mechanics"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-pitot-altimeter",
+      "kind": "page",
+      "title": "Pitot-static and altimeter",
+      "subject": "eng",
+      "engine": "aero",
+      "setup": "pitot-static",
+      "priority": "P1",
+      "path": "/interactives/engineering/pitot-altimeter.html",
+      "summary": "Airspeed from total minus static pressure; altitude from static pressure.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Aeronautical Engineering",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Aeronautical and aerospace engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Propulsion and measurement systems"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-pascal-hydraulics",
+      "kind": "page",
+      "title": "Pascal's principle",
+      "subject": "eng",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P1",
+      "path": "/interactives/engineering/pascal-hydraulics.html",
+      "summary": "Hydraulic press and aircraft hydraulics force calculator.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Aeronautical Engineering",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Aeronautical and aerospace engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Propulsion and measurement systems"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-materials-selection",
+      "kind": "page",
+      "title": "Materials selection chart",
+      "subject": "eng",
+      "engine": "materials",
+      "setup": "selection",
+      "priority": "P1",
+      "path": "/interactives/engineering/materials-selection.html",
+      "summary": "Strength vs density for Ti-6Al-4V, 2024 Al, high-tensile steel and CFRP; strength-to-weight calculator.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Aeronautical Engineering",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Aeronautical and aerospace engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Properties of engineering materials"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-fatigue-ndt",
+      "kind": "page",
+      "title": "Fatigue and NDT methods",
+      "subject": "eng",
+      "engine": "materials",
+      "setup": "fatigue-ndt",
+      "priority": "P2",
+      "path": "/interactives/engineering/fatigue-ndt.html",
+      "summary": "Crack growth to failure; visual, dye penetrant, X-ray, ultrasonic and magnetic particle testing compared.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Aeronautical Engineering",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Aeronautical and aerospace engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Degradation of materials"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-orbits-gps",
+      "kind": "page",
+      "title": "Orbits and GPS",
+      "subject": "eng",
+      "engine": "particle2d",
+      "setup": "orbit-gps",
+      "priority": "P1",
+      "path": "/interactives/engineering/orbits-gps.html",
+      "summary": "LEO, MEO and GEO orbits; GPS trilateration from three satellites.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Telecommunications Engineering",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Aeronautical and aerospace engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Aerospace positioning systems"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-modulation-lab",
+      "kind": "page",
+      "title": "Modulation lab",
+      "subject": "eng",
+      "engine": "wave",
+      "setup": "modulation",
+      "priority": "P1",
+      "path": "/interactives/engineering/modulation-lab.html",
+      "summary": "AM, FM and phase modulation waveforms.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Telecommunications Engineering",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Aeronautical and aerospace engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Aerospace positioning systems"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-descriptive-geometry",
+      "kind": "page",
+      "title": "Descriptive geometry",
+      "subject": "eng",
+      "engine": "space3d",
+      "setup": "descriptive",
+      "priority": "P2",
+      "path": "/interactives/engineering/descriptive-geometry.html",
+      "summary": "True length and true shape by auxiliary views; transition-piece developments.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Aeronautical Engineering",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Aeronautical and aerospace engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Descriptive geometry"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-force-sandbox",
+      "kind": "page",
+      "title": "Force sandbox",
+      "subject": "eng",
+      "engine": "statics",
+      "setup": "concurrent",
+      "priority": "P1",
+      "path": "/interactives/engineering/force-sandbox.html",
+      "summary": "Resolve components, resultant and equilibrant, concurrent forces, three-force rule.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Engineering Fundamentals",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Applied engineering analysis",
+          "year": 11,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Equilibrium in mechanics"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-moments",
+      "kind": "page",
+      "title": "Moments and equilibrium",
+      "subject": "eng",
+      "engine": "statics",
+      "setup": "moments",
+      "priority": "P1",
+      "path": "/interactives/engineering/moments.html",
+      "summary": "Clockwise-positive moments and beam reactions.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Engineering Fundamentals",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Applied engineering analysis",
+          "year": 11,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Equilibrium in mechanics"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-simple-machines",
+      "kind": "page",
+      "title": "Simple machines",
+      "subject": "eng",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P1",
+      "path": "/interactives/engineering/simple-machines.html",
+      "summary": "Lever classes, pulleys, gears, screw threads; MA, VR and efficiency.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Engineered Products",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Applied engineering analysis",
+          "year": 11,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Mechanics of simple machines"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-tensile-test",
+      "kind": "page",
+      "title": "Tensile test machine",
+      "subject": "eng",
+      "engine": "materials",
+      "setup": "tensile",
+      "priority": "P1",
+      "path": "/interactives/engineering/tensile-test.html",
+      "summary": "Load-extension to stress-strain for steel, copper, aluminium, polymer and ceramic; E, yield, UTS, toughness.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Engineered Products",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Applied engineering analysis",
+          "year": 11,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Mechanical strength of materials"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-orthographic-trainer",
+      "kind": "page",
+      "title": "Orthogonal projection trainer",
+      "subject": "eng",
+      "engine": "space3d",
+      "setup": "orthographic",
+      "priority": "P1",
+      "path": "/interactives/engineering/orthographic-trainer.html",
+      "summary": "Rotate a 3D part and build third-angle views to AS 1100.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Engineering Fundamentals",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Technical graphics and communication",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-isometric-grid",
+      "kind": "page",
+      "title": "Isometric sketching grid",
+      "subject": "eng",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P2",
+      "path": "/interactives/engineering/isometric-grid.html",
+      "summary": "Isometric grid with snap for practice sketches.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Engineering Fundamentals",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Technical graphics and communication",
+          "year": 11,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-hardness-testing",
+      "kind": "page",
+      "title": "Hardness testing",
+      "subject": "eng",
+      "engine": "materials",
+      "setup": "hardness",
+      "priority": "P2",
+      "path": "/interactives/engineering/hardness-testing.html",
+      "summary": "Rockwell, Brinell and Vickers indenters compared.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Personal and Public Transport",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Transport engineering and automation",
+          "year": 12,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Testing of engineering materials"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-braking-energy",
+      "kind": "page",
+      "title": "Braking energy",
+      "subject": "eng",
+      "engine": "particle2d",
+      "setup": "braking",
+      "priority": "P1",
+      "path": "/interactives/engineering/braking-energy.html",
+      "summary": "Stopping distance, work done by friction, heat into rotors.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Braking Systems",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Transport engineering and automation",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-energy-systems",
+      "kind": "page",
+      "title": "Energy systems calculator",
+      "subject": "eng",
+      "engine": "custom",
+      "setup": null,
+      "priority": "P2",
+      "path": "/interactives/engineering/energy-systems.html",
+      "summary": "Solar, wind and storage efficiency chains.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Environmental engineering and energy systems",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    }
+  ],
+  "listings": [
+    {
+      "id": "me1-projectile-vectors",
+      "kind": "listing",
+      "title": "Projectile motion with vectors",
+      "subject": "me1",
+      "engine": "particle2d",
+      "setup": "projectile",
+      "priority": "P0",
+      "listingOf": "phy-projectile-lab",
+      "preset": "me1-vectors",
+      "path": "/interactives/physics/projectile-lab.html?preset=me1-vectors",
+      "summary": "The projectile lab with velocity vectors and components on.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 1",
+          "version": "2024",
+          "area": "Vectors",
+          "focusArea": "Introduction to vectors",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "me2-projectile-drag",
+      "kind": "listing",
+      "title": "Projectile with air resistance",
+      "subject": "me2",
+      "engine": "particle2d",
+      "setup": "projectile",
+      "priority": "P0",
+      "listingOf": "phy-projectile-lab",
+      "preset": "me2-drag",
+      "path": "/interactives/physics/projectile-lab.html?preset=me2-drag",
+      "summary": "The projectile lab with quadratic air resistance.",
+      "syllabus": [
+        {
+          "course": "Mathematics Extension 2",
+          "version": "2024",
+          "area": "Mechanics",
+          "focusArea": "Applications of calculus to mechanics",
+          "year": 12,
+          "outcomes": [],
+          "verified": false
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-friction-horizontal",
+      "kind": "listing",
+      "title": "Static friction on a horizontal plane",
+      "subject": "eng",
+      "engine": "statics",
+      "setup": "incline",
+      "priority": "P1",
+      "listingOf": "phy-inclined-plane",
+      "preset": "eng-horizontal",
+      "path": "/interactives/physics/inclined-plane.html?preset=eng-horizontal",
+      "summary": "The friction lab at 0 degrees with g = 10 m/s^2.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Braking Systems",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Applied engineering analysis",
+          "year": 11,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Friction in mechanics"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-fibre-optics",
+      "kind": "listing",
+      "title": "Optical fibre",
+      "subject": "eng",
+      "engine": "rays",
+      "setup": "ray-box",
+      "priority": "P1",
+      "listingOf": "phy-ray-box",
+      "preset": "eng-fibre",
+      "path": "/interactives/physics/ray-box.html?preset=eng-fibre",
+      "summary": "The ray box with the optical fibre preset.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2011",
+          "area": "Telecommunications Engineering",
+          "outcomes": [],
+          "verified": false
+        },
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Aeronautical and aerospace engineering",
+          "year": 12,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Application of materials"
+        }
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "eng-circuits-as1102",
+      "kind": "listing",
+      "title": "Circuits with AS 1102 symbols",
+      "subject": "eng",
+      "engine": "circuit",
+      "setup": "builder",
+      "priority": "P1",
+      "listingOf": "phy-circuit-builder",
+      "preset": "eng-as1102",
+      "path": "/interactives/physics/circuit-builder.html?preset=eng-as1102",
+      "summary": "The circuit builder with AS 1102 symbols.",
+      "syllabus": [
+        {
+          "course": "Engineering Studies",
+          "version": "2026",
+          "focusArea": "Applied engineering analysis",
+          "year": 11,
+          "outcomes": [],
+          "verified": false,
+          "subtopic": "Electronic concepts"
+        }
+      ],
+      "status": "planned"
+    }
+  ]
+}
