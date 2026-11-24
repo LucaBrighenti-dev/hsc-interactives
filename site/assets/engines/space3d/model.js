@@ -526,7 +526,7 @@ export function linesOutputs(s) {
   const P = length(s.u) > 0 ? s.P : [nan, nan, nan];
   return clean({
     relation: L ? L.relation : nan,
-    lineAngle: L ? L.angle : nan,
+    angle: L ? L.angle : nan,
     distance: L ? L.distance : nan,
     ix: meet ? L.point[0] : nan,
     iy: meet ? L.point[1] : nan,

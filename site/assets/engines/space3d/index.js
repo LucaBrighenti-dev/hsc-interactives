@@ -143,7 +143,8 @@ export const meta = {
     magA: { label: '|a|', unit: '', sigfigs: 4, setups: ['vectors'] },
     magB: { label: '|b|', unit: '', sigfigs: 4, setups: ['vectors'] },
     dot: { label: 'a · b', unit: '', sigfigs: 4, setups: ['vectors'] },
-    angle: { label: 'Angle θ between a and b', unit: '°', sigfigs: 4, setups: ['vectors'] },
+    // vectors: the angle between a and b (0° to 180°); lines-spheres: the acute angle between the lines
+    angle: { label: 'Angle θ', unit: '°', sigfigs: 4, setups: ['vectors', 'lines-spheres'] },
     scalarProjection: { label: 'Scalar projection of a on b', unit: '', sigfigs: 4, setups: ['vectors'] },
     resultX: { label: 'Result: x', unit: '', sigfigs: 4, setups: ['vectors'] },
     resultY: { label: 'Result: y', unit: '', sigfigs: 4, setups: ['vectors'] },
@@ -151,7 +152,6 @@ export const meta = {
     resultMag: { label: 'Result: magnitude', unit: '', sigfigs: 4, setups: ['vectors'] },
     // lines-spheres
     relation: { label: 'Relation (0 meet, 1 parallel, 2 same line, 3 skew)', unit: '', integer: true, setups: ['lines-spheres'] },
-    lineAngle: { label: 'Angle between the lines', unit: '°', sigfigs: 4, setups: ['lines-spheres'] },
     distance: { label: 'Shortest distance between the lines', unit: '', sigfigs: 3, setups: ['lines-spheres'] },
     ix: { label: 'Intersection x', unit: '', sigfigs: 3, setups: ['lines-spheres'] },
     iy: { label: 'Intersection y', unit: '', sigfigs: 3, setups: ['lines-spheres'] },

@@ -192,6 +192,7 @@ test('line–sphere: 2λ² − 10λ + 8 = 0 gives λ = 1 and 4, Δ = 36, chord �
 test('lines-spheres outputs: null for the other mode; the moving point P = a + λu', () => {
   const o = linesOutputs(linesScene({ mode: 'lines', point1: [1, 2, 3], dir1: [1, -1, 2], point2: [0, -1, 3], dir2: [1, 1, 1], centre: [1, 1, 1], radius: 3, lambda: 2 }));
   assert.equal(o.relation, 0);
+  close(o.angle, Math.acos(2 / Math.sqrt(18)) / DEG, 1e-9, 'acute angle between the lines');
   close3([o.ix, o.iy, o.iz], [2, 1, 5], 1e-12);
   close3([o.px, o.py, o.pz], [3, 0, 7], 1e-12);
   assert.ok(o.hits === null && o.discriminant === null);

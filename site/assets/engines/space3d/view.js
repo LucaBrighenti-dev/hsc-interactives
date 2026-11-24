@@ -1183,6 +1183,7 @@ export function createView(stage, { setup, onError, onCamera }) {
     card.push({ title: verdicts[0], verdict: true });
     card.push({ note: verdicts[1] });
     card.push({ tex: `\\mathbf{r}_1 = ${col(s.a1)} + \\lambda${col(s.u)},\\quad \\mathbf{r}_2 = ${col(s.a2)} + \\mu${col(s.v)}` });
+    if (Number.isFinite(Lr.angle)) card.push({ tex: `\\cos\\theta = \\dfrac{|\\mathbf{u}\\cdot\\mathbf{v}|}{|\\mathbf{u}|\\,|\\mathbf{v}|} \\;\\Rightarrow\\; \\theta = ${tn(Lr.angle)}^{\\circ}` });
   }
 
   /** A circle of radius R around c in the plane facing the camera (redrawn as the camera turns). */
