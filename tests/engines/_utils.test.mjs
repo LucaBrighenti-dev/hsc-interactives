@@ -42,6 +42,15 @@ test('roundSig', () => {
   assert.equal(roundSig(0.000123456, 2), 0.00012);
 });
 
+test('formatInteger for counts', async () => {
+  const { formatInteger } = await import('../../site/assets/format.js');
+  assert.equal(formatInteger(369), '369');
+  assert.equal(formatInteger(369.4), '369');
+  assert.equal(formatInteger(12345), `12${NNBSP}345`);
+  assert.equal(formatInteger(-7), `${MINUS}7`);
+  assert.equal(formatInteger(NaN), '—');
+});
+
 test('formatQuantity and siPrefix', () => {
   assert.equal(formatQuantity(40.816, 'm'), `40.8${NNBSP}m`);
   assert.equal(formatQuantity(45, '°'), '45.0°');

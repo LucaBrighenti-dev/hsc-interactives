@@ -398,7 +398,8 @@ Wave 0 made these additions and clarifications while building §5.1–§5.9. Eac
 - `meta.staticSetups` (optional): setups with no time evolution; the shell hides play, step and reset for them.
 - `meta.stepSize` (optional, default 1): fixed steps per press of the shell's Step button.
 - Param types: `number` (`min`, `max`, `step`, optional `integer`), `boolean`, `enum` (`options: [[value, label], …]`, values are strings), `string` (`maxLength`, default 200; optional `pattern`), `list` (numbers; optional `min`, `max`, `minItems`, `maxItems`). Any param may have `setups`, `visibleWhen: { key: value | [values] }`, `help`, and for enums `widget: 'segmented' | 'select'` (default: segmented for up to three options). Param keys are camelCase and must not be a reserved URL key (`preset`, `embed`, `theme`, `test`, `present`, `playlist`, `i`).
-- Outputs may have `setups`. `unit` is required (`''` when dimensionless).
+- Outputs may have `setups` and `integer: true` (counts: shown as whole numbers with grouping, never "369.0"). `unit` is required (`''` when dimensionless).
+- `drawAxes` options `xAxisAt: 'zero' | 'bottom'` and `yAxisAt: 'zero' | 'left'` pin an axis to the plot edge (histograms, time series); the default places each axis at zero when zero is in range.
 - `step(n)` stops early when the scenario completes. Optional `describe()` returns a sentence for the stage's `aria-label`.
 - `setTheme(theme)`: the shell sets `data-theme` on `<html>` first; engines re-read colours with `readPalette`.
 - `tests/engines/_contract.test.mjs` checks every engine automatically: files and exports, meta shape, valid defaults, `timeScale` on time-based engines, a pure `model.js`, and no `eval`/`Function`/remote imports.

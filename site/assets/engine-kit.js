@@ -331,14 +331,17 @@ export function axisMargins(px = 18) {
  * @param {ReturnType<typeof viewport>} vp
  * @param {ReturnType<typeof readPalette>} pal
  * @param {{ xTitle?: string, yTitle?: string, px?: number, grid?: boolean, xCount?: number, yCount?: number,
- *   formatX?: (v:number)=>string, formatY?: (v:number)=>string, layer?: 'all'|'under'|'over' }} [opts]
+ *   formatX?: (v:number)=>string, formatY?: (v:number)=>string, layer?: 'all'|'under'|'over',
+ *   xAxisAt?: 'zero'|'bottom', yAxisAt?: 'zero'|'left' }} [opts]
+ *   xAxisAt/yAxisAt: by default each axis sits at zero when zero is in range; 'bottom'/'left' pin it to the edge
+ *   (histograms, time series).
  */
 export function drawAxes(ctx, vp, pal, opts = {}) {
-  const { xTitle, yTitle, px = 18, grid = true, xCount = 8, yCount = 6, formatX = tickText, formatY = tickText, layer = 'all' } = opts;
+  const { xTitle, yTitle, px = 18, grid = true, xCount = 8, yCount = 6, formatX = tickText, formatY = tickText, layer = 'all', xAxisAt = 'zero', yAxisAt = 'zero' } = opts;
   const { rect } = vp;
   // Axes sit at zero when zero is in range, otherwise on the rectangle's edge.
-  const axisY = vp.y[0] <= 0 && vp.y[1] >= 0 ? vp.toY(0) : rect.y + rect.h;
-  const axisX = vp.x[0] <= 0 && vp.x[1] >= 0 ? vp.toX(0) : rect.x;
+  const axisY = xAxisAt === 'zero' && vp.y[0] <= 0 && vp.y[1] >= 0 ? vp.toY(0) : rect.y + rect.h;
+  const axisX = yAxisAt === 'zero' && vp.x[0] <= 0 && vp.x[1] >= 0 ? vp.toX(0) : rect.x;
   ctx.save();
 
   if (layer !== 'over') {
