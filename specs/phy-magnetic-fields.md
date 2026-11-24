@@ -77,7 +77,7 @@ No catalogue listing reuses this page.
 | probeDistance | Probe distance from wire r | m | 3 |
 | forcePerLength | Force per metre between wires | N/m | 3 |
 
-`probeDistance` is measured from wire 1 (or the origin for loop and solenoid). `forcePerLength` is `null` except for two wires.
+`probeDistance` is measured from wire 1 (or the origin for loop and solenoid). `forcePerLength` is `null` except for two wires. The four field outputs, `probeDistance` and `forcePerLength` set `siPrefix: true` (guide §5.10), so they read as "50.0 µT", "5.03 mT", "20.0 mm" or "50.0 µN/m"; the values returned stay in T, m and N/m.
 
 ## Assumptions shown on stage
 - Straight wires are infinitely long and perpendicular to the screen

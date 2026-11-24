@@ -117,7 +117,7 @@ No catalogue listing reuses this page.
 | bePerNucleon | Binding energy per nucleon | MeV | 4 |
 | qValue | Energy released Q | MeV | 4 |
 
-`qValue` is `null` ("—") when `reaction` is `none`.
+`qValue` is `null` ("—") when `reaction` is `none`. `massNumber`, `protonNumber` and `neutronNumber` set `integer: true` (guide §5.10).
 
 ## Assumptions shown on stage
 - Atomic masses from AME2020, rounded to 1 µu
