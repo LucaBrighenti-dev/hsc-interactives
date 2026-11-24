@@ -6,7 +6,7 @@ import { watchConsole, overflowsX } from './helpers.mjs';
 
 const TEMPLATE = '/interactives/_template.html';
 const NEXT = `${TEMPLATE}?amplitude=2`;
-const NEXT_URL = /\/interactives\/_template\.html\?amplitude=2$/;
+const NEXT_URL = /\/interactives\/_template\.html\?amplitude=2(&|$)/; // the page may add its other params after loading
 const signinWith = (next = NEXT) => `/signin.html?next=${encodeURIComponent(next)}`;
 const desktopOnly = (testInfo) => test.skip(testInfo.project.name !== 'desktop', 'interaction detail runs on desktop');
 const stored = (page, key) => page.evaluate((k) => JSON.parse(localStorage.getItem(k)), key);
