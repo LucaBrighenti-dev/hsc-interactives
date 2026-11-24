@@ -3,8 +3,8 @@
 -- HOW TO APPLY (human task H3, Luca)
 --   Option A, Supabase dashboard: Project → SQL Editor → New query → paste this whole file → Run.
 --   Option B, Supabase CLI:       supabase link --project-ref <ref> && supabase db push
--- Then (H5) add access codes, for example:
---   insert into public.access_codes (code, kind) values ('TTT2026', 'event'), ('CLASS2026', 'class');
+-- Then (H5) add the access code (one shared code for everyone; it also gives the Founding Educator badge):
+--   insert into public.access_codes (code, kind) values ('TTT2026', 'event');
 -- Codes are stored upper case; redeem_access_code() upper-cases and trims what people type.
 --
 -- Notes
@@ -107,29 +107,16 @@ create policy "own scenarios" on public.saved_scenarios for all to authenticated
 create policy "own playlists" on public.playlists for all to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
--- Requests and votes: any signed-in user can read them (no names are exposed by the app).
--- Teachers can add them; anonymous class-code sessions can't, unless they redeemed an event code.
+-- Requests and votes: any signed-in user can read and add them (no names are exposed by the app).
 create policy "read requests" on public.requests for select to authenticated using (true);
 create policy "add request" on public.requests for insert to authenticated
-  with check (
-    user_id = (select auth.uid())
-    and (
-      coalesce(((select auth.jwt()) ->> 'is_anonymous')::boolean, false) = false
-      or exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.founding)
-    )
-  );
+  with check (user_id = (select auth.uid()));
 create policy "drop own request" on public.requests for delete to authenticated
   using (user_id = (select auth.uid()));
 
 create policy "read votes" on public.votes for select to authenticated using (true);
 create policy "own votes" on public.votes for insert to authenticated
-  with check (
-    user_id = (select auth.uid())
-    and (
-      coalesce(((select auth.jwt()) ->> 'is_anonymous')::boolean, false) = false
-      or exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.founding)
-    )
-  );
+  with check (user_id = (select auth.uid()));
 create policy "unvote" on public.votes for delete to authenticated
   using (user_id = (select auth.uid()));
 

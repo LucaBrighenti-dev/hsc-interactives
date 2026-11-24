@@ -291,7 +291,7 @@ export const SITE_NAME = 'HSC Interactives Hub';      // placeholder until Luca 
 export const AUTH_MODE = 'local';                     // 'local' until Supabase is configured (human task H3)
 export const SUPABASE_URL = '';
 export const SUPABASE_ANON_KEY = '';                  // public anon key only; never the service_role key
-export const LOCAL_ACCESS_CODES = ['TTT2026', 'CLASS2026'];
+export const LOCAL_ACCESS_CODES = [{ code: 'TTT2026', kind: 'event' }];   // one shared code (see §5.10)
 ```
 
 **Local mode** stores the session and all data in `localStorage` under `hsc:*` keys, accepts any provider click as a signed-in local user, accepts `LOCAL_ACCESS_CODES`, and simulates email by signing in immediately. Every feature must work end to end in local mode, so agents never need credentials.
@@ -421,11 +421,11 @@ Wave 0 made these additions and clarifications while building §5.1–§5.9. Eac
 - `specs/_demo.md` is the reference spec for `_template.html`; the runner always includes it.
 
 **Auth (§5.6, §5.7)**
-- `LOCAL_ACCESS_CODES` is `[{ code, kind: 'event' | 'class' }]`, mirroring the `access_codes` table.
-- Extra exports: `redeemAccessCode(code)` (a signed-in teacher redeems the event code for the Founding Educator badge), `deleteAccount()`, `safeNext(path)`, `onAuthChange(fn)`, `authMode`.
+- `LOCAL_ACCESS_CODES` is `[{ code, kind }]`, mirroring the `access_codes` table. There is **one shared access code, `TTT2026`**, for teachers and their classes (Luca, 25 Nov). It also gives the Founding Educator badge. The `kind` column stays so more codes could be added later without a schema change.
+- Extra exports: `redeemAccessCode(code)` (a teacher signed in with Microsoft or Google enters the access code for the Founding Educator badge), `deleteAccount()`, `safeNext(path)`, `onAuthChange(fn)`, `authMode`.
 - `signInWithProvider(p, { next })` resolves `{ signedIn }` (local) or `{ redirecting }` (Supabase). `signInWithEmail(email, { next })` resolves `{ signedIn }` (local) or `{ sent }` (Supabase). Errors are thrown with messages safe to show a teacher.
 - Session kinds in local mode match Supabase (`oauth`, `email`, `code`).
-- Class-code (anonymous) sessions cannot create requests or vote unless they redeemed an event code. Local mode and the RLS policies agree on this.
+- Any signed-in session, including an access-code session, can create requests and vote.
 - The migration adds explicit grants (no `anon` access), column-level grants so `founding` is never writable from the browser, length and value checks, indexes, `(select auth.uid())` in policies, `search_path = ''` on security-definer functions, and `delete_my_account()`.
 
 **Test hooks (§5.8)**: `runUntilComplete` returns `{ steps, complete }`; `window.__hsc.meta` gives `{ name, version, setup }`.
@@ -715,7 +715,7 @@ Claude Code must not do these; it asks Luca and waits. Track them as H1–H8 in 
 - **H2 Render:** New → Blueprint (uses `render.yaml`), or a Static Site with build `npm ci && npm run build` and publish directory `dist`. Turn on pull request previews if your plan has them.
 - **H3 Supabase project:** region Sydney (ap-southeast-2). Run `supabase/migrations/0001_init.sql` in the SQL editor. Put the Project URL and the **anon public** key into `site/assets/config.js` and set `AUTH_MODE = 'supabase'`. Never commit the service-role key.
 - **H4 Sign-in providers:** Google (Google Cloud OAuth client) and Microsoft (Entra app registration, multi-tenant so any school's Microsoft 365 works). Enable email magic links and anonymous sign-ins. Set Site URL and redirect URLs (Render URL, `http://localhost:5173`).
-- **H5 Access codes:** insert your codes, e.g. `insert into access_codes values ('TTT2026','event',true), ('CLASS2026','class',true);`.
+- **H5 Access codes:** insert your codes, `insert into public.access_codes (code, kind) values ('TTT2026', 'event');` (one shared code).
 - **H6 Test a real NSW Department Microsoft account** and a Google account before the event.
 - **H7 Name and branding:** final `SITE_NAME`; confirm UNSW logo use and the privacy statement with the event organisers.
 - **H8 Gates:** approve Gate A, Gate B per subject, and Gate C merges.

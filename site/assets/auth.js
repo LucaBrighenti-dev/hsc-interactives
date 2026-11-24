@@ -204,13 +204,8 @@ const local = {
       }))
       .sort(byVotes);
   },
-  canRequest(user) {
-    // Mirrors the "add request" policy: class-code sessions can't request or vote unless they redeemed an event code.
-    return user.kind !== 'code' || Boolean(read(K.profile(user.id), null)?.founding);
-  },
   async createRequest({ subject, topic, details }) {
     const user = local.requireUser();
-    if (!local.canRequest(user)) throw new Error('Requests are for teacher accounts. Ask your teacher to add this one.');
     const row = { id: uuid(), userId: user.id, subject, topic: cleanText(topic, 140), details: cleanText(details, 1000) || null, createdAt: new Date().toISOString() };
     write(K.requests, [...read(K.requests, []), row]);
     write(K.votes, [...read(K.votes, []), { requestId: row.id, userId: user.id }]);
@@ -218,7 +213,6 @@ const local = {
   },
   async toggleVote(requestId) {
     const user = local.requireUser();
-    if (!local.canRequest(user)) throw new Error('Voting is for teacher accounts.');
     const votes = read(K.votes, []);
     const has = votes.some((v) => v.requestId === requestId && v.userId === user.id);
     write(K.votes, has ? votes.filter((v) => !(v.requestId === requestId && v.userId === user.id)) : [...votes, { requestId, userId: user.id }]);
@@ -490,7 +484,7 @@ export async function signInWithCode(code) {
   return backend().signInWithCode(clean);
 }
 
-/** Redeem a code on the current account (e.g. the event code for the Founding Educator badge). */
+/** Redeem the access code on the current account (a teacher signed in with Microsoft or Google gets the Founding Educator badge). */
 export async function redeemAccessCode(code) {
   const clean = normaliseCode(code);
   if (!clean) return false;

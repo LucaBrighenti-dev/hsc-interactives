@@ -9,11 +9,9 @@ export const AUTH_MODE = 'local'; // 'local' until Supabase is configured (human
 export const SUPABASE_URL = '';
 export const SUPABASE_ANON_KEY = ''; // public anon key only; never the service_role key
 
-// Local mode only. Mirrors the access_codes table: 'event' codes make the account a Founding Educator.
-export const LOCAL_ACCESS_CODES = [
-  { code: 'TTT2026', kind: 'event' },
-  { code: 'CLASS2026', kind: 'class' },
-];
+// Local mode only. Mirrors the access_codes table. One shared code for everyone (teachers and their classes);
+// redeeming it also gives the Founding Educator badge.
+export const LOCAL_ACCESS_CODES = [{ code: 'TTT2026', kind: 'event' }];
 
 export const SUBJECTS = [
   { id: 'me1', label: 'Maths Extension 1', short: 'Maths Ext 1', folder: 'maths-ext1' },

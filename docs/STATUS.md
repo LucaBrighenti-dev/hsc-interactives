@@ -170,3 +170,4 @@ Tracked on each PR (reviewer comment `VERDICT: PASS/FAIL`) and in `docs/gates/ga
 
 - 2026-11-25: Starter kit created from the master plan. Wave 0 not started.
 - 2026-11-25: Wave 0 complete on local branch `w0/foundations` (git initialised locally; no GitHub remote yet). `npm run check` passes: 34 unit tests, 27 browser tests, 4 acceptance checks on the reference template. Gate A report written; waiting on Luca for Gate A and H1 (GitHub repo, push, PR so CI runs).
+- 2026-11-25: Luca's answers applied: root guide copy deleted; one access code `TTT2026` for everyone (no class codes, no request restriction); privacy contact added. Starting H1 (GitHub) with Luca.

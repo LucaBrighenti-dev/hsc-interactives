@@ -48,7 +48,7 @@ test('a provider sign-in shows onboarding, then returns to the requested page', 
   await expect(dialog).toBeVisible();
   await dialog.getByRole('button', { name: 'Physics' }).click();
   await dialog.getByLabel('Display name').fill('Ms Rivera');
-  await dialog.getByLabel('Event code (optional)').fill('TTT2026');
+  await dialog.getByLabel('Access code (optional)').fill('TTT2026');
   await dialog.getByRole('button', { name: 'Continue' }).click();
   await expect(page).toHaveURL(/\/interactives\/_template\.html\?amplitude=3/);
   await expect(page.locator('.hsc-user__name')).toHaveText('Ms Rivera');
@@ -59,7 +59,7 @@ test('a provider sign-in shows onboarding, then returns to the requested page', 
 test('next must stay on this site', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await page.goto('/signin.html?next=https%3A%2F%2Fexample.com%2F');
-  await page.getByLabel('Access code').fill('CLASS2026');
+  await page.getByLabel('Access code').fill('TTT2026');
   await page.getByRole('button', { name: 'Enter' }).click();
   await expect(page).toHaveURL(/localhost:\d+\/(\?.*)?$/);
 });

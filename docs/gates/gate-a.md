@@ -12,7 +12,7 @@ First time only: `npm ci` then `npx playwright install chromium`.
    - You reach the dashboard with a **Founding Educator** badge.
    - All **76 entries** show **Coming soon**, grouped under Maths Ext 1, Maths Ext 2, Physics and Engineering.
    - Type `projectile` in search (3 cards), then click the subject chips to filter.
-   - Optional: sign out, choose **Continue with Google**, and you get the onboarding (subjects, name, school, event code).
+   - Optional: sign out, choose **Continue with Google**, and you get the onboarding (subjects, name, school, access code).
 2. **Reference template.** Open http://localhost:5173/interactives/_template.html. It runs the `demo` engine (y = A sin(2πft + φ)).
    - **Space** plays and pauses, **.** steps 0.1 s, **R** resets. The readouts update.
    - Drag a slider or type a value. The URL updates. Copy the URL into a new tab and you get the same scenario.
@@ -50,9 +50,9 @@ First time only: `npm ci` then `npx playwright install chromium`.
 These are the ones worth your attention. All are additions; nothing in §5 was removed.
 
 1. **Engine kit (`site/assets/engine-kit.js`).** One shared module provides the fixed-step loop, the 10 Hz outputs, the canvas with DPR capped at 2, theme colours, and axes and labels at 18 px or more. *Why:* 12 agents writing their own animation loops would drift on timing, projector text size and theme handling. The kit makes the §5.1 rules automatic.
-2. **`LOCAL_ACCESS_CODES` is now `[{ code, kind }]`** instead of plain strings. I assumed `TTT2026` is the **event** code (Founding Educator) and `CLASS2026` is a **class** code. *Why:* local mode has to know which codes grant the badge, just as the database table does.
-3. **Extra auth functions:** `redeemAccessCode` and `deleteAccount`. *Why:* teachers who sign in with Microsoft or Google can still enter the event code (in onboarding) to become Founding Educators, and the privacy statement promises account deletion.
-4. **Class-code sessions can't post requests or vote**, unless they redeemed the event code. *Why:* students share class codes, and the request board is for teachers. Teachers at the event who use the code on their card can still request and vote.
+2. **One access code, `TTT2026`** (your decision, 25 Nov). It works for teachers and their classes and also gives the Founding Educator badge. `LOCAL_ACCESS_CODES` is `[{ code, kind }]` to mirror the database table, which keeps a `kind` column in case you ever want a second code.
+3. **Extra auth functions:** `redeemAccessCode` and `deleteAccount`. *Why:* teachers who sign in with Microsoft or Google can enter the access code in onboarding to get the Founding Educator badge, and the privacy statement promises account deletion.
+4. **Requests and votes are open to every signed-in session**, including access-code sessions (your decision, 25 Nov: no class-code restriction).
 5. **Database hardening.** Explicit grants, `founding` can't be set from the browser, and length and value checks are added. *Why:* Supabase is moving new projects to opt-in table exposure, and these follow its current guidance.
 6. **Embed mode hides Share, Save and Teacher notes.** *Why:* embeds are what students see in Google Classroom, Canvas and OneNote, and the notes contain the answers. Students keep CSV export.
 7. **Engine metadata additions:** `staticSetups`, `stepSize`, `visibleWhen`, and `string` and `list` param types. *Why:* the backlog needs expression inputs (fnplot), root lists (polynomials), and controls that only appear when relevant (drag coefficient when drag is on).
@@ -64,13 +64,13 @@ These are the ones worth your attention. All are additions; nothing in §5 was r
 - **Render's Node version.** `render.yaml` sets `NODE_VERSION=22` and the repo has `.node-version`. The Render docs I read didn't say which one Render uses, so check the first build log shows Node 22.
 - **PR previews** need a Render plan that includes them. The Blueprint asks for them, and the setting does nothing on a plan without them.
 
-## Open questions for you
+## Your answers (25 November)
 
-1. **Duplicate guide.** There is a second, older copy of `IMPLEMENTATION_GUIDE.md` at the repo root (`docs/IMPLEMENTATION_GUIDE.md` is the real one and now has §5.10). OK to delete the root copy so agents don't read a stale guide?
-2. **Event vs class code.** Is `TTT2026` = event and `CLASS2026` = class right?
-3. **Class codes and requests.** Is it fine that students on class codes can't post requests or vote (point 4 above)?
-4. **Privacy draft** (`/privacy.html`). Please read it and give me the contact address to show. Also confirm the wording with the organisers (H7).
-5. The master plan's open questions still stand: site name (one value in `config.js`), the UNSW subdomain, and analytics (none are built in).
+1. Root copy of the guide: deleted. `docs/IMPLEMENTATION_GUIDE.md` is the only guide.
+2. Access codes: one code, `TTT2026`, for everyone.
+3. Requests: no restriction for access-code sessions.
+4. Privacy contact: Luca.Brighenti1@outlook.com (shown on `/privacy.html`).
+5. Still open from the master plan: site name (one value in `config.js`), UNSW subdomain, analytics (none built in).
 
 ## Your next human tasks
 

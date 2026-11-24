@@ -1,4 +1,4 @@
-// Onboarding: pick the subjects you teach, optional display name, school and event code.
+// Onboarding: pick the subjects you teach, optional display name, school and access code (Founding Educator badge).
 // Resolves when saved or skipped. Access-code (class) sessions never see it.
 import { saveProfile, redeemAccessCode } from '../auth.js';
 import { SUBJECTS } from '../config.js';
@@ -20,7 +20,7 @@ export function openOnboarding(profile = {}) {
     );
     const name = textField({ label: 'Display name', value: profile.displayName || '', autocomplete: 'name' });
     const school = textField({ label: 'School (optional)', value: profile.school || '', autocomplete: 'organization' });
-    const code = textField({ label: 'Event code (optional)', placeholder: 'FROM YOUR EVENT CARD' });
+    const code = textField({ label: 'Access code (optional)', placeholder: 'ACCESS CODE' });
     code.input.classList.add('input--code');
     const error = el('p', { class: 'msg msg--error', role: 'status' });
 
@@ -45,7 +45,7 @@ export function openOnboarding(profile = {}) {
           await saveProfile({ displayName: name.getValue(), school: school.getValue(), subjects: [...chosen] });
           if (code.getValue().trim()) {
             const ok = await redeemAccessCode(code.getValue());
-            toast(ok ? 'Welcome, Founding Educator.' : 'That event code did not work. You can add it later.', { kind: ok ? 'ok' : 'info' });
+            toast(ok ? 'Welcome, Founding Educator.' : 'That access code did not work. You can add it later.', { kind: ok ? 'ok' : 'info' });
           }
           finish();
         } catch (err) {
