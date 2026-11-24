@@ -101,7 +101,8 @@ Definitions (the engine's outputs): `range`, `flightTime`, `impactSpeed` and `im
 - Stage `aria-label`: the engine's `describe()` sentence, for example "Projectile launched at 20 metres per second, 45 degrees above the horizontal, from ground level, g = 9.8, no air resistance", followed by the landing values once it lands.
 
 ## Engine change requests
-- None required: every key used here exists in the `particle2d` engine's meta on `w1/engine-particle2d`.
+- Every key used here exists in the `particle2d` engine's meta on `w1/engine-particle2d`.
+- **Listing card wording (catalogue, owned by this page's builder):** the `me2-projectile-drag` listing's summary in `site/catalog/me2-projectile-drag.json` and `docs/backlog.json` says "quadratic air resistance"; it must say linear (kv) air resistance, because the `me2-drag` preset is linear drag with closed-form answers.
 - Optional, for a later engine version: keep up to five earlier paths as faint ghost lines, so complementary angles can be compared on one picture (prompt 2 works without it by reading the values).
 
 ## Acceptance

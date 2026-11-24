@@ -75,7 +75,7 @@ Definitions (the engine's outputs, SI): `fieldE` = V/d (0 in magnetic mode); `fo
 
 ## Try this (3–5 predict, observe, explain prompts)
 1. Predict: an electron and a proton enter the same plates at the same speed. Which way does each bend, and which bends more? Switch the particle and check.
-2. Observe: in the electric field, double the plate voltage. What happens to the deflection? Now double the speed instead. Why does the deflection fall to a quarter?
+2. Observe: in the default plates, set the voltage to 20 V and read the deflection (0.440 cm). Double it to 40 V: what happens to the deflection? Now go back to 20 V and double the speed instead, from 10 to 20 × 10⁶ m/s. Why does the deflection fall to a quarter (0.110 cm)? (Doubling 50 V to 100 V would need 2.20 cm, more than the 2 cm to the plate, so the electron would hit it.)
 3. Explain: in the magnetic field the particle's speed never changes, even though a force acts on it the whole time. Check the work-done readout, then explain why.
 4. Predict: in the `magnetic` preset, what radius will an alpha particle have at the same speed? (Mass about 4 times, charge 2 times.) Check your prediction.
 5. Explain: in the `selector` preset, switch from an electron to a proton. Why does the proton also go straight through, even though both forces now point the other way?

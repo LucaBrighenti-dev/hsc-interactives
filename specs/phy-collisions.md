@@ -88,7 +88,8 @@ Definitions (the engine's outputs): `vA`, `vB` are the x-velocities and `vAy`, `
 - Stage `aria-label`: the engine's `describe()` sentence giving the masses, velocities before and after, total momentum and kinetic energy lost.
 
 ## Engine change requests
-- None: every key used here exists in the `particle2d` engine's meta on `w1/engine-particle2d`.
+- Every key used here exists in the `particle2d` engine's meta on `w1/engine-particle2d`.
+- **Restitution help text (particle2d):** the `restitution` help says "0 means the pucks stick together", which is only true in 1D; in 2D, smooth pucks with e = 0 can still slide apart (Check 6). Suggested text: "1 is elastic; 0 leaves no rebound along the line of centres (in 1D the pucks move off together)." The orchestrator has passed this to the particle2d builder.
 
 ## Acceptance
 Every number below comes from the formula and hand calculation shown here. Along the line of impact, with approach velocities u₁, u₂: v₁ = (m₁u₁ + m₂u₂ − m₂e(u₁ − u₂))/(m₁ + m₂) and v₂ = (m₁u₁ + m₂u₂ + m₁e(u₁ − u₂))/(m₁ + m₂), which conserve momentum and give a separation speed e times the approach speed. The impulse along the line of centres is J = (1 + e)(approach speed)/(1/m₁ + 1/m₂). Contact happens when the centres are 0.5 m apart.
