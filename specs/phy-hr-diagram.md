@@ -42,7 +42,7 @@ Formulas for the selected or custom star (T in K, L in L☉):
 - Radius in metres, directly from Stefan–Boltzmann: R = √(L_W / (4πσT⁴)). (For the Sun this gives 6.957 × 10⁸ m, the IAU nominal radius.)
 - Peak wavelength (Wien): λ_max = b/T, output in nm.
 - Constant-radius lines: log L = 2 log(R/R☉) + 4 log(T/5772).
-- Spectral class from T (approximate, for labelling only): O ≥ 30 000 K; B 10 000–30 000; A 7 500–10 000; F 6 000–7 500; G 5 200–6 000; K 3 700–5 200; M below 3 700 K.
+- Spectral class from T (approximate, for labelling only): O ≥ 30 000 K; B 10 000–30 000; A 7 500–10 000; F 6 000–7 500; G 5 200–6 000; K 3 700–5 200; M below 3 700 K. The side card shows the table's spectral type for a catalogue star (so Canopus reads A9 II and Sirius B reads DA2) and this T-based class only for the custom star, labelled "class from temperature (approx.)".
 - Colour for dots: a black-body colour approximation from T, drawn flat (no glow).
 - Main-sequence band (schematic, for shading): centre line through (T, log L) = (3 000, −2.8), (3 800, −1.3), (5 000, −0.5), (5 772, 0), (7 500, 0.8), (10 000, 1.6), (20 000, 3.3), (30 000, 4.7), (40 000, 5.4), band ±0.5 in log L. Giants: 3 500–5 500 K, log L 1 to 3.5. Supergiants: log L above 4, all temperatures. White dwarfs: log L −4.5 to −1, 5 000–40 000 K, below the main sequence.
 - Schematic Sun track (labelled "schematic, not a computed model"): (5 772, 0) → (5 000, 0.4) → (4 500, 1.5) → (3 300, 3.4) red-giant tip → (4 800, 1.7) horizontal branch → (3 200, 3.7) AGB → (40 000, 3.7) and an arrow off the left edge "planetary nebula, hotter than 40 000 K" → re-enters at (40 000, 0) → (20 000, −1.5) → (8 000, −3.5) white-dwarf cooling.
@@ -71,7 +71,7 @@ Formulas for the selected or custom star (T in K, L in L☉):
 | antares | Antares | M1.5 Iab | 3600 | 75 000 | ≈ |
 | rigel | Rigel | B8 Ia | 12 000 | 120 000 | ≈ |
 | deneb | Deneb | A2 Ia | 8500 | 200 000 | ≈ |
-| siriusb | Sirius B | DA2 white dwarf | 25 000 | 0.056 | |
+| siriusb | Sirius B | DA2 white dwarf | 25 400 | 0.0245 | (Bond et al. 2017, *ApJ* 840, 70: T = 25 369 K, R = 0.008 098 R☉, so L = R²(T/5772)⁴ = 0.0245 L☉) |
 | eridanib | 40 Eridani B | DA white dwarf | 16 500 | 0.013 | |
 | procyonb | Procyon B | white dwarf | 7700 | 0.0005 | ≈ |
 
@@ -81,7 +81,7 @@ When `star` is a catalogue star, the outputs use that row's T and L; the tempera
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | star | Star | | | | | sun | enum: `custom` (Custom star) plus every `star` value in the table, labelled by name; `widget: 'select'` |
-| temperature | Surface temperature T | K | 2000 | 40000 | 10 | 5772 | `visibleWhen: { star: 'custom' }` |
+| temperature | Surface temperature T | K | 2000 | 40000 | 1 | 5772 | `visibleWhen: { star: 'custom' }`; step 1 K so the Sun's 5772 K and the check values are reachable on the slider |
 | logLuminosity | Luminosity, log₁₀(L/L☉) | | −5 | 6 | 0.01 | 0 | `visibleWhen: { star: 'custom' }` |
 | showRegions | Label the regions | | | | | on | boolean |
 | showRadiusLines | Lines of constant radius | | | | | off | boolean |
@@ -131,7 +131,7 @@ No catalogue listing reuses this page.
 ## Accessibility notes
 - Dot colour is backed by dot size (radius), a text label and the spectral class letters on the top axis. The selected star is ringed and crosshaired, not only recoloured. Regions are labelled in words, and radius lines are dashed with text labels.
 - Keyboard: the star menu is a standard select; arrow keys move through stars in order of temperature.
-- Stage `aria-label` from `describe()`: "HR diagram. Selected: Sirius B, white dwarf, surface temperature 25 000 kelvin, luminosity 0.056 solar, radius 0.013 solar radii, below and left of the main sequence."
+- Stage `aria-label` from `describe()`: "HR diagram. Selected: Sirius B, white dwarf, surface temperature 25 400 kelvin, luminosity 0.025 solar, radius 0.0081 solar radii (about the size of Earth), below and left of the main sequence."
 
 ## Engine change requests
 None. This spec defines the custom engine, built in Wave 2 under `site/assets/engines/custom/phy-hr-diagram/` (with `data.json`) and tests in `tests/engines/custom-phy-hr-diagram.test.mjs` covering every check below.

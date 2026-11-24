@@ -73,7 +73,7 @@ No catalogue listing reuses this page.
 - Cart treated as a particle locked to the track (it cannot leave it)
 - Kinetic friction μN everywhere, with N including the curvature term m v²κ
 - No air resistance; rolling wheels' rotational energy ignored
-- GPE measured from the lowest point of the track (height 0)
+- GPE measured from height 0 on the grid (the bottom of the valley and the runway; the two-valley track's dips sit at h₀/3)
 - g = 9.8 m/s²
 
 ## Try this (3–5 predict, observe, explain prompts)

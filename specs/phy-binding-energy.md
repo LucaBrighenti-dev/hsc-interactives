@@ -23,7 +23,7 @@ Syllabus tags: 2017 Module 8 (From the Universe to the Atom: properties of the n
 ## What the student sees
 Default view at 1920×1080 (light projector stage):
 
-- **Main panel (about 65% of the width), the curve.** Binding energy per nucleon (MeV, 0 to 9.5) against mass number A (0 to 250, or log scale with `massAxis` = `log`). Each nuclide in the data table is a dot labelled with its symbol (for example ⁵⁶Fe); radioactive fission products are hollow dots. A thin line joins the stable nuclides in order of A as a guide to the eye. The peak region (A ≈ 56–62) is marked with a bracket labelled "most tightly bound". With `showRegions` on, the region left of the peak is lightly hatched and labelled "Fusion releases energy" with an arrow pointing up the curve to the right, and the region right of the peak is hatched the other way and labelled "Fission releases energy" with an arrow pointing up the curve to the left.
+- **Main panel (about 65% of the width), the curve.** Binding energy per nucleon (MeV, 0 to 9.5) against mass number A (0 to 250, or log scale with `massAxis` = `log`). Each nuclide in the data table is a dot labelled with its symbol (for example ⁵⁶Fe); radioactive nuclides (³H, ⁹²Kr, ¹⁴¹Ba, ²³⁵U and ²³⁸U, the rows marked "no" in the table below) are hollow dots and stable ones are filled. A thin line joins the stable nuclides and the two long-lived uranium isotopes, in order of A, as a guide to the eye. The peak region (A ≈ 56–62) is marked with a bracket labelled "most tightly bound". With `showRegions` on, the region left of the peak is lightly hatched and labelled "Fusion releases energy" with an arrow pointing up the curve to the right, and the region right of the peak is hatched the other way and labelled "Fission releases energy" with an arrow pointing up the curve to the left.
 - **Selected nuclide.** The chosen nuclide's dot is enlarged and outlined in orange, with a leader to a card showing Z, N, A and BE/A.
 - **Right panel, the working** (with `showWorking`): the mass-defect calculation set out line by line with the table values: Z × m(¹H) + N × m_n − M(atom) = Δm (u); Δm × 931.494 = BE (MeV); BE / A = BE per nucleon. The constants are listed under it.
 - **Reaction overlay** (when `reaction` is not `none`): reactant dots and product dots are ringed and joined by arrows on the curve, and an equation strip under the plot shows the reaction, the mass before and after (u), Δm and Q (MeV), and the same Q from binding energies, BE(products) − BE(reactants).
@@ -33,7 +33,7 @@ Engine folder `site/assets/engines/custom/phy-binding-energy/`, `meta.name: 'phy
 
 Constants (shown on stage): 1 u = 931.494 102 42 MeV/c² = 1.660 539 066 60 × 10⁻²⁷ kg (CODATA 2018); 1 MeV = 1.602 176 634 × 10⁻¹³ J.
 
-**Data the engine must carry.** Neutral-atom masses from the AME2020 atomic mass evaluation (M. Wang, W. J. Huang, F. G. Kondev, G. Audi and S. Naimi, *Chinese Physics C* 45, 030003, 2021), **rounded to 6 decimal places (1 µu)**. The engine uses these rounded values exactly, so the acceptance numbers below are reproducible. The builder confirms each value against the AME2020 table and records the source per row. (A 1 µu change moves BE/A by at most 0.000 02 MeV, far below the displayed precision; if a value is corrected, update this table and the affected checks together.)
+**Data the engine must carry.** Neutral-atom masses from the AME2020 atomic mass evaluation (M. Wang, W. J. Huang, F. G. Kondev, G. Audi and S. Naimi, *Chinese Physics C* 45, 030003, 2021), **rounded to 6 decimal places (1 µu)**. The engine uses these rounded values exactly, so the acceptance numbers below are reproducible. The builder confirms each value against the AME2020 table and records the source per row. (A 1 µu change in one nuclide's mass moves its BE/A by 931.494 × 10⁻⁶/A MeV: 0.000 47 MeV for ²H, 0.000 23 MeV for ⁴He, and under 0.000 02 MeV for A ≥ 47. That is below the 4 significant figures displayed for all but the lightest nuclides, where it can change the last digit, so it matters mainly for the acceptance checks: if a value is corrected, update this table and the affected checks together.)
 
 | `nuclide` value | Nuclide | Z | N | A | Atomic mass (u) | Stable? |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -55,15 +55,15 @@ Constants (shown on stage): 1 u = 931.494 102 42 MeV/c² = 1.660 539 066 60 × 1
 | ca40 | ⁴⁰Ca | 20 | 20 | 40 | 39.962591 | yes |
 | fe56 | ⁵⁶Fe | 26 | 30 | 56 | 55.934936 | yes |
 | ni62 | ⁶²Ni | 28 | 34 | 62 | 61.928345 | yes |
-| zr90 | ⁹⁰Zr | 40 | 50 | 90 | 89.904698 | yes |
+| zr90 | ⁹⁰Zr | 40 | 50 | 90 | 89.904699 | yes |
 | kr92 | ⁹²Kr | 36 | 56 | 92 | 91.926173 | no (fission product) |
-| sn120 | ¹²⁰Sn | 50 | 70 | 120 | 119.902202 | yes |
+| sn120 | ¹²⁰Sn | 50 | 70 | 120 | 119.902203 | yes |
 | ba138 | ¹³⁸Ba | 56 | 82 | 138 | 137.905247 | yes |
-| ba141 | ¹⁴¹Ba | 56 | 85 | 141 | 140.914403 | no (fission product) |
+| ba141 | ¹⁴¹Ba | 56 | 85 | 141 | 140.914404 | no (fission product) |
 | au197 | ¹⁹⁷Au | 79 | 118 | 197 | 196.966570 | yes |
 | pb208 | ²⁰⁸Pb | 82 | 126 | 208 | 207.976652 | yes |
-| u235 | ²³⁵U | 92 | 143 | 235 | 235.043930 | no (very long-lived) |
-| u238 | ²³⁸U | 92 | 146 | 238 | 238.050788 | no (very long-lived) |
+| u235 | ²³⁵U | 92 | 143 | 235 | 235.043928 | no (very long-lived) |
+| u238 | ²³⁸U | 92 | 146 | 238 | 238.050787 | no (very long-lived) |
 
 Particle mass also needed: neutron m_n = 1.008665 u (AME2020, rounded the same way).
 
@@ -153,13 +153,13 @@ Every number below comes from the formula and hand calculation shown here, using
 - **Check 1, ⁴He.** Δm = 2(1.007825) + 2(1.008665) − 4.002603 = 2.015650 + 2.017330 − 4.002603 = **0.030377 u**. BE = 0.030377 × 931.494 102 = **28.295 996 MeV**; BE/A = 28.295 996/4 = **7.073 999 MeV**. In kg: 0.030377 × 1.660 539 067 × 10⁻²⁷ = **5.044 220 × 10⁻²⁹ kg**; in J: 28.295 996 × 1.602 176 634 × 10⁻¹³ = **4.533 518 × 10⁻¹² J**.
 - **Check 2, ⁵⁶Fe.** Δm = 26(1.007825) + 30(1.008665) − 55.934936 = 26.203450 + 30.259950 − 55.934936 = **0.528464 u**; BE = **492.261 10 MeV**; BE/A = 492.261 10/56 = **8.790 377 MeV**.
 - **Check 3, ⁶²Ni is the peak.** Δm = 28(1.007825) + 34(1.008665) − 61.928345 = 28.219100 + 34.294610 − 61.928345 = **0.585365 u**; BE = **545.264 05 MeV**; BE/A = 545.264 05/62 = **8.794 581 MeV** (greater than ⁵⁶Fe's 8.790 377).
-- **Check 4, ²³⁵U.** Δm = 92(1.007825) + 143(1.008665) − 235.043930 = 92.719900 + 144.239095 − 235.043930 = **1.915065 u**; BE = **1783.8718 MeV**; BE/A = **7.590 944 MeV**. Z = 92, N = 143, A = 235.
+- **Check 4, ²³⁵U.** Δm = 92(1.007825) + 143(1.008665) − 235.043928 = 92.719900 + 144.239095 − 235.043928 = **1.915067 u**; BE = 1.915067 × 931.494 102 = **1783.873 62 MeV**; BE/A = 1783.873 62/235 = **7.590 952 MeV**. Z = 92, N = 143, A = 235.
 - **Check 5, ¹H.** Δm = 1.007825 − 1.007825 = **0**, so BE = **0**.
 - **Check 6, D–T fusion.** Before: 2.014102 + 3.016049 = 5.030151 u. After: 4.002603 + 1.008665 = 5.011268 u. Δm = **0.018883 u**; Q = 0.018883 × 931.494 102 = **17.589 403 MeV**.
 - **Check 7, D–D fusion (neutron branch).** Before: 2 × 2.014102 = 4.028204 u. After: 3.016029 + 1.008665 = 4.024694 u. Δm = 0.003510 u; Q = **3.269 544 MeV**.
-- **Check 8, U-235 fission.** Before: 1.008665 + 235.043930 = 236.052595 u. After: 140.914403 + 91.926173 + 3(1.008665) = 235.866571 u. Δm = 0.186024 u; Q = 0.186024 × 931.494 102 = **173.280 26 MeV**.
+- **Check 8, U-235 fission.** Before: 1.008665 + 235.043928 = 236.052593 u. After: 140.914404 + 91.926173 + 3(1.008665) = 235.866572 u. Δm = 0.186021 u; Q = 0.186021 × 931.494 102 = **173.277 46 MeV**.
 
-Tolerances: 1 × 10⁻⁶ relative (the engine uses the table values exactly), except the fission Q at 1 × 10⁻⁵ because it is a small difference of large numbers.
+Tolerances: 1 × 10⁻⁶ relative throughout. The engine uses the table values exactly, so even the fission Q (a small difference of large numbers) is reproduced to floating-point precision.
 
 ```acceptance
 [
@@ -173,8 +173,8 @@ Tolerances: 1 × 10⁻⁶ relative (the engine uses the table values exactly), e
   { "name": "nickel-62 is the peak", "params": { "nuclide": "ni62", "reaction": "none" }, "run": "static",
     "expect": { "bePerNucleon": { "value": 8.794581375, "relTol": 1e-6 }, "bindingEnergy": { "value": 545.2640453, "relTol": 1e-6 } } },
   { "name": "uranium-235", "params": { "nuclide": "u235", "reaction": "none" }, "run": "static",
-    "expect": { "massDefect": { "value": 1.915065, "relTol": 1e-6 }, "bindingEnergy": { "value": 1783.871753, "relTol": 1e-6 },
-                "bePerNucleon": { "value": 7.590943631, "relTol": 1e-6 }, "protonNumber": { "value": 92, "absTol": 1e-9 },
+    "expect": { "massDefect": { "value": 1.915067, "relTol": 1e-6 }, "bindingEnergy": { "value": 1783.873616, "relTol": 1e-6 },
+                "bePerNucleon": { "value": 7.590951558, "relTol": 1e-6 }, "protonNumber": { "value": 92, "absTol": 1e-9 },
                 "neutronNumber": { "value": 143, "absTol": 1e-9 }, "massNumber": { "value": 235, "absTol": 1e-9 } } },
   { "name": "hydrogen-1 has no binding energy", "params": { "nuclide": "h1", "reaction": "none" }, "run": "static",
     "expect": { "massDefect": { "value": 0, "absTol": 1e-12 }, "bindingEnergy": { "value": 0, "absTol": 1e-9 } } },
@@ -183,6 +183,6 @@ Tolerances: 1 × 10⁻⁶ relative (the engine uses the table values exactly), e
   { "name": "D-D fusion Q value", "params": { "nuclide": "he3", "reaction": "dd-fusion" }, "run": "static",
     "expect": { "qValue": { "value": 3.269544299, "relTol": 1e-6 } } },
   { "name": "U-235 fission Q value", "params": { "nuclide": "u235", "reaction": "u235-fission" }, "run": "static",
-    "expect": { "qValue": { "value": 173.2802589, "relTol": 1e-5 } } }
+    "expect": { "qValue": { "value": 173.2774644, "relTol": 1e-6 } } }
 ]
 ```

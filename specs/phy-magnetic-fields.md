@@ -50,10 +50,15 @@ Keys proposed for the `field2d` engine's `magnetic` setup: no `field2d` branch e
 ## Model
 Static (no time evolution): `magnetic` belongs in the engine's `staticSetups`. μ₀ = 4π × 10⁻⁷ T m A⁻¹ (shown on stage). Positions in metres; x to the right, y up, z out of the screen.
 
-- **Wire** at the origin, current I along +z (out of the screen) when I > 0: B = (μ₀I/2πr) φ̂, anticlockwise for I > 0 (right-hand grip). Inside the 2 mm wire radius the current is uniform, so B = μ₀I r/(2πa²), which avoids an infinity at the centre.
+- **Wire** at the origin, current I along +z (out of the screen) when I > 0: B = (μ₀I/2πr) φ̂, anticlockwise for I > 0 (right-hand grip). Inside the 2 mm wire radius the current is uniform, so B = μ₀I r/(2πa²), which avoids an infinity at the centre (the general rule is under "Finite conductors").
 - **Two wires** at (−d/2, 0) carrying I₁ = `current` and (+d/2, 0) carrying I₂ = `current2`; fields superpose. Force per metre on each: F/l = μ₀I₁I₂/(2πd); output positive for attraction (currents in the same direction).
 - **Loop**: N turns of radius R in the plane x = 0, axis along x, current such that B at the centre points along +x when I > 0 (so the top side, at (0, +R), carries current out of the screen). Field from Biot–Savart for a circular loop (the exact off-axis result with complete elliptic integrals K and E; on the axis it reduces to B = μ₀NIR² / (2(R² + x²)^{3/2})).
 - **Solenoid**: N turns, length L, radius R, centred on the origin with its axis along x, same current sense as the loop. Modelled as M = min(N, 200) equally spaced circular loops at x_k = −L/2 + (k − ½)L/M, each carrying NI/M. At the centre this agrees with the finite current-sheet result B = μ₀(N/L)I × L/√(L² + 4R²) to better than 1 × 10⁻⁶ for the defaults.
+- **Finite conductors (every source).** A filament field is infinite on the filament, so every conductor has radius a = 2 mm in the cross-section: each straight wire, each side of the loop, and each of the solenoid's modelled windings. For each winding w (a straight wire, or one circular loop) let W be its cross-section centre nearest the point P, r = |P − W|, I_w its current (NI for the loop, NI/M for a solenoid winding), B_f,w the filament field of the whole winding (straight-wire or exact loop formula) and B_s,w the field of an infinite straight wire through W perpendicular to the screen carrying I_w.
+  - If r ≥ a: the winding contributes B_f,w(P), unchanged.
+  - If r < a: it contributes B_f,w(P_a) − B_s,w(P_a) + B_int,w(P), where P_a = W + a·(P − W)/r is the point on the conductor's surface in the direction of P (P_a = W + a·ŷ when P = W), and B_int,w is the uniform-current interior field μ₀I_w r/(2πa²) circling W by the right-hand rule. The first two terms are the rest of the winding's field, taken at the surface; the last is the conductor's own field, which falls to zero at its centre.
+  - This is continuous at r = a, finite everywhere, and for a straight wire it is exactly the uniform-current interior field. Contributions from all windings are summed, so a probe in an overlapping solenoid winding is also finite.
+  - On stage, when the probe is inside a conductor its label adds "inside the conductor (radius 2 mm)"; compass needles whose centres fall inside a conductor are not drawn; field lines stop at conductor surfaces. Nothing shows Infinity or NaN.
 - **Formula card output** `bFormula`: wire μ₀I/(2πr) at the probe distance; loop μ₀NI/(2R); solenoid μ₀NI/L (the ideal long-solenoid value); two wires `null`.
 
 ## Presets
@@ -105,7 +110,7 @@ No catalogue listing reuses this page.
 
 ## Engine change requests
 Keys to reconcile with engine meta: the `field2d` engine had no branch when this spec was written, so every param and output key above is a **proposal** (guide §9.1 lists wire, loop and solenoid presets for `field2d`). The `field2d` builder adopts these keys or tells the orchestrator which to rename, and this spec is updated to match. Features this page needs from the `magnetic` setup:
-1. Sources `wire`, `two-wires`, `loop` and `solenoid` with the geometry and current conventions in "Model", fields from Biot–Savart (exact loop field with elliptic integrals; solenoid as up to 200 loops).
+1. Sources `wire`, `two-wires`, `loop` and `solenoid` with the geometry and current conventions in "Model", fields from Biot–Savart (exact loop field with elliptic integrals; solenoid as up to 200 loops), and the finite-conductor rule (radius 2 mm for every wire and winding) so no output or needle is ever infinite or NaN.
 2. A draggable probe bound to `probeX` and `probeY`, and the outputs in "Readouts", including `forcePerLength` for two wires.
 3. A compass-needle grid as well as field lines.
 4. `magnetic` listed in `staticSetups`.
@@ -120,8 +125,10 @@ Every number below comes from the formula and hand calculation shown here. μ₀
 - **Check 5, loop centre.** N = 10, I = 2.0 A, R = 0.050 m, probe at (0, 0): B = μ₀NI/(2R) = 4π × 10⁻⁷ × 20/0.10 = **2.513 274 × 10⁻⁴ T**, along +x.
 - **Check 6, loop axis.** Same loop, probe at (0.050, 0), a distance R along the axis: B = μ₀NIR²/(2(R² + R²)^{3/2}) = μ₀NI/(2R × 2^{3/2}) = 2.513 274 × 10⁻⁴/2.828 427 = **8.885 766 × 10⁻⁵ T**, along +x.
 - **Check 7, solenoid.** N = 500, I = 2.0 A, L = 0.25 m, R = 0.020 m. Ideal formula: μ₀NI/L = 4π × 10⁻⁷ × 1000/0.25 = **5.026 548 × 10⁻³ T** (`bFormula`). At the centre the finite coil gives B = 5.026 548 × 10⁻³ × 0.25/√(0.0625 + 0.0016) = 5.026 548 × 10⁻³ × 0.987 441 = **4.963 418 × 10⁻³ T** along +x (the 200-loop model agrees to 3 × 10⁻⁷).
+- **Check 8, probe at the centre of a straight wire.** Two wires, 5.0 A each in the same direction, d = 0.10 m, probe at the centre of wire 1, (−0.050, 0). Wire 1's own interior field is μ₀I r/(2πa²) = 0 at r = 0, so only wire 2 contributes: B = 2 × 10⁻⁷ × 5.0/0.10 = 1.0 × 10⁻⁵ T. The probe is to the left of wire 2, whose current comes out of the screen, so B points down: B_y = **−1.0 × 10⁻⁵ T**, B_x = **0**.
+- **Check 9, probe on a loop winding (finite, not infinite).** Loop preset (N = 10, I = 2.0 A, so NI = 20 A, R = 0.050 m), probe at (0, 0.050), exactly at the centre W of the top winding. r = 0, so P_a = W + a·ŷ = (0, 0.052) and the conductor's own term is 0. The exact loop field at P_a (in the loop's plane, x = 0, at distance ρ = 0.052 m from the axis): m = k² = 4Rρ/(R + ρ)² = 4 × 0.050 × 0.052/0.102² = 0.999 616, so K(m) = 5.318 535 and E(m) = 1.000 926, and B_x = (μ₀NI/(2π(R + ρ)))[K + ((R + ρ)/(R − ρ))E] = (4.0 × 10⁻⁶/0.102)[5.318 535 − 51 × 1.000 926] = 3.921 569 × 10⁻⁵ × (−45.728 707) = −1.793 283 × 10⁻³ T. The straight-wire field of the top winding at P_a is μ₀NI/(2πa) = 2 × 10⁻⁷ × 20/0.002 = 2.0 × 10⁻³ T, pointing along −x (current out of the screen, point above it), so subtracting it adds +2.0 × 10⁻³ T. B_x(W) = −1.793 283 × 10⁻³ + 2.0 × 10⁻³ = **+2.067 174 × 10⁻⁴ T** (about the field at the loop's centre, as expected for the rest of the loop), B_y = **0**, and |B| = **2.067 174 × 10⁻⁴ T**, finite.
 
-Tolerances: 1 × 10⁻⁶ relative for closed forms; zero fields use absolute 1 × 10⁻¹²; the solenoid centre uses 1 × 10⁻⁵ relative.
+Tolerances: 1 × 10⁻⁶ relative for closed forms (check 9 uses complete elliptic integrals, which the AGM gives to full precision); zero fields use absolute 1 × 10⁻¹²; the solenoid centre uses 1 × 10⁻⁵ relative.
 
 ```acceptance
 [
@@ -139,6 +146,10 @@ Tolerances: 1 × 10⁻⁶ relative for closed forms; zero fields use absolute 1 
   { "name": "loop axis at x = R", "params": { "source": "loop", "current": 2, "turns": 10, "coilRadius": 0.05, "probeX": 0.05, "probeY": 0 }, "run": "static",
     "expect": { "bxProbe": { "value": 8.885765876e-5, "relTol": 1e-6 } } },
   { "name": "solenoid centre", "params": { "source": "solenoid", "current": 2, "turns": 500, "coilRadius": 0.02, "solenoidLength": 0.25, "probeX": 0, "probeY": 0 }, "run": "static",
-    "expect": { "bFormula": { "value": 5.026548246e-3, "relTol": 1e-6 }, "bxProbe": { "value": 4.963417976e-3, "relTol": 1e-5 } } }
+    "expect": { "bFormula": { "value": 5.026548246e-3, "relTol": 1e-6 }, "bxProbe": { "value": 4.963417976e-3, "relTol": 1e-5 } } },
+  { "name": "probe at the centre of wire 1", "params": { "source": "two-wires", "current": 5, "current2": 5, "separation": 0.1, "probeX": -0.05, "probeY": 0 }, "run": "static",
+    "expect": { "byProbe": { "value": -1e-5, "relTol": 1e-6 }, "bxProbe": { "value": 0, "absTol": 1e-12 } } },
+  { "name": "probe on a loop winding is finite", "preset": "loop", "params": { "probeX": 0, "probeY": 0.05 }, "run": "static",
+    "expect": { "bxProbe": { "value": 2.067173595e-4, "relTol": 1e-6 }, "byProbe": { "value": 0, "absTol": 1e-12 }, "bProbe": { "value": 2.067173595e-4, "relTol": 1e-6 } } }
 ]
 ```
