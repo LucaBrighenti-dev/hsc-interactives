@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>space3d engine demo · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!--
+    Engine demo page (guide §9.1): mounts the space3d engine through the shell for each setup.
+    Pick the setup with the #hash: #revolution, #trig3d, #vectors, #lines-spheres, #orthographic
+    or #descriptive. Not linked from the hub.
+  -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+
+    const { meta } = await import('/assets/engines/space3d/index.js');
+    const wanted = location.hash.slice(1);
+    const setup = meta.setups.includes(wanted) ? wanted : meta.setups[0];
+    addEventListener('hashchange', () => location.reload());
+
+    const VIEW = ['camera', 'viewFrom', 'showLabels'];
+    const CONFIG = {
+      revolution: {
+        presets: {
+          default: {},
+          cone: { f: 'x', axis: 'x', lower: 0, upper: 1, discs: 10, discRule: 'midpoint' },
+          sphere: { f: 'sqrt(9 - x^2)', axis: 'x', lower: -3, upper: 3, discs: 10 },
+          power: { f: 'x^2', axis: 'x', lower: 0, upper: 2, discs: 4, discRule: 'left' },
+          'bowl-y': { f: 'sqrt(y)', axis: 'y', lower: 0, upper: 4, discs: 10 },
+          'half-sweep': { f: 'sqrt(9 - x^2)', axis: 'x', lower: -3, upper: 3, discs: 12, sweep: 180 },
+        },
+        presetLabels: { default: 'y = √x on [0, 4] about the x-axis', cone: 'Cone y = x on [0, 1]', sphere: 'Sphere of radius 3', power: 'y = x², 4 left discs', 'bowl-y': 'x = √y about the y-axis', 'half-sweep': 'Sphere, half swept' },
+        controls: ['f', 'axis', 'lower', 'upper', 'discs', 'discRule', 'showDiscs', 'showSolid', 'sweep', ...VIEW],
+        readouts: ['volume', 'volumeOverPi', 'discSum', 'discError', 'discWidth'],
+        assumptions: ['The region lies between the curve and the axis of rotation', 'Volume by adaptive Simpson’s rule', 'Lengths in units, volumes in cubic units'],
+      },
+      trig3d: {
+        presets: {
+          default: {},
+          'tower-obtuse': { scene: 'tower', towerHeight: 40, distA: 100, bearingA: 30, distB: 100, bearingB: 150 },
+          cuboid: { scene: 'cuboid', length: 4, width: 3, height: 12 },
+          ramp: { scene: 'ramp', length: 12, width: 5, height: 4 },
+          pyramid: { scene: 'pyramid', baseSide: 6, height: 4 },
+        },
+        presetLabels: { default: 'Tower: A due south, B due east', 'tower-obtuse': 'Tower: 120° at the base', cuboid: 'Cuboid 4 × 3 × 12', ramp: 'Ramp 12 × 5 rising 4', pyramid: 'Square pyramid s = 6, h = 4' },
+        controls: ['scene', 'towerHeight', 'distA', 'bearingA', 'distB', 'bearingB', 'length', 'width', 'height', 'baseSide', 'showTriangles', ...VIEW],
+        readouts: ['elevA', 'elevB', 'baseAngle', 'distAB', 'spaceDiagonal', 'diagonalAngle', 'slopeAngle', 'faceAngle', 'edgeAngle'],
+        assumptions: ['Flat, horizontal ground; vertical towers', 'Observers’ eyes at ground level', 'True bearings, clockwise from north'],
+      },
+      vectors: {
+        presets: {
+          default: {},
+          'add-3d': { dimension: '3d', ax: 3, ay: 4, az: 0, bx: 1, by: -2, bz: 2, operation: 'add' },
+          perpendicular: { dimension: '3d', ax: 2, ay: 1, az: -1, bx: 1, by: -1, bz: 1, operation: 'dot' },
+          'projection-2d': { dimension: '2d', ax: 3, ay: 4, bx: 4, by: 0, operation: 'project' },
+          scale: { dimension: '3d', ax: 2, ay: -2, az: 1, scalar: -1.5, operation: 'scale' },
+        },
+        presetLabels: { default: 'Dot product, |a| = |b| = 3', 'add-3d': 'Adding in 3D', perpendicular: 'Perpendicular vectors', 'projection-2d': 'Projection in 2D', scale: 'Negative scalar' },
+        controls: ['dimension', 'ax', 'ay', 'az', 'bx', 'by', 'bz', 'operation', 'scalar', 'showComponents', ...VIEW],
+        readouts: ['magA', 'magB', 'dot', 'angle', 'scalarProjection', 'resultX', 'resultY', 'resultZ', 'resultMag'],
+        assumptions: ['Position vectors drawn from the origin unless shown head to tail', 'Right-handed axes', 'In 2D, the z components are 0'],
+      },
+      'lines-spheres': {
+        presets: {
+          default: {},
+          intersecting: { mode: 'lines', point2: [0, -1, 3] },
+          parallel: { mode: 'lines', point2: [0, 0, 0], dir2: [-2, 2, -4] },
+          coincident: { mode: 'lines', point2: [3, 0, 7], dir2: [-1, 1, -2] },
+          'skew-from-above': { mode: 'lines', showClosest: true, viewFrom: 'top' },
+          'sphere-two-points': { mode: 'sphere', point1: [1, 0, 5], dir1: [0, 1, -1], centre: [1, 1, 1], radius: 3, lambda: 1 },
+          'sphere-tangent': { mode: 'sphere', point1: [-2, 1, 4], dir1: [1, 0, 0], centre: [1, 1, 1], radius: 3 },
+          'sphere-miss': { mode: 'sphere', point1: [1, 0, 5], dir1: [0, 1, -1], centre: [1, 1, 1], radius: 2 },
+        },
+        controls: ['mode', 'point1', 'dir1', 'point2', 'dir2', 'centre', 'radius', 'lambda', 'showClosest', ...VIEW],
+        readouts: ['relation', 'lineAngle', 'distance', 'px', 'py', 'pz', 'hits', 'discriminant', 'lambda1', 'lambda2', 'chord', 'centreDistance'],
+        assumptions: ['Lines extend without end; drawn inside −10 ≤ x, y, z ≤ 10', 'Right-handed axes, equal scales', 'Angle between lines is the acute angle between their directions'],
+      },
+      orthographic: {
+        presets: {
+          default: { camera: 'orthographic' },
+          slot: { part: 'slottedBlock', camera: 'orthographic' },
+          chamfer: { part: 'chamferBlock', camera: 'orthographic' },
+          hole: { part: 'holeBlock', camera: 'orthographic' },
+          'first-angle': { part: 'stepBlock', projection: 'first', camera: 'orthographic' },
+          challenge: { part: 'stepBlock', challenge: true, camera: 'orthographic' },
+        },
+        presetLabels: { default: 'Step block, third angle', slot: 'Slotted block', chamfer: 'Chamfer block', hole: 'Block with a hole', 'first-angle': 'Step block, first angle', challenge: 'Challenge: sketch first' },
+        controls: ['part', 'projection', 'showHidden', 'showProjectors', 'showDimensions', 'challenge', ...VIEW],
+        readouts: ['width', 'depth', 'height', 'partVolume', 'frontArea', 'topArea', 'sideArea', 'topViewPlacement', 'sideViewPlacement'],
+        assumptions: ['Orthogonal (parallel) projection; AS 1100 line conventions', 'Third-angle projection unless first angle is chosen', 'Dimensions in millimetres'],
+      },
+      descriptive: {
+        presets: { default: { camera: 'orthographic' }, face: { feature: 'face', camera: 'orthographic' } },
+        presetLabels: { default: 'True length of AB', face: 'True shape of a sloping face' },
+        controls: ['feature', 'pointA', 'pointB', 'chamferRun', 'chamferDrop', 'showProjectors', ...VIEW],
+        readouts: ['trueLength', 'planLength', 'frontLength', 'angleHP', 'angleVP', 'trueArea', 'planArea'],
+        assumptions: ['Third-angle projection', 'Auxiliary views projected across fold lines', 'Dimensions in millimetres'],
+      },
+    };
+    const c = CONFIG[setup];
+
+    mountInteractive({
+      id: 'dev-space3d',
+      title: `space3d · ${setup}`,
+      engine: () => import('/assets/engines/space3d/index.js'),
+      setup,
+      presets: c.presets,
+      presetLabels: c.presetLabels,
+      controls: c.controls,
+      readouts: c.readouts,
+      assumptions: c.assumptions,
+      prompts: [],
+    }).then(() => {
+      const nav = document.createElement('nav');
+      nav.setAttribute('aria-label', 'Setups');
+      nav.className = 'cluster';
+      nav.style.cssText = 'gap: 8px; padding: 0 16px 16px; font-family: var(--f-mono); font-size: 14px;';
+      for (const s of meta.setups) {
+        const a = document.createElement('a');
+        a.href = `#${s}`;
+        a.textContent = s;
+        if (s === setup) a.setAttribute('aria-current', 'page');
+        nav.append(a);
+      }
+      const side = document.querySelector('.hsc-side');
+      (side ?? document.body).prepend(nav);
+    });
+  </script>
+</body>
+</html>
