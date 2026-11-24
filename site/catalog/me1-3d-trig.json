@@ -15,9 +15,13 @@
       "version": "2024",
       "area": "Trigonometric functions",
       "focusArea": "Further trigonometry",
+      "subtopic": "Trigonometry in three dimensions",
       "year": 11,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ME1-11-03"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-1-11-12-2024/content/year-11/fa788a073e",
+      "verified": true
     }
   ]
 }

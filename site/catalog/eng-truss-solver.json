@@ -13,17 +13,26 @@
     {
       "course": "Engineering Studies",
       "version": "2011",
-      "area": "Civil Structures",
-      "outcomes": [],
-      "verified": false
+      "area": "Civil structures",
+      "subtopic": "Engineering mechanics",
+      "year": 12,
+      "outcomes": [
+        "H3.1"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011",
+      "verified": true
     },
     {
       "course": "Engineering Studies",
       "version": "2026",
       "focusArea": "Civil and structural engineering",
+      "subtopic": "Engineering mechanics – truss analysis",
       "year": 12,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ES-12-04"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fab35fb465",
+      "verified": true
     }
   ]
 }

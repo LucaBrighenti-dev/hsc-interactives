@@ -14,12 +14,27 @@
   "syllabus": [
     {
       "course": "Engineering Studies",
+      "version": "2011",
+      "area": "Biomedical engineering",
+      "subtopic": "Electricity/electronics",
+      "year": 11,
+      "outcomes": [
+        "P3.1"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011",
+      "verified": true
+    },
+    {
+      "course": "Engineering Studies",
       "version": "2026",
       "focusArea": "Applied engineering analysis",
+      "subtopic": "Electronic concepts",
       "year": 11,
-      "outcomes": [],
-      "verified": false,
-      "subtopic": "Electronic concepts"
+      "outcomes": [
+        "ES-11-04"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-11/faa305594d",
+      "verified": true
     }
   ]
 }

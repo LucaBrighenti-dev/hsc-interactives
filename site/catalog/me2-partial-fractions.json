@@ -16,8 +16,11 @@
       "area": "Calculus",
       "focusArea": "Further integration",
       "year": 12,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ME2-12-04"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-2-11-12-2024/content/year-12/fa812ef8f0",
+      "verified": true
     }
   ]
 }

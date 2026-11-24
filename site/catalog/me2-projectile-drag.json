@@ -17,9 +17,13 @@
       "version": "2024",
       "area": "Mechanics",
       "focusArea": "Applications of calculus to mechanics",
+      "subtopic": "Projectiles and resisted motion",
       "year": 12,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ME2-12-05"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-2-11-12-2024/content/year-12/fa86b7acff",
+      "verified": true
     }
   ]
 }

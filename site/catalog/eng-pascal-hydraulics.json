@@ -13,18 +13,38 @@
     {
       "course": "Engineering Studies",
       "version": "2011",
-      "area": "Aeronautical Engineering",
-      "outcomes": [],
-      "verified": false
+      "area": "Aeronautical engineering",
+      "subtopic": "Engineering mechanics and hydraulics",
+      "year": 12,
+      "outcomes": [
+        "H3.1"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011",
+      "verified": true
     },
     {
       "course": "Engineering Studies",
       "version": "2026",
       "focusArea": "Aeronautical and aerospace engineering",
+      "subtopic": "Propulsion and measurement systems",
       "year": 12,
-      "outcomes": [],
-      "verified": false,
-      "subtopic": "Propulsion and measurement systems"
+      "outcomes": [
+        "ES-12-04"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fa66e557c0",
+      "verified": true
+    },
+    {
+      "course": "Engineering Studies",
+      "version": "2026",
+      "focusArea": "Environmental engineering and energy systems",
+      "subtopic": "Hydraulics and pneumatics",
+      "year": 12,
+      "outcomes": [
+        "ES-12-04"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fa4b243f12",
+      "verified": true
     }
   ]
 }

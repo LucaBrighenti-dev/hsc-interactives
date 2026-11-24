@@ -13,18 +13,26 @@
     {
       "course": "Engineering Studies",
       "version": "2011",
-      "area": "Personal and Public Transport",
-      "outcomes": [],
-      "verified": false
+      "area": "Personal and public transport",
+      "subtopic": "Engineering materials",
+      "year": 12,
+      "outcomes": [
+        "H1.2"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011",
+      "verified": true
     },
     {
       "course": "Engineering Studies",
       "version": "2026",
       "focusArea": "Transport engineering and automation",
+      "subtopic": "Testing of engineering materials",
       "year": 12,
-      "outcomes": [],
-      "verified": false,
-      "subtopic": "Testing of engineering materials"
+      "outcomes": [
+        "ES-12-02"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fab1f95ed9",
+      "verified": true
     }
   ]
 }
