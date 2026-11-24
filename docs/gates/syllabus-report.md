@@ -51,20 +51,21 @@ The Engineering choices are my judgement. Every code is on the relevant NESA lis
 
 ## 2. Interactives whose content isn't (fully) in a new syllabus
 
-Twelve findings. The first two matter most.
+Thirteen findings. The first three matter most.
 
 | Interactive | Finding | Suggestion |
 | --- | --- | --- |
 | `phy-heating-curves` | **No home in Physics 2025.** The 2025 syllabus has no thermodynamics: no specific heat, latent heat or heating curves. It keeps only the 2017 tag (Module 3, Thermodynamics). Newton's law of cooling isn't in Physics 2017 either. The same model, a rate proportional to Q − P, is in **ME1 2024, Further applications of calculus, Further rates of change**. | Keep it as a 2017 page (P2). Consider an ME1 listing for the cooling model. Its summary still says "until checked against 2025"; the page builder can update it. |
 | `me1-normal-approx` | **Excluded by ME1 2024.** The binomial focus area says binomial problems are solved without the normal approximation. Continuity correction isn't in the syllabus. **This tag is left `verified: false`.** | Repurpose it as a binomial distribution explorer (mean np, variance np(1−p), shape as n and p change), which is in the syllabus. Or drop it from the backlog. |
+| `me2-projectile-drag` (P0 listing) | **The summary says quadratic air resistance, but ME2 2024 only treats projectiles with resistance proportional to speed (kv)**, in *Projectiles and resisted motion*. Resistance proportional to the square of the speed appears only for vertical motion (*Vertical resisted motion*). Straight-line motion uses a general power of the speed. | Make linear resistance (kv) the `me2-drag` preset's default and the listing's framing. Keep quadratic drag as an option labelled beyond the syllabus for projectiles. The page builder should update the summary. |
 | `me1-arrangements` | The pigeonhole principle isn't in ME1 2024. It was in 2017. Restrictions, together/apart arrangements and circular arrangements are all in. | Drop the pigeonhole demo or label it enrichment. |
 | `me1-inequality-line` | The summary says quadratic inequalities. ME1 2024 asks for cubic inequalities (product of linear factors), rational inequalities with the variable in the denominator, and absolute-value inequalities. | Spec writer: build cubic, rational and absolute-value cases. |
-| `phy-doppler-beats` | Physics 2025 has the Doppler shift only qualitatively, for a moving source (sound, plus light redshift and blueshift). Beats aren't in 2025. Physics 2017 has both. | Keep the 2025 tag; frame beats and the moving observer as 2017 or extension. Add a light redshift and blueshift view. |
+| `phy-doppler-beats` | **Only beats are missing from Physics 2025.** *Wave behaviours* keeps the Doppler shift in full: quantitative sound problems with the standard formula, which has both an observer-speed and a source-speed term (the same relationship as 2017 Module 3, *Sound Waves*). It also adds the redshift and blueshift of light for a moving source. Physics 2017 has both Doppler and beats. | Keep the moving source and moving observer in the 2025 framing. Label only beats as 2017. Add a light redshift and blueshift view. |
 | `phy-wave-machine` | Physics 2025 has standing waves on strings fixed at both ends only. Pipes aren't in 2025. | Keep pipes as a 2017 preset. |
 | `phy-circular-motion` | Banked tracks aren't in Physics 2025. Torque moved to Electromagnetism (torque on a current loop in a motor). 2025 has horizontal bends and a mass on a string moving in a horizontal circle. | Add flat-bend and conical-pendulum presets; keep the banked track as 2017. |
 | `phy-field-sketcher` | Equipotential lines aren't named in Physics 2025. They were in 2017. Field-line diagrams for point charges and parallel plates are in. | Keep equipotentials as an optional overlay. |
 | `phy-blackbody` | Wien's law isn't named in Physics 2025. Black-body curves at different temperatures and Planck's quantised energy are in. | Keep Wien's law, but lead with comparing curves against the classical prediction. |
-| `phy-charged-particles` | The velocity selector isn't named in Physics 2025. Crossed E and B fields do appear, in the Thomson e/m content under Matter, energy and the cosmos, *Modelling the atom*, along with mass spectrometers and electron guns. | Add a Thomson e/m preset; it also helps the atom focus area. |
+| `phy-charged-particles` | The velocity selector isn't named in Physics 2025. Mass spectrometers and electron guns are, in Electromagnetism, *Charged particles in electric and magnetic fields*, the subtopic this page is already tagged with. A velocity selector is a mass-spectrometer stage, so it has a home on the existing tag. Only the e/m derivation with perpendicular fields in a cathode-ray tube sits in Matter, energy and the cosmos, *Modelling the atom*. | Frame the velocity selector as part of a mass spectrometer. A Thomson e/m preset would also serve *Modelling the atom*. |
 | `eng-fibre-optics` | Engineering 2026 mentions fibre-optic systems only as an aerospace material choice. The physics of total internal reflection isn't in Engineering 2026. It is in Physics 2025 Waves. | A light-touch fit. Keep it as a listing. |
 | `eng-modulation-lab` | Engineering 2026 compares frequency and phase modulation. AM appears only in the 2011 syllabus. | Lead with FM against PM. Keep AM for 2011. |
 
@@ -72,6 +73,11 @@ Old-syllabus notes (not counted above):
 
 - `eng-energy-systems` has no 2011 match.
 - `eng-descriptive-geometry`: the 2011 syllabus has transition-piece developments but not true length or true shape. Those are new in 2026.
+- `eng-braking-energy`: its 2011 tag, *Braking systems*, lists work, power and energy without calculations. The calculations are in *Personal and public transport*, Engineering mechanics, along with basic work, energy and power and static friction, which suits this page's stopping-distance and friction-work numbers better. A second 2011 tag (Personal and public transport / Engineering mechanics / year 12 / `H3.1`) would be accurate. I left the fragment unchanged in this PR, so the counts above still apply.
+
+Note for spec writers:
+
+- `eng-beam-lab`: the 2026 tag's subtopic is *Engineering mechanics – truss analysis*, which holds the support reactions and shear force and bending moment diagrams. Bending stress (σ = My/I) and the qualitative treatment of uniformly distributed loads sit in the Civil subtopic *Engineering mechanics – strength and testing of materials*. The focus area and outcome are the same.
 
 ## 3. New-syllabus topics no interactive covers (backlog candidates)
 
