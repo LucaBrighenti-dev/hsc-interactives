@@ -47,7 +47,7 @@ Static setup: play, step and reset are hidden. Dragging a load, a support or the
 | pivotX | Point at x | m | 0 | 20 | 0.1 | 3 | visible when momentsAbout = point |
 | showReactions | Show the reactions | | | | | on | boolean; off hides them so students can find them first |
 
-These keys, ranges and engine defaults match the statics engine's in-progress `meta` (read on 25 November 2026; not yet pushed), so they are listed under "Engine change requests" to confirm at merge.
+These keys, ranges and engine defaults match the statics engine's `meta` on `origin/w1/engine-statics` (checked 25 November 2026).
 
 ## Presets
 | Name | Values | Why |
@@ -94,7 +94,7 @@ With **Show the reactions** off, the reaction and sum readouts show "—" until 
 Each moment arrow is labelled with its value and "CW" or "ACW" in text, and clockwise arrows are solid while anticlockwise arrows are dashed. Lever arms are dimension lines with values. The balance bar labels both sides in words. Loads, supports and the pivot can be selected with Tab and moved with arrow keys (0.1 m per press). Stage label: "Beam … metres long on supports at … and … metres with … loads. Reactions … and … kilonewtons. About the pivot at … metres, clockwise moments total … and anticlockwise … kilonewton metres."
 
 ## Engine change requests
-- Confirm at merge: every param and output used here is in the statics engine's in-progress `meta` for `moments` (read from the engine builder's working copy on 25 November 2026; not yet pushed): params `length`, `supportA`, `supportB`, `load1`, `load1At`, `load2`, `load2At`, `load3`, `load3At`, `momentSign`, `momentsAbout`, `pivotX`, `showReactions`; outputs `reactionA`, `reactionB`, `sumCw`, `sumAcw`, `loadMoment`, `netMoment`.
+- None for the keys: every param and output used here is in the statics engine's `meta` for `moments` on `origin/w1/engine-statics` (checked 25 November 2026): params `length`, `supportA`, `supportB`, `load1`, `load1At`, `load2`, `load2At`, `load3`, `load3At`, `momentSign`, `momentsAbout`, `pivotX`, `showReactions`; outputs `reactionA`, `reactionB`, `sumCw`, `sumAcw`, `loadMoment`, `netMoment`.
 
 ## Acceptance
 Every number below comes from the formula and hand calculation shown here. Moments about A (clockwise +): a downward load P at x gives +P(x − x_A); the reaction R_B gives −R_B(x_B − x_A). Setting the sum to zero gives R_B; then R_A = ΣP − R_B. About any pivot, a downward load to the right of the pivot turns clockwise and to the left anticlockwise; an upward reaction does the opposite.

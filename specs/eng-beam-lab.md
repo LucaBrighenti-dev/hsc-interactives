@@ -48,7 +48,7 @@ Static setup: play, step and reset are hidden. Dragging a load arrow along the b
 | sectionD | Section depth d | mm | 10 | 1500 | 5 | 200 | |
 | probeX | Section at x | m | 0 | 20 | 0.1 | 1.5 | clamped to the span |
 
-These keys, ranges and engine defaults match the statics engine's in-progress `meta` (read on 25 November 2026; not yet pushed), so they are listed under "Engine change requests" to confirm at merge.
+These keys, ranges and engine defaults match the statics engine's `meta` on `origin/w1/engine-statics` (checked 25 November 2026).
 
 ## Presets
 | Name | Values | Why |
@@ -100,7 +100,7 @@ For a simply supported beam `fixingMoment` shows "—"; for a cantilever `reacti
 The SFD and BMD use hatching that differs for positive and negative regions, plus "+" and "−" labels, so sign is never shown by colour alone. Every jump and maximum carries a text value. The stress inset labels the compressive and tensile faces "C" and "T". Load arrows and the section line can be moved with arrow keys after Tab-selecting them (0.1 m per press). Stage label: "Simply supported beam, span … metres, with … loads. Reactions … and … kilonewtons. Largest bending moment … kilonewton metres at … metres; largest bending stress … megapascals."
 
 ## Engine change requests
-- Confirm at merge: every param and output used here is in the statics engine's in-progress `meta` for `beam` (read from the engine builder's working copy on 25 November 2026; not yet pushed): params `beamType`, `length`, `p1`, `p1At`, `p2`, `p2At`, `udl`, `udlExtent`, `udlFrom`, `udlTo`, `sectionB`, `sectionD`, `probeX`; outputs `reactionA`, `reactionB`, `fixingMoment`, `maxShear`, `maxMoment`, `maxMomentAt`, `secondMoment`, `maxStress`, `shearAtX`, `momentAtX`, `stressAtX`.
+- None for the keys: every param and output used here is in the statics engine's `meta` for `beam` on `origin/w1/engine-statics` (checked 25 November 2026): params `beamType`, `length`, `p1`, `p1At`, `p2`, `p2At`, `udl`, `udlExtent`, `udlFrom`, `udlTo`, `sectionB`, `sectionD`, `probeX`; outputs `reactionA`, `reactionB`, `fixingMoment`, `maxShear`, `maxMoment`, `maxMomentAt`, `secondMoment`, `maxStress`, `shearAtX`, `momentAtX`, `stressAtX`.
 - `fixingMoment` is the wall's moment on the beam, positive when anticlockwise (the engine model's `MA`); the stage labels its sense in words. `maxMoment` is signed (sagging +), so a cantilever with downward loads gives a negative value.
 - Optional, for a later engine version (not used below): a yield-stress param and a factor-of-safety output, so the design check in the lesson flow appears as a readout.
 

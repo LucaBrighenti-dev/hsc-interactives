@@ -48,7 +48,7 @@ Static setup: there is no time evolution, so play, step and reset are hidden.
 | probeJoint | Support to read | | | | | A | string, one joint letter |
 | showForces | Show forces | | | | | on | boolean |
 
-These keys, ranges and engine defaults match the statics engine's in-progress `meta` (read on 25 November 2026; not yet pushed), so they are listed under "Engine change requests" to confirm at merge. Joints snap to a 0.25 m grid when placed or dragged.
+These keys, ranges and engine defaults match the statics engine's `meta` on `origin/w1/engine-statics` (checked 25 November 2026). Joints snap to a 0.25 m grid when placed or dragged.
 
 ## Presets
 | Name | Values | Why |
@@ -98,7 +98,7 @@ The member readout also shows "T" or "C" as text, and the status bar gives m, r 
 Tension and compression are never shown by colour alone: tension is a solid line tagged "T", compression a thicker dashed line tagged "C", zero-force a thin dotted line tagged "0", and the legend repeats this. Each force label includes its value and letter. Supports are drawn as distinct shapes (pin: hatched triangle; roller: triangle on circles; side roller: rotated), each with a text tag. All editing tools have keyboard equivalents: arrow keys move the selected joint by one grid step, Tab cycles joints, Enter applies the active tool, and the `truss` text box accepts the whole structure as text. Stage label: "Truss with … joints and … members, pin at …, roller at …, … kilonewton load at joint …. Statically determinate. Largest tension … kilonewtons in member …; largest compression … kilonewtons in member …."
 
 ## Engine change requests
-- Confirm at merge: every param and output used here is in the statics engine's in-progress `meta` for `truss` (read from the engine builder's working copy on 25 November 2026; not yet pushed): params `structure`, `span`, `height`, `panels`, `truss`, `load`, `loadAt`, `loadAngle`, `editTool`, `probeMember`, `probeJoint`, `showForces`; outputs `memberForce`, `reactionX`, `reactionY`, `maxTension`, `maxCompression`, `determinacy`. The `probeMember` and `probeJoint` selectors are what let a fixed list of outputs report any member or support.
+- None for the keys: every param and output used here is in the statics engine's `meta` for `truss` on `origin/w1/engine-statics` (checked 25 November 2026): params `structure`, `span`, `height`, `panels`, `truss`, `load`, `loadAt`, `loadAngle`, `editTool`, `probeMember`, `probeJoint`, `showForces`; outputs `memberForce`, `reactionX`, `reactionY`, `maxTension`, `maxCompression`, `determinacy`. The `probeMember` and `probeJoint` selectors are what let a fixed list of outputs report any member or support.
 - The joint free-body-diagram inset (with substituted equations) is a view feature this page relies on; if the engine does not draw it, the page needs it added before Gate C.
 - Joint lettering for presets must be as in the engine's `presetTruss`: bottom chord left to right, then top chord left to right; bracket A = top wall joint, B = bottom wall joint, C = tip.
 

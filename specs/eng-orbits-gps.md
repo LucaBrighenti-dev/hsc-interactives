@@ -36,7 +36,7 @@ Default view at 1920×1080, light projector theme. The **View** control switches
 | clockError | Receiver clock error | ns | −1000 | 1000 | 1 | 0 | 1000 ns = 1 μs |
 | timeScale | Playback speed | × | 0.25 | 2 | 0.25 | 1 | |
 
-These keys, ranges and engine defaults match the particle2d engine's in-progress `meta` (read on 25 November 2026; not yet pushed), so they are listed under "Engine change requests" to confirm at merge.
+These keys, ranges and engine defaults match the particle2d engine's `meta` on `origin/w1/engine-particle2d` (checked 25 November 2026).
 
 ## Presets
 | Name | Values | Why |
@@ -88,7 +88,7 @@ The engine also reports the same quantities in seconds and metres (`leoPeriod`, 
 Orbit bands are labelled in text (LEO, MEO, GEO), not only by colour, and each orbit's trail has its own dash pattern. In the GPS view each used satellite and its range circle share a number label (1, 2, 3) and a dash pattern; the receiver's true position is a cross and its fix a ring, each labelled. All controls are keyboard operable; Space plays and pauses. Stage label: "Three satellites orbit the Earth: a low orbit at … kilometres with period … minutes, a GPS orbit with period … hours, and a geostationary orbit with period … hours. GPS clock error … nanoseconds; position error … metres."
 
 ## Engine change requests
-- Confirm at merge: every param and output used here is in the particle2d engine's in-progress `meta` for `orbit-gps` (read from the engine builder's working copy on 25 November 2026; not yet pushed): params `altitude`, `gpsView`, `receiverAngle`, `clockError`, `timeScale`; outputs `leoPeriod`, `leoPeriodMinutes`, `leoSpeed`, `gpsPeriodHours`, `gpsAltitudeKm`, `gpsSpeed`, `geoPeriodHours`, `geoAltitudeKm`, `geoSpeed`, `signalTime`, `rangeError`, `positionError`, `tHours`.
+- None for the keys: every param and output used here is in the particle2d engine's `meta` for `orbit-gps` on `origin/w1/engine-particle2d` (checked 25 November 2026): params `altitude`, `gpsView`, `receiverAngle`, `clockError`, `timeScale`; outputs `leoPeriod`, `leoPeriodMinutes`, `leoSpeed`, `gpsPeriodHours`, `gpsAltitudeKm`, `gpsSpeed`, `geoPeriodHours`, `geoAltitudeKm`, `geoSpeed`, `signalTime`, `rangeError`, `positionError`, `tHours`.
 - Geometry the checks rely on (as in the engine's model): mean Earth radius 6371 km; eight GPS satellites 45° apart on one orbit, the first starting at 10°; the fix uses the three satellites highest above the receiver's horizon.
 - Optional, for a later engine version (not used below): a "solve for clock error" toggle, so the fix uses the three pseudoranges to solve for x, y and the clock error together and the position error returns to zero.
 

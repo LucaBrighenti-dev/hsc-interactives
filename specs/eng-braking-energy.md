@@ -35,14 +35,14 @@ The run ends when the car stops (the scenario completes).
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | speed | Speed before the hazard v₀ | m/s | 0 | 60 | 0.5 | 20 | 20 m/s = 72 km/h; the stage also shows km/h |
 | reactionTime | Reaction time t_r | s | 0 | 3 | 0.1 | 1 | |
-| mu | Tyre–road friction μ | | 0.05 | 1.2 | 0.01 | 0.7 | dry bitumen about 0.7; wet about 0.4; ice about 0.1 |
+| mu | Tyre–road friction μ | | 0.1 | 1.2 | 0.01 | 0.7 | dry bitumen about 0.7; wet about 0.4; ice about 0.1 |
 | carMass | Car mass m | kg | 500 | 3000 | 50 | 1500 | |
 | rotorMass | Brake rotor mass (all rotors) | kg | 2 | 60 | 1 | 30 | |
 | rotorHeat | Rotor specific heat c | J/(kg·K) | 100 | 1000 | 1 | 449 | 449 J/(kg·K): iron at 25 °C (CRC Handbook of Chemistry and Physics); grey cast iron rotors are similar |
 | g | Gravitational field g | m/s² | 1 | 25 | 0.1 | 9.8 | every preset on this page sets 10 |
 | timeScale | Playback speed | × | 0.25 | 2 | 0.25 | 1 | |
 
-These keys, ranges and engine defaults match the particle2d engine's in-progress `meta` (read on 25 November 2026; not yet pushed), so they are listed under "Engine change requests" to confirm at merge.
+These keys, ranges and engine defaults match the particle2d engine's `meta` on `origin/w1/engine-particle2d` (checked 25 November 2026).
 
 ## Presets
 | Name | Values | Why |
@@ -96,7 +96,7 @@ The reaction, braking and stopping readouts are measured from the run and show "
 The reaction and braking bands differ by fill pattern (hatched against solid) and carry text labels with their lengths. The phase is named in a text tag ("Reacting", "Braking", "Stopped"). Graph curves are labelled at their ends, and the energy bars are labelled in words. All controls are keyboard operable; Space plays and pauses. Stage label: "A … kilogram car braking from … metres per second with friction coefficient … after a … second reaction time. Reaction distance … metres, braking distance … metres, total … metres. The rotors warm by … kelvin."
 
 ## Engine change requests
-- Confirm at merge: every param and output used here is in the particle2d engine's in-progress `meta` for `braking` (read from the engine builder's working copy on 25 November 2026; not yet pushed): params `speed`, `reactionTime`, `mu`, `carMass`, `rotorMass`, `rotorHeat`, `g`, `timeScale`; outputs `v`, `t`, `x`, `deceleration`, `brakingForce`, `reactionDistance`, `brakingDistance`, `stoppingDistance`, `stoppingTime`, `kineticEnergy`, `frictionWork`, `rotorTempRise`.
+- None for the keys: every param and output used here is in the particle2d engine's `meta` for `braking` on `origin/w1/engine-particle2d` (checked 25 November 2026): params `speed`, `reactionTime`, `mu`, `carMass`, `rotorMass`, `rotorHeat`, `g`, `timeScale`; outputs `v`, `t`, `x`, `deceleration`, `brakingForce`, `reactionDistance`, `brakingDistance`, `stoppingDistance`, `stoppingTime`, `kineticEnergy`, `frictionWork`, `rotorTempRise`.
 - `kineticEnergy` is the kinetic energy now (½mv² at the current speed), so the initial value is checked with a static run and the final value (0) with a complete run.
 
 ## Acceptance

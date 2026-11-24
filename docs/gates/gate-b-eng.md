@@ -7,9 +7,8 @@ Each line is one spec: its id, what a student should get from it, and the key ac
 **How to approve:** skim the lines below, open two or three specs, and check that the learning goal fits the syllabus, the ranges suit a classroom, the numbers look right and the prompts make students think. Then tick **Gate B / eng** in `docs/STATUS.md` (or tell the orchestrator).
 
 **Engine keys (as of 25 November 2026):**
-- **aero** and **wave** are pushed (`origin/w1/engine-aero`, `origin/w1/engine-wave`): flight forces, pitot-static and modulation use their exact params and outputs. No change requests.
-- **statics** and **particle2d** have an in-progress `meta` in their builders' working copies (not yet pushed): the truss, beam, moments, force sandbox, braking and orbits specs use those keys and say "confirm at merge".
-- **materials** and **space3d** have not started: the materials selection, tensile test and orthographic trainer specs propose keys and list them as change requests.
+- **aero**, **wave**, **statics** and **particle2d** are pushed (`origin/w1/engine-<name>`): flight forces, pitot-static, modulation, truss, beam, moments, force sandbox, braking and orbits use their exact params and outputs. Every acceptance check in those nine specs was run against the pushed engine code (198 expectations, all pass, every param accepted unchanged), and every parameter table row matches the engine's min, max, step and default. No key change requests.
+- **materials** and **space3d** had not pushed a `meta` when these specs were written: the materials selection, tensile test and orthographic trainer specs propose keys and list them as change requests.
 - **Custom pages** (Pascal, simple machines) define their own model, params and outputs.
 - Once an engine merges, `npm test` checks each spec's keys against its `meta`; any mismatch is a quick spec edit.
 

@@ -51,7 +51,7 @@ Static setup: play, step and reset are hidden.
 | boomLoadAt | Load distance from the wall a | m | 0 | 10 | 0.1 | 3 | boom scene; clamped to the boom |
 | showComponents | Show components | | | | | on | boolean |
 
-Angles −110° and 250° are the same direction; the sliders use −180° to 180°. These keys, ranges and engine defaults match the statics engine's in-progress `meta` (read on 25 November 2026; not yet pushed), so they are listed under "Engine change requests" to confirm at merge.
+Angles −110° and 250° are the same direction; the sliders use −180° to 180°. These keys, ranges and engine defaults match the statics engine's `meta` on `origin/w1/engine-statics` (checked 25 November 2026).
 
 ## Presets
 | Name | Values | Why |
@@ -101,7 +101,7 @@ Directions are in (−180°, 180°]. Readouts for the other scene show "—".
 Each force arrow carries a text label with its name, size and angle; the resultant is a thick double-headed arrow and the equilibrant has an open arrowhead, so they differ by shape as well as colour. Components are dashed. In the boom scene, the cable (tension) is a solid line tagged "T" and the boom (compression) a thick dashed line tagged "C". Forces can be selected with Tab and adjusted with arrow keys (left/right turn by 1°, up/down change size by 1 N). Stage label: "… concurrent forces. Resultant … newtons at … degrees; equilibrant … newtons at … degrees."
 
 ## Engine change requests
-- Confirm at merge: every param and output used here is in the statics engine's in-progress `meta` for `concurrent` (read from the engine builder's working copy on 25 November 2026; not yet pushed): params `concurrentMode`, `forceCount`, `force1`–`force4`, `angle1`–`angle4`, `boomLength`, `cableHeight`, `boomLoad`, `boomLoadAt`, `showComponents`; outputs `resultant`, `resultantAngle`, `sumFx`, `sumFy`, `equilibrant`, `equilibrantAngle`, `cableTension`, `pinReaction`, `pinAngle`.
+- None for the keys: every param and output used here is in the statics engine's `meta` for `concurrent` on `origin/w1/engine-statics` (checked 25 November 2026): params `concurrentMode`, `forceCount`, `force1`–`force4`, `angle1`–`angle4`, `boomLength`, `cableHeight`, `boomLoad`, `boomLoadAt`, `showComponents`; outputs `resultant`, `resultantAngle`, `sumFx`, `sumFy`, `equilibrant`, `equilibrantAngle`, `cableTension`, `pinReaction`, `pinAngle`.
 - The force polygon is part of the view this page relies on.
 
 ## Acceptance
