@@ -160,7 +160,8 @@ export async function mountInteractive(config) {
     el('a', { href: fullUrl(), target: '_blank', rel: 'noopener', text: 'Open full page ↗' }),
   );
 
-  const stage = el('div', { id: 'hsc-stage', class: 'hsc-stage', role: 'img', aria: { label: `${fallbackTitle} simulation` }, tabindex: '-1' });
+  // role=group (not img) so interactive stage content (editors, draggable handles, in-stage buttons) stays accessible.
+  const stage = el('div', { id: 'hsc-stage', class: 'hsc-stage', role: 'group', aria: { roledescription: 'simulation', label: `${fallbackTitle} simulation` }, tabindex: '-1' });
   const loading = el('div', { class: 'hsc-stage-loading', text: 'Loading simulation…' });
   stage.append(loading);
   const stageMsg = el('div', { class: 'hsc-stage-msg', hidden: true, role: 'alert' });
