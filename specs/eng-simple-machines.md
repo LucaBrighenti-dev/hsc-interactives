@@ -24,14 +24,14 @@ Syllabus fit: 2011 Engineering fundamentals (engineering mechanics: levers, pull
 ## What the student sees
 Default view at 1920×1080, light projector theme, one machine at a time chosen with **Machine**:
 
-- **Lever:** a beam on a triangular fulcrum, with the load (a block labelled with its mass and weight) and an effort arrow placed for the chosen class (class 1: fulcrum between; class 2: load between; class 3: effort between). The effort and load arms are dimension lines with values. A **Lift** slider raises the load by its distance and the effort end moves by its own distance, both dimensioned.
+- **Lever:** a beam on a triangular fulcrum, with the load (a block labelled with its mass and weight) and an effort arrow placed for the chosen class (class 1: fulcrum between; class 2: load between; class 3: effort between). The effort and load arms are dimension lines with values. The **Lift** slider (`lift`) tilts the lever about the fulcrum: the load end rises by up to the chosen load distance and the effort end moves VR times as far, both dimensioned as vertical distances.
 - **Pulley:** a block and tackle with the chosen number of supporting strands, each strand numbered, the effort pulling the free rope end. Lifting the load by d pulls n × d of rope, shown with a rope-length counter.
 - **Gears:** two meshing spur gears drawn with their tooth counts, the driver turning at the input speed and the driven gear at the output speed (direction arrows show they turn opposite ways). Torque labels on each shaft.
 - **Screw jack:** a screw thread in section with its pitch dimensioned, a handle of the chosen radius, and the load on top. One handle turn raises the load by one pitch.
 - **Results panel (every machine):** VR, MA and η, plus a work bar (work in against work out, with the lost work hatched).
 - **Footer:** the assumptions, including "g = 10 m/s²".
 
-Static custom page: play, step and reset are hidden; the Lift slider (or the input speed for gears) drives the motion on stage.
+Static custom page: play, step and reset are hidden; the **Lift** slider (`lift`, for the lever, pulley and screw jack) and the input speed (gears) drive the motion on stage.
 
 ## Parameters
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
@@ -48,7 +48,8 @@ Static custom page: play, step and reset are hidden; the Lift slider (or the inp
 | pitch | Thread pitch (single start) | mm | 1 | 12 | 0.5 | 5 | screw |
 | handleRadius | Handle radius | mm | 50 | 600 | 10 | 300 | screw |
 | loadMass | Load mass | kg | 1 | 5000 | 1 | 100 | lever, pulley, screw |
-| loadDistance | Distance the load rises | m | 0.01 | 2 | 0.01 | 0.5 | lever, pulley, screw |
+| loadDistance | Distance the load rises | m | 0.01 | 2 | 0.01 | 0.5 | lever, pulley, screw; for a lever it is capped at 0.5 × load arm (see the model) |
+| lift | Lift | | 0 | 1 | 0.05 | 1 | the fraction of the load distance shown on stage (like the Pascal page's `push`); readouts always use the full load distance |
 | efficiency | Efficiency η (friction losses) | % | 10 | 100 | 1 | 100 | |
 | g | Gravitational field g | m/s² | 9.8 | 10 | 0.2 | 10 | |
 
@@ -60,15 +61,16 @@ Pure functions in `model.js`:
 - MA = (η/100) × VR; effort E = W/MA (lever, pulley, screw); ideal effort = W/VR.
 - Reported efficiency = MA/VR × 100, where MA is recomputed as W/E (this is the check that the three quantities agree).
 - Distances: effort distance = loadDistance × VR. Work out = W × loadDistance; work in = E × effort distance (J).
+- Lever geometry: the lever turns through an angle θ about the fulcrum, so the load end rises loadArm × sin θ and the effort end moves effortArm × sin θ (both vertical); their ratio is still effortArm/loadArm = VR. θ is capped at 30°, so for a lever the load distance used is min(loadDistance, 0.5 × loadArm), and the stage says "Limited to a 30° swing of the lever" when the cap applies.
 - Gears: output speed = inputSpeed/VR (rpm); output torque = (η/100) × VR × inputTorque; MA = output torque/input torque; power = torque × 2πN/60 (W).
 - Lever class rules: class 2 requires loadArm < effortArm; class 3 requires effortArm < loadArm. A combination that breaks the class shows a message on stage and gives `null` outputs.
 
 ## Presets
 | Name | Values | Why |
 | --- | --- | --- |
-| default | lever, class 1, effort arm 1.2 m, load arm 0.3 m, 100 kg, η = 100%, g = 10 | VR = 4: 250 N lifts 1000 N |
-| wheelbarrow | lever, class 2, effort arm 1.5 m, load arm 0.5 m, 60 kg, η = 100% | class 2: load between |
-| forearm | lever, class 3, effort arm 0.05 m, load arm 0.3 m, 2 kg | class 3: MA below 1, but the load moves further and faster |
+| default | lever, class 1, effort arm 1.2 m, load arm 0.3 m, 100 kg, lift 0.1 m, η = 100%, g = 10 | VR = 4: 250 N lifts 1000 N; the effort end moves 0.4 m |
+| wheelbarrow | lever, class 2, effort arm 1.5 m, load arm 0.5 m, 60 kg, lift 0.1 m, η = 100% | class 2: load between |
+| forearm | lever, class 3, effort arm 0.05 m, load arm 0.3 m, 2 kg in the hand, lift 0.1 m | class 3: MA below 1, but the hand (and the load in it) moves six times as far as the muscle's attachment point |
 | pulley | pulley, n = 4, 200 kg, η = 80%, lift 0.5 m | friction: MA 3.2 against VR 4 |
 | gearbox | gears, 12 → 36 teeth, 300 rpm, 10 N·m, η = 95% | a 3:1 reduction |
 | screw-jack | screw, pitch 5 mm, handle 300 mm, 1500 kg, η = 30%, lift 0.05 m | huge VR; most screw jacks are under 50% efficient |
@@ -125,11 +127,17 @@ Every number below comes from the formula and hand calculation shown here (guide
 - **Check 2, pulley block with friction.** n = 4: VR = **4**. η = 80%: MA = 0.8 × 4 = **3.2**. W = 200 × 10 = 2000 N; E = 2000/3.2 = **625 N**. Lifting 0.5 m pulls 4 × 0.5 = **2 m** of rope. Work out = 2000 × 0.5 = **1000 J**; work in = 625 × 2 = **1250 J**; η = 1000/1250 = 3.2/4 = **80%**.
 - **Check 3, gear train.** VR = 36/12 = **3**; output speed = 300/3 = **100 rpm**; output torque = 0.95 × 3 × 10 = **28.5 N·m**; MA = 28.5/10 = **2.85**. Power in = 10 × 2π × 300/60 = 10 × 31.416 = **314.16 W**; power out = 28.5 × 2π × 100/60 = **298.45 W** (95%).
 - **Check 4, screw jack.** VR = 2π × 300/5 = **376.99**. η = 30%: MA = 0.3 × 376.99 = **113.10**. W = 1500 × 10 = 15 000 N; E = 15 000/113.10 = **132.63 N**; with no friction it would be 15 000/376.99 = **39.789 N**. Lifting 0.05 m: effort distance = 0.05 × 376.99 = 18.850 m; work in = 132.63 × 18.850 = **2500 J**; work out = 15 000 × 0.05 = **750 J**.
-- **Check 5, class 3 lever.** VR = 0.05/0.3 = **0.16667**. W = 2 × 10 = 20 N; E = 20/0.16667 = **120 N**: six times the load, but the hand moves 1/6 as far as the load.
+- **Check 5, class 3 lever.** VR = 0.05/0.3 = **0.16667**. W = 2 × 10 = 20 N; E = 20/0.16667 = **120 N**: six times the load. In return the effort point (where the biceps attaches, 0.05 m from the elbow) moves only 1/6 as far as the hand and the load it holds.
+- **Check 6, lever distances.** Default lever (VR = 4, W = 1000 N, η = 100%) with the load raised 0.1 m: sin θ = 0.1/0.3, θ = 19.5°, inside the 30° cap. Effort distance = 0.1 × 4 = **0.4 m**; work out = 1000 × 0.1 = **100 J** = work in = 250 × 0.4.
+- **Check 7, the 30° cap.** The same lever with loadDistance = 0.5 m: a 0.3 m arm cannot lift its end 0.5 m, so the load distance used is 0.5 × 0.3 = 0.15 m (θ = 30°). Effort distance = 0.15 × 4 = **0.6 m**; work out = 1000 × 0.15 = **150 J**.
 - **Question idea check.** VR 5, MA 4, η 80%, rope 4 m, work in 2400 J, work out 1920 J.
 
 ```acceptance
 [
+  { "name": "lever distances: effort moves VR times as far", "params": { "machine": "lever", "leverClass": "1", "effortArm": 1.2, "loadArm": 0.3, "loadMass": 100, "loadDistance": 0.1, "efficiency": 100, "g": 10 }, "run": "static",
+    "expect": { "effortDistance": { "value": 0.4, "relTol": 1e-12 }, "workOut": { "value": 100, "relTol": 1e-12 }, "workIn": { "value": 100, "relTol": 1e-12 } } },
+  { "name": "lever swing capped at 30°", "params": { "machine": "lever", "leverClass": "1", "effortArm": 1.2, "loadArm": 0.3, "loadMass": 100, "loadDistance": 0.5, "efficiency": 100, "g": 10 }, "run": "static",
+    "expect": { "effortDistance": { "value": 0.6, "relTol": 1e-12 }, "workOut": { "value": 150, "relTol": 1e-12 } } },
   { "name": "class 1 lever: VR = MA = 4", "params": { "machine": "lever", "leverClass": "1", "effortArm": 1.2, "loadArm": 0.3, "loadMass": 100, "efficiency": 100, "g": 10 }, "run": "static",
     "expect": { "vr": { "value": 4, "relTol": 1e-12 }, "ma": { "value": 4, "relTol": 1e-12 }, "load": { "value": 1000, "relTol": 1e-12 }, "effort": { "value": 250, "relTol": 1e-12 }, "efficiencyOut": { "value": 100, "relTol": 1e-12 } } },
   { "name": "pulley block at 80%: η = MA/VR", "params": { "machine": "pulley", "strands": 4, "loadMass": 200, "loadDistance": 0.5, "efficiency": 80, "g": 10 }, "run": "static",

@@ -93,7 +93,7 @@ The engine also reports `clAtMaxLD`, `dynamicPressure` and `temperature`; the pa
 - g = 10 m/s²
 
 ## Try this (3–5 predict, observe, explain prompts)
-1. Predict: if the airspeed halves in level flight, what must happen to the lift coefficient to keep L = W? Observe it by moving from 40 m/s to 20 m/s.
+1. Predict: if the airspeed halves in level flight, what must happen to the lift coefficient to keep L = W? Observe it by moving from 50 m/s to 25 m/s (C_L goes from 0.41 to 1.63, and α climbs to about 13°, close enough to the stall for the warning to show).
 2. Observe: start a climb at γ = 5° without changing speed. Which force changes most, and by how much compared with W sin γ?
 3. Predict, then observe: in the **stall** preset, set α to 15°, then 18°. What happens to lift, and what happens to drag?
 4. Explain: why does the stall speed rise at 3000 m even though the wing and the weight are the same?

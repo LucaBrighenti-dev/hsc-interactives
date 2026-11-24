@@ -23,9 +23,10 @@ Syllabus fit: 2011 Braking systems (friction, energy conversion in brakes, stopp
 ## What the student sees
 Default view at 1920×1080, light projector theme:
 
-- **Upper half:** a side view of a car on a flat road with distance markers every 5 m. The car moves right. During the reaction time a "Reacting" tag shows and the car keeps its speed; then a "Braking" tag shows and a friction arrow (labelled "F = μmg = … N") points backwards at the tyres. Bands under the road mark the reaction distance (hatched, labelled "reaction … m") and the braking distance (solid, labelled "braking … m"). A speed label above the car gives m/s and km/h.
-- **Lower left:** the velocity–time graph (flat during the reaction time, then a straight line of slope −μg to zero), drawn live.
-- **Lower right:** energy bars (kinetic energy now, work done by friction so far) and a rotor thermometer showing the rotors' temperature rise in K.
+- **Header:** the starting speed in m/s and km/h, μ, g and the reaction time.
+- **Upper half:** a side view of a car on a flat road with a distance scale in metres. The car moves right, keeping its speed during the reaction time; a "brakes on" marker shows where braking starts. Under the road, the reaction distance is a dashed blue line labelled "reaction … m" and the braking distance a solid orange line labelled "braking … m". When the car stops, the stage says "Stopped after … m in … s".
+- **Lower left:** the velocity–time graph (flat during the reaction time, then a straight line of slope −μg to zero), drawn live, with the note "area under the graph = distance".
+- **Lower right:** energy bars for the kinetic energy now, the work done by friction so far and their total (dashed), then text lines for the friction force μmg and the rotor temperature rise in K.
 - **Footer:** the assumptions, including "g = 10 m/s²".
 
 The run ends when the car stops (the scenario completes).
@@ -82,18 +83,18 @@ The reaction, braking and stopping readouts are measured from the run and show "
 
 ## Try this (3–5 predict, observe, explain prompts)
 1. Predict: if you double the speed, what happens to the braking distance? Observe with 20 m/s and 40 m/s (use **brakes-only**).
-2. Observe: with a 1 s reaction time, which part of the stopping distance is bigger at 20 m/s, and which at 30 m/s?
+2. Observe: with a 1 s reaction time, which part of the stopping distance is bigger at 10 m/s, and which at 30 m/s? At what speed are the two parts equal?
 3. Predict, then observe: double the car's mass. Does the braking distance change? Does the rotor temperature rise change?
 4. Explain: why does the braking distance not depend on mass in this model, when the friction force does?
 5. Observe: halve the rotor mass. What happens to the temperature rise, and why do performance cars use larger, ventilated rotors?
 
 ## Teacher notes outline
 - Misconceptions to target: stopping distance is proportional to speed (the braking part goes as v²); heavier vehicles take longer to stop on the same road (not when μ and g are fixed); friction "uses up" energy (it converts kinetic energy to internal energy); a locked wheel stops a car fastest (sliding friction is usually lower, and steering is lost).
-- 10-minute lesson flow: (1) **brakes-only**: read 28.6 m and check v²/(2μg); (2) double the speed: four times the distance; (3) the default with reaction time: compare the two parts; (4) energy bars: kinetic energy into heat; (5) rotor temperature from Q = mcΔT, brake fade, and why the front brakes are larger (they do most of the work as weight shifts forward).
+- 10-minute lesson flow: (1) **brakes-only**: read 28.6 m and check v²/(2μg); (2) double the speed: four times the distance; (3) the default with reaction time: compare the two parts (at 10 m/s reacting takes 10 m and braking 7.1 m; at 30 m/s, 30 m and 64.3 m; they are equal at v = 2μg t_r = 14 m/s on a dry road); (4) energy bars: kinetic energy into heat; (5) rotor temperature from Q = mcΔT, brake fade, and why the front brakes are larger (they do most of the work as weight shifts forward).
 - Original HSC-style question idea: a 1800 kg utility travelling at 25 m/s brakes to rest on a road with μ = 0.6 (g = 10 m/s²). Find the braking distance, the braking force, the work done by friction, and the temperature rise of its four rotors (36 kg in total, c = 449 J/(kg·K)) if they absorb all the energy. Worked solution: s = 625/12 = 52.1 m; F = 0.6 × 1800 × 10 = 10 800 N; W = ½ × 1800 × 625 = 562 500 J; ΔT = 562 500/(36 × 449) = 34.8 K.
 
 ## Accessibility notes
-The reaction and braking bands differ by fill pattern (hatched against solid) and carry text labels with their lengths. The phase is named in a text tag ("Reacting", "Braking", "Stopped"). Graph curves are labelled at their ends, and the energy bars are labelled in words. All controls are keyboard operable; Space plays and pauses. Stage label: "A … kilogram car braking from … metres per second with friction coefficient … after a … second reaction time. Reaction distance … metres, braking distance … metres, total … metres. The rotors warm by … kelvin."
+The reaction and braking distances differ by line style (dashed against solid) as well as colour, and carry text labels with their lengths. The "brakes on" marker and the "Stopped after … m in … s" message are text. The graph axes are titled, and the energy bars and the friction and rotor lines are labelled in words. All controls are keyboard operable; Space plays and pauses. Stage label: "A … kilogram car braking from … metres per second with friction coefficient … after a … second reaction time. Reaction distance … metres, braking distance … metres, total … metres. The rotors warm by … kelvin."
 
 ## Engine change requests
 - None for the keys: every param and output used here is in the particle2d engine's `meta` for `braking` on `origin/w1/engine-particle2d` (checked 25 November 2026): params `speed`, `reactionTime`, `mu`, `carMass`, `rotorMass`, `rotorHeat`, `g`, `timeScale`; outputs `v`, `t`, `x`, `deceleration`, `brakingForce`, `reactionDistance`, `brakingDistance`, `stoppingDistance`, `stoppingTime`, `kineticEnergy`, `frictionWork`, `rotorTempRise`.

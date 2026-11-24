@@ -54,7 +54,7 @@ Pure functions in `model.js`, all inputs as above:
 - Output force F₂ = (η/100) × p × A₂ (N). Area ratio A₂/A₁.
 - Output travel s₂ = s₁ × A₁/A₂ (volume conserved: A₁s₁ = A₂s₂; friction does not change it).
 - Work in = F₁s₁/1000 (J); work out = F₂s₂/1000 (J) = (η/100) × work in.
-- Load weight W = mg (N). Input force needed to lift it: F₁,needed = W × A₁/((η/100) × A₂). The load rises if F₂ ≥ W.
+- Load weight W = mg (N). Input force needed to lift it: F₁,needed = W × A₁/((η/100) × A₂). The load rises if F₂ ≥ W × (1 − 10⁻⁹): the comparison is tolerant, because floating-point arithmetic can put F₂ a hair below W when the input force is exactly the force needed (150 N on the car hoist gives F₂ = 14 999.999999999998 N in JavaScript).
 - Aircraft: A_bore = πD²/4, A_annulus = π(D² − d²)/4. Extend force = p × A_bore/1000 (kN); retract force = p × A_annulus/1000 (kN) (ideal, no losses). Fluid to extend once = A_bore × stroke/1000 (mL).
 - Invalid geometry (d₂ ≤ d₁, d ≥ D) gives a calm message on stage and `null` outputs, never NaN.
 
@@ -62,7 +62,7 @@ Pure functions in `model.js`, all inputs as above:
 | Name | Values | Why |
 | --- | --- | --- |
 | default | press, F₁ = 200 N, d₁ = 20 mm, d₂ = 100 mm, s₁ = 100 mm, η = 100%, 400 kg, g = 10 | area ratio 25: 200 N lifts up to 5000 N |
-| car-hoist | press, d₁ = 25 mm, d₂ = 250 mm, 1500 kg, F₁ = 150 N | a workshop hoist: ratio 100 |
+| car-hoist | press, d₁ = 25 mm, d₂ = 250 mm, 1500 kg, F₁ = 160 N | a workshop hoist: ratio 100; 150 N is the least that lifts the car, so 160 N lifts it with a margin |
 | real-press | default with η = 80% | friction: same travel, less force and work out |
 | aircraft | aircraft, p = 20.7 MPa, D = 50 mm, d = 20 mm, stroke 200 mm | a landing-gear-sized actuator |
 | high-pressure | aircraft, p = 34.5 MPa (5000 psi) | newer airliners use higher pressure for smaller, lighter actuators |

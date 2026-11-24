@@ -24,13 +24,13 @@ Syllabus fit: 2011 Engineered products (engineering mechanics: forces, resolutio
 Default view at 1920×1080, light projector theme.
 
 **Concurrent forces scene (default):**
-- **Left half, space diagram:** a point O at the centre of a polar grid (30° spokes, rings every 20 N). Up to four force arrows start at O, each draggable by its head, labelled "F₁ = 50 N, 30°". With **Show components** on, each force casts dashed x and y component arrows with values ("43.3 N", "25.0 N"). The resultant R is a thick double-headed arrow labelled "R = …" and the equilibrant E a thick arrow with an open head labelled "E = …", pointing the opposite way.
-- **Right half, force polygon:** the same forces drawn head to tail in order, to the same scale, with the resultant closing the polygon from the first tail to the last head (labelled R) and the equilibrant from the last head back to the first tail (labelled E). When R is less than 0.5% of the largest force, the polygon is labelled "Closed: in equilibrium".
-- **Below:** a components table (F, θ, Fx = F cos θ, Fy = F sin θ, and the sums ΣFx, ΣFy).
+- **Left half, space diagram:** x and y axes through the point where the forces act, marked "+x" and "+y". Up to four force arrows start there, each in its own colour and labelled "F₁ = 50 N, 30°". With **Show components** on, each force casts thin dashed lines to its x and y components. The resultant R is a dashed dark arrow labelled "R", and the equilibrant E a solid green arrow labelled "E", pointing the opposite way.
+- **Right half, force polygon:** titled "Force polygon (tip to tail)": the same forces drawn tip to tail in order (F₁, F₂, F₃, F₄), to the same scale and in the same colours, each labelled, with the resultant R drawn dashed from the first tail to the last tip. When R = 0 the polygon is labelled "The polygon closes".
+- **Below:** a summary line with ΣFx, ΣFy, R and its direction, and E and its direction (or "ΣFx = 0, ΣFy = 0: R = 0, so the forces are in equilibrium"), and the note "Angles anticlockwise from +x. R dashed; equilibrant E solid green."
 
-**Three-force body scene:** a horizontal boom AB pinned to a wall at A, held by a cable from its end B to a wall point C above A, carrying a hanging load W at distance a from A. The lines of action of W (vertical) and of the cable are extended as dashed lines to meet at point O, and the pin reaction at A is drawn along the line AO. A small force triangle (W, T, R_A) is drawn closed beside it.
+**Three-force body scene:** a horizontal boom AB (drawn as a bar) pinned to a wall at A, held by a cable (a blue line) from its end B to a wall point C above A, carrying a hanging load W at distance a from A. The lines of action of W, the cable and the pin reaction are extended as dashed lines; the lines of W and the cable meet at point O, and the pin reaction R_A at A is drawn as a green arrow along the line AO. Arrows are labelled "W = 6 kN", "T = 10.0 kN" and "R_A = 8.00 kN". A force triangle (W, T, R_A) is drawn closed beside it, and a summary line gives T = Wa√(L² + h²)/(Lh) and the angle of R_A.
 
-Static setup: play, step and reset are hidden.
+Static setup: play, step and reset are hidden. All inputs are made with the controls (force sizes and directions, boom sizes and load position).
 
 ## Parameters
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
@@ -87,7 +87,7 @@ Directions are in (−180°, 180°]. Readouts for the other scene show "—".
 
 ## Try this (3–5 predict, observe, explain prompts)
 1. Predict: two forces of 30 N and 40 N act at right angles. How big is the resultant? Observe with the **right-angle** preset.
-2. Observe: in the default preset, reorder the forces in the polygon (drag F₃ to be first). Does the resultant change?
+2. Observe: in the default preset, swap the values of F₁ and F₃ (size and direction), so the polygon is drawn in a different order. Does the resultant change?
 3. Predict, then observe: in the **balanced** preset, change one force to 120 N. Where does the equilibrant point?
 4. Explain: in the **boom** preset, why must the pin reaction at A point straight along the boom when the load hangs at the end?
 5. Observe: slide the load towards A in the boom scene. How do the cable tension and the direction of the pin reaction change, and where is point O?
@@ -95,14 +95,15 @@ Directions are in (−180°, 180°]. Readouts for the other scene show "—".
 ## Teacher notes outline
 - Misconceptions to target: the resultant's size is the sum of the sizes; the equilibrant is the same as the resultant; the order in a force polygon matters; a pin reaction always acts along the member it supports (only for a two-force member).
 - 10-minute lesson flow: (1) right-angle preset by Pythagoras; (2) the default preset by components, checked against the polygon; (3) balanced: a closed polygon means equilibrium; (4) boom with the load at the end (two-force member), then at mid-span (three-force rule).
-- Original HSC-style question idea: a sign of weight 9 kN hangs from the end of a 3 m horizontal boom pinned to a wall; a cable runs from the boom's end to the wall 4 m above the pin. Find the cable tension and the pin reaction. Worked solution: cable length 5 m; moments about the pin: T × (perpendicular distance 3 × 4/5 = 2.4 m) = 9 × 3, so T = 11.25 kN; pin reaction = 11.25 × 3/5 = 6.75 kN horizontally into the wall.
+- Original HSC-style question idea: a sign of weight 9 kN hangs from the end of a 3 m horizontal boom pinned to a wall; a cable runs from the boom's end to the wall 4 m above the pin. Find the cable tension and the pin reaction. Worked solution: cable length 5 m; moments about the pin: T × (perpendicular distance 3 × 4/5 = 2.4 m) = 9 × 3, so T = 11.25 kN; the wall's pin reaction on the boom is 11.25 × 3/5 = 6.75 kN, horizontal and pointing away from the wall along the boom (0°); by Newton's third law the boom pushes on the wall with 6.75 kN.
 
 ## Accessibility notes
-Each force arrow carries a text label with its name, size and angle; the resultant is a thick double-headed arrow and the equilibrant has an open arrowhead, so they differ by shape as well as colour. Components are dashed. In the boom scene, the cable (tension) is a solid line tagged "T" and the boom (compression) a thick dashed line tagged "C". Forces can be selected with Tab and adjusted with arrow keys (left/right turn by 1°, up/down change size by 1 N). Stage label: "… concurrent forces. Resultant … newtons at … degrees; equilibrant … newtons at … degrees."
+Each force arrow carries a text label with its name, size and angle. The resultant is dashed and labelled "R"; the equilibrant is solid and labelled "E", so they differ by line style and letter as well as colour, and the note under the stage says so in words. Components are thin dashed lines. In the boom scene the cable force is labelled "T = … kN" and the pin reaction "R_A = … kN" in text; the cable is a line and the boom a bar. All inputs are sliders reachable by keyboard (directions in 1° steps, forces in 1 N steps). Stage label: "… concurrent forces. Resultant … newtons at … degrees; equilibrant … newtons at … degrees."
 
 ## Engine change requests
 - None for the keys: every param and output used here is in the statics engine's `meta` for `concurrent` on `origin/w1/engine-statics` (checked 25 November 2026): params `concurrentMode`, `forceCount`, `force1`–`force4`, `angle1`–`angle4`, `boomLength`, `cableHeight`, `boomLoad`, `boomLoadAt`, `showComponents`; outputs `resultant`, `resultantAngle`, `sumFx`, `sumFy`, `equilibrant`, `equilibrantAngle`, `cableTension`, `pinReaction`, `pinAngle`.
-- The force polygon is part of the view this page relies on.
+- The stage description above follows the engine's view (`drawConcurrent` and `drawBoom` in `view.js`): R dashed, E solid green, the polygon with R only, "The polygon closes" when R = 0, and no T or C tags in the boom scene.
+- Optional, for a later engine version: draw E in the force polygon too (from the last tip back to the first tail), and tag the boom "C" and the cable "T" in the boom scene.
 
 ## Acceptance
 Every number below comes from the formula and hand calculation shown here. Components: Fx = F cos θ, Fy = F sin θ; R = √(ΣFx² + ΣFy²); direction = atan2(ΣFy, ΣFx); the equilibrant has the same size and the opposite direction. Boom: moments about the pin A give T × (Lh/√(L² + h²)) = W × a; then the pin reaction balances W and T.
@@ -112,7 +113,7 @@ Every number below comes from the formula and hand calculation shown here. Compo
 - **Check 3, three general forces (default).** 50 N at 30°: (43.301, 25.000). 80 N at 135°: (−56.569, 56.569). 40 N at −110°: (40 cos(−110°), 40 sin(−110°)) = (−13.681, −37.588). ΣFx = 43.301 − 56.569 − 13.681 = **−26.948 N**; ΣFy = 25.000 + 56.569 − 37.588 = **43.981 N**. R = √(26.948² + 43.981²) = √(726.20 + 1934.32) = **51.580 N**. Direction: second quadrant, 180° − atan(43.981/26.948) = 180° − 58.503° = **121.497°**. Equilibrant at 121.497° − 180° = **−58.503°**.
 - **Check 4, boom with the load at the end.** L = 4 m, h = 3 m, cable BC length √(4² + 3²) = 5 m. W = 6 kN at a = 4 m. The cable's perpendicular distance from A is Lh/5 = 2.4 m, so T × 2.4 = 6 × 4 and **T = 10 kN**. Cable components on B: (−10 × 4/5, +10 × 3/5) = (−8, +6) kN. Equilibrium of the boom: A_x = +8 kN, A_y = 6 − 6 = 0, so the pin reaction is **8 kN at 0°** (straight along the boom). Three-force check: W's line x = 4 and the cable line meet at O = (4, 0), on the boom's axis ✓.
 - **Check 5, boom with the load at mid-span.** a = 2 m: T × 2.4 = 6 × 2, so **T = 5 kN**, components (−4, +3) kN. A_x = 4 kN, A_y = 6 − 3 = 3 kN: pin reaction √(4² + 3²) = **5 kN** at atan(3/4) = **36.870°**. Three-force check: W's line x = 2 meets the cable line y = 3(1 − x/4) at O = (2, 1.5), and 1.5/2 = 0.75 = tan 36.870° ✓.
-- **Check 6, question idea.** L = 3 m, h = 4 m, W = 9 kN at a = 3 m: T = 9 × 3 × 5/(3 × 4) = **11.25 kN**; A_x = 11.25 × 3/5 = 6.75 kN, A_y = 9 − 11.25 × 4/5 = 0, so the pin reaction is **6.75 kN at 0°**.
+- **Check 6, question idea.** L = 3 m, h = 4 m, W = 9 kN at a = 3 m: T = 9 × 3 × 5/(3 × 4) = **11.25 kN**; A_x = 11.25 × 3/5 = 6.75 kN, A_y = 9 − 11.25 × 4/5 = 0, so the wall's pin reaction on the boom is **6.75 kN at 0°** (horizontal, pointing away from the wall); the boom pushes on the wall with an equal and opposite force.
 
 ```acceptance
 [

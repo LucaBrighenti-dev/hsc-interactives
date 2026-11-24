@@ -54,7 +54,7 @@ The materials engine has not published its `meta` yet; keys are listed under "En
 | copper | Copper C11000, annealed | 117 | 69 | 221 | 45 | Copper Development Association, alloy C11000, temper OS050 |
 | aluminium-2024 | Aluminium 2024-T3 | 73 | 345 | 483 | 18 | ASM Handbook Vol. 2 (1990), 2024-T3 sheet |
 | hdpe | Polymer: HDPE | 1.25 | 32 (yield point) | 32 | 150 | AZoM "High Density Polyethylene – HDPE" (from PLASCAMS) |
-| alumina | Ceramic: alumina, 99.5% Al₂O₃ (brittle) | 375 | none | 379 (fracture) | none | Accuratus Corporation, "Aluminum Oxide, Al2O3 Ceramic Properties" (flexural strength used as the fracture stress) |
+| alumina | Ceramic: alumina, 99.5% Al₂O₃ (brittle) | 375 | none | 379 (fracture) | 0 (no plastic elongation; its strain at fracture, 0.10%, is all elastic) | Accuratus Corporation, "Aluminum Oxide, Al2O3 Ceramic Properties" (flexural strength used as the fracture stress) |
 
 Teaching values, not specifications. If the engine's data rows change, the acceptance numbers below must be recomputed with the same formulas.
 
@@ -80,7 +80,7 @@ No preset uses g.
 | yieldStrength | Yield (0.2% proof) strength | MPa | 3 |
 | uts | Ultimate tensile strength | MPa | 3 |
 | maxLoad | Maximum load | kN | 4 |
-| elongation | Elongation after fracture | % | 3 |
+| elongation | Elongation after fracture (plastic, permanent; 0 for a brittle material) | % | 3 |
 | toughness | Toughness (area under σ–ε) | MJ/m³ | 3 |
 | fractureStrain | Strain at fracture (elastic + plastic) | % | 3 |
 | load | Load now | kN | 3 |
@@ -90,7 +90,7 @@ Each property readout shows "—" until the test has passed that point. A cerami
 
 ## Assumptions shown on stage
 - Engineering stress and strain (on the original area and length)
-- A smooth model curve through the sourced E, yield, UTS and elongation; its shape between them is schematic
+- A smooth model curve through the sourced E, yield, UTS and elongation; its shape between them is schematic (the polymer's yield drop, neck and draw are drawn schematically)
 - Room temperature, slow (quasi-static) loading; time-lapse playback
 - Toughness from the area under the engineering stress–strain curve
 
@@ -118,7 +118,7 @@ Every number below comes from the formula and hand calculation shown here, using
 
 - **Check 1, structural steel, 10 mm × 50 mm.** A₀ = π × 10²/4 = **78.540 mm²**. E = **200 GPa** (from the slope, 1%). Yield = **300 MPa**. UTS = **440 MPa**, so the maximum load = 440 × 78.540 = 34 558 N = **34.558 kN**. Elongation after fracture = **22%**.
 - **Check 2, thick specimen.** d₀ = 20 mm: A₀ = π × 20²/4 = **314.16 mm²** (four times). Maximum load = 440 × 314.16 = **138.23 kN** (four times 34.558 kN), but E = **200 GPa** and UTS = **440 MPa** are unchanged.
-- **Check 3, alumina (brittle).** Linear to fracture at σ_f = 379 MPa with E = 375 GPa: ε_f = 379/375 000 = 0.001011 = 0.1011%. Toughness = ½ × 379 × 0.001011 = 379²/(2 × 375 000) = **0.19152 MJ/m³** (the §9.1 test: ½σε to 0.5%). Maximum (fracture) load on a 10 mm specimen = 379 × 78.540 = **29.767 kN**.
+- **Check 3, alumina (brittle).** Linear to fracture at σ_f = 379 MPa with E = 375 GPa: ε_f = 379/375 000 = 0.001011 = **0.10107%** (all elastic, so the elongation after fracture is **0**). Toughness = ½ × 379 × 0.001011 = 379²/(2 × 375 000) = **0.19152 MJ/m³** (the §9.1 test: ½σε to 0.5%). Maximum (fracture) load on a 10 mm specimen = 379 × 78.540 = **29.767 kN**.
 - **Check 4, structural steel toughness (a range).** The area under a curve that sits at or above the yield stress from yield to fracture, and never above the UTS, lies between σ_y × ε_f = 300 × 0.22 = 66 MJ/m³ and UTS × (ε_f + σ/E) = 440 × 0.2222 = 97.77 MJ/m³ (the elastic part is negligible). The check accepts **81.88 ± 15.88 MJ/m³**, exactly that range.
 - **Check 5, copper.** E = **117 GPa** (1%); 0.2% proof = **69 MPa**; maximum load = 221 × 78.540 = **17.357 kN**.
 - **Check 6, rectangular specimen.** 2024-T3, 12.5 × 3 mm: A₀ = **37.5 mm²**; maximum load = 483 × 37.5 = 18 112.5 N = **18.1125 kN**.
@@ -131,7 +131,7 @@ Every number below comes from the formula and hand calculation shown here, using
   { "name": "thick specimen: four times the load, same properties", "params": { "material": "structural-steel", "gaugeLength": 50, "section": "round", "diameter": 20 }, "run": "complete",
     "expect": { "area": { "value": 314.1592654, "relTol": 1e-9 }, "maxLoad": { "value": 138.2300768, "relTol": 0.005 }, "modulus": { "value": 200, "relTol": 0.01 }, "uts": { "value": 440, "relTol": 0.005 } } },
   { "name": "alumina: linear to fracture, toughness ½σε", "params": { "material": "alumina", "gaugeLength": 50, "section": "round", "diameter": 10 }, "run": "complete",
-    "expect": { "modulus": { "value": 375, "relTol": 0.01 }, "uts": { "value": 379, "relTol": 0.005 }, "toughness": { "value": 0.1915213333, "relTol": 0.005 }, "maxLoad": { "value": 29.76659039, "relTol": 0.005 } } },
+    "expect": { "modulus": { "value": 375, "relTol": 0.01 }, "uts": { "value": 379, "relTol": 0.005 }, "toughness": { "value": 0.1915213333, "relTol": 0.005 }, "maxLoad": { "value": 29.76659039, "relTol": 0.005 }, "elongation": { "value": 0, "absTol": 1e-6 }, "fractureStrain": { "value": 0.1010666667, "relTol": 0.005 } } },
   { "name": "structural steel toughness lies between σ_y·ε_f and UTS·ε_f", "params": { "material": "structural-steel", "gaugeLength": 50, "section": "round", "diameter": 10 }, "run": "complete",
     "expect": { "toughness": { "value": 81.884, "absTol": 15.884 } } },
   { "name": "copper: modulus, proof stress and maximum load", "params": { "material": "copper", "gaugeLength": 50, "section": "round", "diameter": 10 }, "run": "complete",

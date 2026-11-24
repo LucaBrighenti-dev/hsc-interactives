@@ -21,14 +21,16 @@ Students analyse a pin-jointed plane truss by the method of joints: find the sup
 Syllabus fit: 2011 Civil Structures (truss analysis, method of joints, tension and compression); 2026 Civil and structural engineering, Year 12 (structural analysis of trusses). Pitched at Stage 6: equilibrium of concurrent forces at a joint, reactions by moments, no matrix methods asked of students (the matrix solver is hidden).
 
 ## What the student sees
-Default view at 1920×1080, light projector theme: a four-panel Warren truss (12 m span, 3 m deep) drawn to scale on a faint 0.5 m grid, with a pin support (triangle with hatched ground) at A and a roller support (triangle on circles) at E. A 20 kN load arrow points down at joint C with the label "20 kN".
+Default view at 1920×1080, light projector theme: a four-panel Warren truss (12 m span, 3 m deep) drawn to scale on a faint grid (1 m squares where they are big enough to see), with a pin support at A and a roller support at E drawn as distinct symbols. A load arrow points down at joint C labelled "P = 20 kN".
 
 - **Joints** are labelled A, B, C … (bottom chord left to right, then top chord left to right).
-- **Members** are drawn by state, always with two cues besides colour: **tension** is a solid orange line with a "T" tag and its force ("15.0 kN T"); **compression** is a dashed graphite line, drawn thicker, with a "C" tag ("20.0 kN C"); a **zero-force** member is a thin grey dotted line tagged "0". A legend in the corner shows all three line styles.
-- **Reactions** are drawn as hollow arrows at each support with their components labelled ("10.0 kN").
-- **Joint free-body diagram:** clicking a joint (or the support chosen in **Support to read**) rings it, and an inset shows its free-body diagram: every member force drawn as an arrow along its member (pulling away from the joint for tension, pushing in for compression), any load and reaction, and the two equations ΣFx = 0 and ΣFy = 0 with the numbers substituted.
-- **Status bar** above the truss: "m + r = 15 + 3 = 18 = 2j: statically determinate". For a mechanism or an indeterminate truss it says so in words, and no forces are shown.
-- **Editing:** a tool strip (Select, Joint, Member, Support, Load) lets students add joints on the grid, join them with members, cycle a joint's support (pin → roller → side roller → none) and move joints by dragging. Any edit switches the structure to "Custom" and stores it in the `truss` text, so the URL shares the exact truss.
+- **Members** are drawn by state, always with two cues besides colour: **tension** is a solid blue line with a "T" tag and its force ("15.0 kN T"); **compression** is a dashed orange line with a "C" tag ("20.0 kN C"); a **zero-force** member is a thin solid grey line tagged "0". Tension and compression lines get thicker with the size of the force. A legend shows all three ("T tension", "C compression", "0 zero force") with their line styles.
+- **Reactions** are drawn as green arrows at each support, labelled with their components ("R_Ay = 10.0 kN").
+- **Readout highlights:** the labels of the member chosen in **Member to read** and of the support chosen in **Support to read** are framed, so students can match the readouts to the drawing.
+- **Status line** above the truss: "m = 15   r = 3   j = 9   m + r = 18 = 2j = 18   statically determinate". For a mechanism, an indeterminate truss or unstable geometry it says so in words, a footer line says what to change, and no forces are shown.
+- **Editing:** the **Stage tool** control chooses what a click or drag on the stage does: move joints, add joints, add or remove members, cycle a joint's support (pin → roller → side roller → none), move the load P, add or remove extra loads, or delete. Joints snap to a 0.25 m grid. Any edit switches the structure to "Custom" and writes it into the `truss` text, so the URL shares the exact truss.
+
+Students draw each joint's free-body diagram on paper and check their answers against the member labels and readouts; the stage does not draw free-body diagrams.
 
 Static setup: there is no time evolution, so play, step and reset are hidden.
 
@@ -43,7 +45,7 @@ Static setup: there is no time evolution, so play, step and reset are hidden.
 | load | Load P | kN | 0 | 200 | 1 | 20 | |
 | loadAt | Load P at joint | | | | | C | enum: A–Z |
 | loadAngle | Load angle from vertical | ° | −90 | 90 | 5 | 0 | 0 = straight down; + leans to the right |
-| editTool | Stage tool | | | | | move | enum: `move`, `joint`, `member`, `support`, `load`, `delete` |
+| editTool | Stage tool | | | | | move | enum: `move`, `joint`, `member`, `support`, `load`, `extraLoad`, `delete` |
 | probeMember | Member to read | | | | | AB | string, two joint letters |
 | probeJoint | Support to read | | | | | A | string, one joint letter |
 | showForces | Show forces | | | | | on | boolean |
@@ -87,19 +89,20 @@ The member readout also shows "T" or "C" as text, and the status bar gives m, r 
 2. Observe: move the load from C to B. How do the two reactions change, and does the largest member force go up or down?
 3. Predict, then observe: switch from Pratt to Howe. Which members change from tension to compression?
 4. Explain: open the **mechanism** preset. Why does the solver refuse to give forces? Add one member so that m + r = 2j and solve it.
-5. Observe: in the **sandbox** preset, member AB carries no force. Explain using joint B's free-body diagram.
+5. Observe: in the **sandbox** preset, member AB reads 0 kN. Sketch joint B's free-body diagram on paper and explain why AB must carry no force.
 
 ## Teacher notes outline
 - Misconceptions to target: every member of a loaded truss carries force (zero-force members exist); a member's sign depends on which end you look from (tension pulls on both joints); the top chord of a simply supported truss is in tension; more members always make a truss stronger and still solvable (indeterminate trusses need more than statics).
-- 10-minute lesson flow: (1) equilateral preset: reactions by symmetry, then joint C's free-body diagram; (2) default Warren: joint A, then F, B and G in order, checking each against the inset; (3) compare the top chord force with M/h from the beam analogy (PL/4 ÷ h = 20 kN); (4) Pratt against Howe; (5) mechanism and braced: m + r against 2j.
+- 10-minute lesson flow: (1) equilateral preset: reactions by symmetry, then joint C's free-body diagram drawn on the board; (2) default Warren: solve joint A, then F, B and G in order on paper, checking each member against its label and the **Member to read** readout; (3) compare the top chord force with M/h from the beam analogy (PL/4 ÷ h = 20 kN); (4) Pratt against Howe; (5) mechanism and braced: m + r against 2j.
 - Original HSC-style question idea: a symmetric roof truss with joints A(0, 0), B(8, 0) and C(4, 3) m, pin at A, roller at B, and a 24 kN load at C. Find the reactions and the force in AC and AB, stating tension or compression. Worked solution: R_A = R_B = 12 kN up; at A, F_AC × 3/5 = −12 so F_AC = −20 kN (C); F_AB = −F_AC × 4/5 = +16 kN (T).
 
 ## Accessibility notes
-Tension and compression are never shown by colour alone: tension is a solid line tagged "T", compression a thicker dashed line tagged "C", zero-force a thin dotted line tagged "0", and the legend repeats this. Each force label includes its value and letter. Supports are drawn as distinct shapes (pin: hatched triangle; roller: triangle on circles; side roller: rotated), each with a text tag. All editing tools have keyboard equivalents: arrow keys move the selected joint by one grid step, Tab cycles joints, Enter applies the active tool, and the `truss` text box accepts the whole structure as text. Stage label: "Truss with … joints and … members, pin at …, roller at …, … kilonewton load at joint …. Statically determinate. Largest tension … kilonewtons in member …; largest compression … kilonewtons in member …."
+Tension and compression are never shown by colour alone: tension is a solid blue line tagged "T", compression a dashed orange line tagged "C", zero-force a thin grey line tagged "0", and the legend repeats this. Each force label includes its value and letter. Supports are drawn as distinct symbols (pin, roller, side roller). On-stage editing is by pointer or touch; the keyboard route to the same edits is the **Structure text** box (`truss`), which takes the whole structure as text, together with the other controls (structure, sizes, load, load joint, angle, member and support to read), which are all keyboard operable. Stage label: "Truss with … joints and … members, pin at …, roller at …, … kilonewton load at joint …. Statically determinate. Largest tension … kilonewtons in member …; largest compression … kilonewtons in member …."
 
 ## Engine change requests
-- None for the keys: every param and output used here is in the statics engine's `meta` for `truss` on `origin/w1/engine-statics` (checked 25 November 2026): params `structure`, `span`, `height`, `panels`, `truss`, `load`, `loadAt`, `loadAngle`, `editTool`, `probeMember`, `probeJoint`, `showForces`; outputs `memberForce`, `reactionX`, `reactionY`, `maxTension`, `maxCompression`, `determinacy`. The `probeMember` and `probeJoint` selectors are what let a fixed list of outputs report any member or support.
-- The joint free-body-diagram inset (with substituted equations) is a view feature this page relies on; if the engine does not draw it, the page needs it added before Gate C.
+- None for the keys: every param and output used here is in the statics engine's `meta` for `truss` on `origin/w1/engine-statics` (checked 25 November 2026): params `structure`, `span`, `height`, `panels`, `truss`, `load`, `loadAt`, `loadAngle`, `editTool`, `probeMember`, `probeJoint`, `showForces`; outputs `memberForce`, `reactionX`, `reactionY`, `maxTension`, `maxCompression`, `determinacy`. The `probeMember` and `probeJoint` selectors are what let a fixed list of outputs report any member or support. The stage description above follows the engine's view (`styleOf` and the legend in `view.js`).
+- Optional, for a later engine version (the page does not depend on it): a joint free-body-diagram inset for the joint chosen in **Support to read** (or a clicked joint), showing each member force as an arrow along its member with ΣFx = 0 and ΣFy = 0 substituted.
+- Optional: keyboard editing on the stage (arrow keys move the selected joint by one grid step).
 - Joint lettering for presets must be as in the engine's `presetTruss`: bottom chord left to right, then top chord left to right; bracket A = top wall joint, B = bottom wall joint, C = tip.
 
 ## Acceptance
@@ -130,6 +133,10 @@ Every number below comes from the formula and hand calculation shown here. Metho
 - Joint C: unit vectors C→B = (0, −1) and C→A = (−0.8, −0.6). ΣFx: −0.8 F_CA + 6 = 0, so F_CA = **+7.5 kN (T)**. ΣFy: −F_CB − 0.6 × 7.5 = 0, so F_CB = **−4.5 kN (C)**.
 - Joint B: ΣFx: −F_BA = 0, so F_AB = **0** (a zero-force member). ΣFy: F_BC + R_By = −4.5 + 4.5 = 0 ✓.
 
+**Check 11 and 12, Pratt against Howe (prompt 3).** Both 12 m × 3 m with 4 panels: bottom joints A(0, 0), B(3, 0), C(6, 0), D(9, 0), E(12, 0); top joints F(3, 3), G(6, 3), H(9, 3); pin at A, roller at E; 20 kN down at C, so R_Ay = R_Ey = 10 kN. The Pratt diagonals run F→C and C→H (sloping down towards mid-span); the Howe diagonals run B→G and G→D (sloping up towards mid-span). Each diagonal is at 45° (3 m across, 3 m up), so sin 45° = 0.707107.
+- Pratt, section through FG, FC and BC, left part: ΣFy = 10 − 0.707107 F_FC = 0, so F_FC = **+14.1421 kN (T)**.
+- Howe, section through FG, BG and BC, left part: ΣFy = 10 + 0.707107 F_BG = 0, so F_BG = **−14.1421 kN (C)**. The same diagonals swap from tension to compression when they slope the other way.
+
 ```acceptance
 [
   { "name": "equilateral: inclined member and reaction at A", "params": { "structure": "equilateral", "span": 6, "load": 10, "loadAt": "C", "loadAngle": 0, "probeMember": "AC", "probeJoint": "A" }, "run": "static",
@@ -153,6 +160,10 @@ Every number below comes from the formula and hand calculation shown here. Metho
   { "name": "custom truss: zero-force member and pin reaction", "params": { "structure": "custom", "truss": "j:0,0 4,0 4,3;m:AB BC AC;s:Ap Br;l:C6,0", "load": 0, "probeMember": "AB", "probeJoint": "A" }, "run": "static",
     "expect": { "memberForce": { "value": 0, "absTol": 1e-9 }, "reactionX": { "value": -6, "absTol": 1e-9 }, "reactionY": { "value": -4.5, "absTol": 1e-9 } } },
   { "name": "custom truss: member BC and roller reaction", "params": { "structure": "custom", "truss": "j:0,0 4,0 4,3;m:AB BC AC;s:Ap Br;l:C6,0", "load": 0, "probeMember": "BC", "probeJoint": "B" }, "run": "static",
-    "expect": { "memberForce": { "value": -4.5, "absTol": 1e-9 }, "reactionY": { "value": 4.5, "absTol": 1e-9 } } }
+    "expect": { "memberForce": { "value": -4.5, "absTol": 1e-9 }, "reactionY": { "value": 4.5, "absTol": 1e-9 } } },
+  { "name": "Pratt: diagonal FC in tension", "params": { "structure": "pratt", "span": 12, "height": 3, "panels": 4, "load": 20, "loadAt": "C", "loadAngle": 0, "probeMember": "FC", "probeJoint": "A" }, "run": "static",
+    "expect": { "memberForce": { "value": 14.14213562, "absTol": 1e-8 } } },
+  { "name": "Howe: diagonal BG in compression", "params": { "structure": "howe", "span": 12, "height": 3, "panels": 4, "load": 20, "loadAt": "C", "loadAngle": 0, "probeMember": "BG", "probeJoint": "A" }, "run": "static",
+    "expect": { "memberForce": { "value": -14.14213562, "absTol": 1e-8 } } }
 ]
 ```

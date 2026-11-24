@@ -38,7 +38,7 @@ Static setup: play, step and reset are hidden.
 | seaLevelPressure | Sea-level pressure today | hPa | 950 | 1050 | 0.25 | 1013.25 | |
 | altimeterSetting | Altimeter setting (QNH) | hPa | 950 | 1050 | 0.25 | 1013.25 | |
 
-These keys, ranges and engine defaults match the aero engine's `meta` on `origin/w1/engine-aero` (checked 25 November 2026). Up to 100 m/s the flow stays below Mach 0.3, so the incompressible formula is fair.
+These keys, ranges and engine defaults match the aero engine's `meta` on `origin/w1/engine-aero` (checked 25 November 2026). At sea level 100 m/s is Mach 0.29, but the speed of sound falls with temperature, so 100 m/s passes Mach 0.3 above about 1800 m (Mach 0.34 at 11 000 m). Above Mach 0.3 the incompressible formula reads low, and the engine shows a compressibility warning on stage.
 
 ## Presets
 | Name | Values | Why |
@@ -48,7 +48,7 @@ These keys, ranges and engine defaults match the aero engine's `meta` on `origin
 | cruise | 3000 m, 60 m/s | thinner air: indicated airspeed about 14% low |
 | high-to-low | 1000 m, 60 m/s, sea-level pressure 1003.25, set 1013.25 | flying into lower pressure without resetting: the altimeter over-reads |
 | reset-qnh | high-to-low with the setting 1003.25 | resetting to QNH fixes it |
-| tropopause | 11 000 m, 100 m/s | the top of the troposphere: −56.5 °C |
+| tropopause | 11 000 m, 85 m/s | the top of the troposphere: −56.5 °C; 85 m/s keeps the flow just under Mach 0.3 (Mach 0.288) |
 
 g is not set on this page: the standard atmosphere uses its own fixed g₀ = 9.80665 m/s² (the footer says so).
 
@@ -109,7 +109,7 @@ The engine's ISA density at sea level is 1.22500002 kg/m³ (p₀/(RT₀) with R 
     "expect": { "staticPressure": { "value": 101325, "relTol": 1e-9 }, "pressureDifference": { "value": 980, "relTol": 1e-6 }, "totalPressure": { "value": 102305, "relTol": 1e-9 }, "trueAirspeed": { "value": 40, "relTol": 1e-9 }, "indicatedAirspeed": { "value": 40, "relTol": 1e-6 }, "indicatedAltitude": { "value": 0, "absTol": 1e-6 } } },
   { "name": "3000 m, 60 m/s: density and indicated airspeed", "params": { "altitude": 3000, "airspeed": 60, "seaLevelPressure": 1013.25, "altimeterSetting": 1013.25 }, "run": "static",
     "expect": { "temperature": { "value": 268.65, "absTol": 1e-9 }, "staticPressure": { "value": 70108.526, "relTol": 1e-6 }, "density": { "value": 0.90912186, "relTol": 1e-6 }, "pressureDifference": { "value": 1636.4194, "relTol": 1e-6 }, "indicatedAirspeed": { "value": 51.688539, "relTol": 1e-6 }, "mach": { "value": 0.18260508, "relTol": 1e-6 } } },
-  { "name": "ISA tropopause, 11 000 m", "params": { "altitude": 11000, "airspeed": 100, "seaLevelPressure": 1013.25, "altimeterSetting": 1013.25 }, "run": "static",
+  { "name": "ISA tropopause, 11 000 m", "params": { "altitude": 11000, "airspeed": 85, "seaLevelPressure": 1013.25, "altimeterSetting": 1013.25 }, "run": "static",
     "expect": { "temperature": { "value": 216.65, "absTol": 1e-9 }, "staticPressure": { "value": 22632.04, "relTol": 1e-6 } } },
   { "name": "altimeter set 10 hPa low reads 84 m low", "params": { "altitude": 0, "airspeed": 40, "seaLevelPressure": 1013.25, "altimeterSetting": 1003.25 }, "run": "static",
     "expect": { "indicatedAltitude": { "value": -83.576747, "relTol": 1e-6 } } },

@@ -30,7 +30,7 @@ Default view at 1920×1080, light projector theme. The **View** control switches
 ## Parameters
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| altitude | Satellite altitude (low orbit) | km | 100 | 40000 | 10 | 400 | above the mean Earth radius 6371 km |
+| altitude | Satellite altitude (low orbit) | km | 100 | 40000 | 10 | 400 | above the equatorial Earth radius 6378.137 km |
 | gpsView | View | | | | | orbits | enum: `orbits`, `gps` (GPS fix) |
 | receiverAngle | Receiver position | ° | −180 | 180 | 1 | 30 | angle around the equator at t = 0; the receiver turns with the Earth |
 | clockError | Receiver clock error | ns | −1000 | 1000 | 1 | 0 | 1000 ns = 1 μs |
@@ -43,8 +43,8 @@ These keys, ranges and engine defaults match the particle2d engine's `meta` on `
 | --- | --- | --- |
 | default | orbits view, low orbit 400 km, receiver at 30°, no clock error | about the height of a crewed space station |
 | starlink-height | orbits view, low orbit 550 km | a typical broadband constellation height |
-| gps-fix | GPS view, receiver at 10° (a satellite directly overhead), no clock error | the three range circles meet |
-| clock-error | GPS view, receiver at 10°, clock error 1000 ns | the circles miss: hundreds of metres of error |
+| gps-fix | GPS view, receiver at 30°, no clock error | the three range circles meet |
+| clock-error | GPS view, receiver at 30°, clock error 1000 ns | the circles miss: hundreds of metres of error |
 
 The page uses GM for the Earth, not g; the footer says so.
 
@@ -67,7 +67,8 @@ The page uses GM for the Earth, not g; the footer says so.
 The engine also reports the same quantities in seconds and metres (`leoPeriod`, `gpsPeriod`, `gpsAltitude`, `geoPeriod`, `geoAltitude`) and `t`.
 
 ## Assumptions shown on stage
-- Circular orbits in one plane; Earth a uniform sphere of radius 6371 km, GM = 3.986 × 10¹⁴ m³/s²
+- Circular orbits in one plane; Earth a uniform sphere, GM = 3.986 × 10¹⁴ m³/s²
+- Altitudes measured from the equatorial radius, 6378 km (geostationary satellites sit over the equator)
 - GPS orbit: half a sidereal day; geostationary: one sidereal day (86 164 s)
 - GPS shown in a 2D slice with three satellites (real GPS works in 3D and uses at least four)
 - Signals travel in straight lines at c = 299 792 458 m/s; no atmospheric delay or relativity corrections
@@ -85,20 +86,22 @@ The engine also reports the same quantities in seconds and metres (`leoPeriod`, 
 - Original HSC-style question idea: a navigation satellite orbits at an altitude of 23 222 km. Using GM = 3.986 × 10¹⁴ m³/s² and an Earth radius of 6378 km, find its period and speed. A receiver's clock is 0.5 μs fast: find the range error. Worked solution: r = 29 600 km; T = 2π√((2.96 × 10⁷)³/(3.986 × 10¹⁴)) = 50 681 s ≈ 14.08 h; v = √(GM/r) = 3.670 km/s; range error = 3 × 10⁸ × 0.5 × 10⁻⁶ = 150 m.
 
 ## Accessibility notes
-Orbit bands are labelled in text (LEO, MEO, GEO), not only by colour, and each orbit's trail has its own dash pattern. In the GPS view each used satellite and its range circle share a number label (1, 2, 3) and a dash pattern; the receiver's true position is a cross and its fix a ring, each labelled. All controls are keyboard operable; Space plays and pauses. Stage label: "Three satellites orbit the Earth: a low orbit at … kilometres with period … minutes, a GPS orbit with period … hours, and a geostationary orbit with period … hours. GPS clock error … nanoseconds; position error … metres."
+The three orbits are told apart by text labels, marker shape (circle, square, triangle) and line pattern, not only by colour. In the GPS view each used satellite is numbered and its range circle labelled; the receiver's true position and its fix are marked and labelled in text. All controls are keyboard operable; Space plays and pauses. Stage label: "Three satellites orbit the Earth: a low orbit at … kilometres with period … minutes, a GPS orbit with period … hours, and a geostationary orbit with period … hours. GPS clock error … nanoseconds; position error … metres."
 
 ## Engine change requests
 - None for the keys: every param and output used here is in the particle2d engine's `meta` for `orbit-gps` on `origin/w1/engine-particle2d` (checked 25 November 2026): params `altitude`, `gpsView`, `receiverAngle`, `clockError`, `timeScale`; outputs `leoPeriod`, `leoPeriodMinutes`, `leoSpeed`, `gpsPeriodHours`, `gpsAltitudeKm`, `gpsSpeed`, `geoPeriodHours`, `geoAltitudeKm`, `geoSpeed`, `signalTime`, `rangeError`, `positionError`, `tHours`.
-- Geometry the checks rely on (as in the engine's model): mean Earth radius 6371 km; eight GPS satellites 45° apart on one orbit, the first starting at 10°; the fix uses the three satellites highest above the receiver's horizon.
+- **Earth radius (requested via the orchestrator for particle2d #24):** measure `orbit-gps` altitudes from the equatorial radius, 6378.137 km (WGS 84), not the mean radius 6371 km, so the geostationary altitude reads the standard 35 786 km. The orbit radii and periods do not change; the LEO period and speed (at a given altitude), both altitude readouts and the signal time do. Checks 1, 2, 3 and 4 use the equatorial radius; against an engine still on 6371 km they would read 5544.86 s, 20 190.76 km, 35 793.17 km and 0.0690146 s.
+- Robustness (found while checking): with the receiver directly under a satellite (for example at 10°), rounding can make the elevation sine 1 + 10⁻¹⁶, so `asin` returns NaN and that satellite drops out of the fix (no fix, `positionError` null). Clamp the argument of `asin` to [−1, 1] in `gpsFix`. The checks avoid that geometry.
+- Geometry the checks rely on (as in the engine's model): eight GPS satellites 45° apart on one orbit, the first starting at 10°; the fix uses the three satellites highest above the receiver's horizon.
 - Optional, for a later engine version (not used below): a "solve for clock error" toggle, so the fix uses the three pseudoranges to solve for x, y and the clock error together and the position error returns to zero.
 
 ## Acceptance
-Every number below comes from the formula and hand calculation shown here. Constants: GM = 3.986004418 × 10¹⁴ m³/s²; R = 6371 km; sidereal day 86 164.0905 s; c = 299 792 458 m/s. Formulas: T = 2π√(r³/GM); v = √(GM/r); for a given period, r = (GM T²/4π²)^(1/3); travel time = distance/c; range error = c × Δt.
+Every number below comes from the formula and hand calculation shown here. Constants: GM = 3.986004418 × 10¹⁴ m³/s²; R = 6378.137 km (equatorial); sidereal day 86 164.0905 s; c = 299 792 458 m/s. Formulas: T = 2π√(r³/GM); v = √(GM/r); for a given period, r = (GM T²/4π²)^(1/3); travel time = distance/c; range error = c × Δt.
 
-- **Check 1, low orbit at 400 km.** r = 6371 + 400 = 6771 km. r³/GM = (6.771 × 10⁶)³/3.986004 × 10¹⁴ = 778 790.5 s², √ = 882.491 s, so T = 2π × 882.491 = **5544.86 s = 92.414 min**. v = √(3.986004 × 10¹⁴/6.771 × 10⁶) = √(5.886877 × 10⁷) = **7672.60 m/s**.
-- **Check 2, GPS orbit.** T = 86 164.0905/2 = 43 082.045 s = **11.96723 h**. r = (3.986004 × 10¹⁴ × 43 082.045²/4π²)^(1/3) = 26 561.76 km, so the altitude is 26 561.76 − 6371 = **20 190.76 km**. v = √(GM/r) = **3873.83 m/s**.
-- **Check 3, geostationary orbit.** T = 86 164.0905 s = **23.93447 h**. r = 42 164.17 km, altitude **35 793.17 km**, v = **3074.66 m/s**.
-- **Check 4, GPS timing.** With the receiver at 10° and the first GPS satellite starting at 10°, that satellite is directly overhead at t = 0: its range is 26 561.76 − 6371 = 20 190.76 km, so the travel time is 2.019076 × 10⁷/299 792 458 = **0.0673491 s** (67.35 ms). The other two satellites used are 45° either side, well inside the 76.1° horizon limit (cos⁻¹(6371/26 561.76)). With no clock error the three true ranges meet exactly at the receiver: position error **0 m**.
+- **Check 1, low orbit at 400 km.** r = 6378.137 + 400 = 6778.137 km. r³/GM = (6.778137 × 10⁶)³/3.986004 × 10¹⁴ = 781 255.8 s², √ = 883.887 s, so T = 2π × 883.887 = **5553.62 s = 92.560 min**. v = √(3.986004 × 10¹⁴/6.778137 × 10⁶) = √(5.880678 × 10⁷) = **7668.56 m/s**.
+- **Check 2, GPS orbit.** T = 86 164.0905/2 = 43 082.045 s = **11.96723 h**. r = (3.986004 × 10¹⁴ × 43 082.045²/4π²)^(1/3) = 26 561.76 km, so the altitude is 26 561.76 − 6378.14 = **20 183.63 km** (the "about 20 200 km" usually quoted). v = √(GM/r) = **3873.83 m/s**.
+- **Check 3, geostationary orbit.** T = 86 164.0905 s = **23.93447 h**. r = (GM T²/4π²)^(1/3) = 42 164.17 km, so the altitude above the equator is 42 164.17 − 6378.14 = **35 786.03 km**, the standard figure. (Measured from the mean radius, 6371 km, it would be 35 793 km; the orbit radius is the same either way.) v = **3074.66 m/s**.
+- **Check 4, GPS timing.** The receiver starts at 30° and the eight GPS satellites at 10°, 55°, 100° … (45° apart), so the highest satellite is the one at 10°, 20° of arc away. By the cosine rule its range is √(R² + r² − 2Rr cos 20°) = √(6378.137² + 26 561.762² − 2 × 6378.137 × 26 561.762 × 0.939693) = **20 683.63 km**, so the travel time is 2.068363 × 10⁷/299 792 458 = **0.0689932 s** (68.99 ms). The fix uses that satellite and the next two highest (at 55° and at −35°, 25° and 65° away, inside the 76.1° horizon limit cos⁻¹(6378.14/26 561.76)). With no clock error the three true ranges meet exactly at the receiver: position error **0 m**.
 - **Check 5, clock error.** 1000 ns = 10⁻⁶ s adds c × 10⁻⁶ = **299.792 m** to every range.
 - **Check 6, one sidereal day.** The run ends after one sidereal day: t = **23.93447 h**.
 - **Question idea check.** r = 2.96 × 10⁷ m: T = 50 681 s = 14.078 h; v = 3.6696 km/s; 150 m (with c ≈ 3 × 10⁸; 149.9 m with the exact c).
@@ -106,14 +109,14 @@ Every number below comes from the formula and hand calculation shown here. Const
 ```acceptance
 [
   { "name": "low orbit 400 km: period and speed", "params": { "altitude": 400 }, "run": "static",
-    "expect": { "leoPeriod": { "value": 5544.8551, "relTol": 1e-6 }, "leoPeriodMinutes": { "value": 92.414252, "relTol": 1e-6 }, "leoSpeed": { "value": 7672.5986, "relTol": 1e-6 } } },
+    "expect": { "leoPeriod": { "value": 5553.6243, "relTol": 1e-6 }, "leoPeriodMinutes": { "value": 92.560405, "relTol": 1e-6 }, "leoSpeed": { "value": 7668.5582, "relTol": 1e-6 } } },
   { "name": "GPS orbit: half a sidereal day", "params": { "altitude": 400 }, "run": "static",
-    "expect": { "gpsPeriodHours": { "value": 11.9672348, "relTol": 1e-6 }, "gpsAltitudeKm": { "value": 20190.762, "relTol": 1e-6 }, "gpsSpeed": { "value": 3873.829, "relTol": 1e-6 } } },
+    "expect": { "gpsPeriodHours": { "value": 11.9672348, "relTol": 1e-6 }, "gpsAltitudeKm": { "value": 20183.6254, "relTol": 1e-6 }, "gpsSpeed": { "value": 3873.829, "relTol": 1e-6 } } },
   { "name": "geostationary orbit: one sidereal day", "params": { "altitude": 400 }, "run": "static",
-    "expect": { "geoPeriodHours": { "value": 23.9344696, "relTol": 1e-6 }, "geoAltitudeKm": { "value": 35793.170, "relTol": 1e-6 }, "geoSpeed": { "value": 3074.660, "relTol": 1e-6 } } },
-  { "name": "GPS: overhead satellite travel time and an exact fix", "params": { "altitude": 400, "gpsView": "gps", "receiverAngle": 10, "clockError": 0 }, "run": "static",
-    "expect": { "signalTime": { "value": 0.06734913, "relTol": 1e-6 }, "rangeError": { "value": 0, "absTol": 1e-9 }, "positionError": { "value": 0, "absTol": 1e-3 } } },
-  { "name": "GPS: a 1 μs clock error is about 300 m of range", "params": { "altitude": 400, "gpsView": "gps", "receiverAngle": 10, "clockError": 1000 }, "run": "static",
+    "expect": { "geoPeriodHours": { "value": 23.9344696, "relTol": 1e-6 }, "geoAltitudeKm": { "value": 35786.0326, "relTol": 1e-6 }, "geoSpeed": { "value": 3074.660, "relTol": 1e-6 } } },
+  { "name": "GPS: travel time from the highest satellite and an exact fix", "params": { "altitude": 400, "gpsView": "gps", "receiverAngle": 30, "clockError": 0 }, "run": "static",
+    "expect": { "signalTime": { "value": 0.06899317, "relTol": 1e-6 }, "rangeError": { "value": 0, "absTol": 1e-9 }, "positionError": { "value": 0, "absTol": 1e-3 } } },
+  { "name": "GPS: a 1 μs clock error is about 300 m of range", "params": { "altitude": 400, "gpsView": "gps", "receiverAngle": 30, "clockError": 1000 }, "run": "static",
     "expect": { "rangeError": { "value": 299.792458, "relTol": 1e-9 } } },
   { "name": "the run lasts one sidereal day", "params": { "altitude": 400 }, "run": "complete",
     "expect": { "tHours": { "value": 23.9344696, "relTol": 1e-6 } } }

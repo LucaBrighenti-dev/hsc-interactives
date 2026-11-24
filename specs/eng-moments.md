@@ -23,12 +23,12 @@ Syllabus fit: 2011 Engineered products (engineering mechanics: moments, equilibr
 ## What the student sees
 Default view at 1920×1080, light projector theme:
 
-- **Upper half:** a horizontal beam drawn to scale with a ruler (0.5 m ticks) along it, two supports A and B (A a pin, B a roller), and up to three downward load arrows labelled "10 kN" with their positions. The reactions are hollow upward arrows labelled with their values. The chosen pivot is a large ringed point labelled "pivot".
-- Each force's moment about the pivot is drawn as a curved arrow around the pivot, clockwise or anticlockwise, with its value in kN·m and a lever-arm dimension line from the pivot to the force's line of action ("2.0 m").
-- **Lower half, moment table:** one row per force (name, F, lever arm, sense, moment with the convention's sign), then Σ clockwise, Σ anticlockwise and the net moment. A balance bar shows Σ clockwise against Σ anticlockwise side by side, with the word "Balanced" when they agree.
-- A convention badge reads "Clockwise +" (or "Anticlockwise +").
+- **Title and badge:** "Moments about A · clockwise positive", with a badge at the top right reading "clockwise +" (or "anticlockwise +") beside a small turning arrow.
+- **Upper part, the beam:** a horizontal beam drawn to scale above a ruler marked in metres, two supports A and B, and up to three downward load arrows, each labelled with its size and with a small turning arrow beside the label showing whether it turns clockwise or anticlockwise about the pivot. The reactions are green upward arrows labelled "R_A = 11.7 kN" (or a dashed arrow labelled "R_A = ?" when **Show the reactions** is off). The pivot is a ringed point on the beam, labelled "O" when it is not at a support.
+- **Lower part, the moment table:** one row per force (the loads, then R_A and R_B) with columns for the force, its size (kN), its distance from the pivot (m) and its moment (kN·m, with the convention's sign), plus a turning arrow and the word "clockwise" or "anticlockwise". A force through the pivot shows "0 (through the pivot)".
+- **Under the table:** the equilibrium statement, for example "Σ M = 0 kN·m, so the beam is in equilibrium (Σ clockwise 110 = Σ anticlockwise 110)". With the reactions hidden it asks "Which reaction balances it?" and then shows the working ΣM = 0 → R_B.
 
-Static setup: play, step and reset are hidden. Dragging a load, a support or the pivot updates everything.
+Static setup: play, step and reset are hidden. All inputs are made with the controls (load sizes and positions, support positions, the pivot and the convention); the stage redraws at once.
 
 ## Parameters
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
@@ -91,10 +91,12 @@ With **Show the reactions** off, the reaction and sum readouts show "—" until 
 - Original HSC-style question idea: a 5 m beam rests on supports 1 m from each end and carries 4 kN at the left end, 10 kN at 2.5 m and 6 kN at the right end. Taking clockwise as positive, find both reactions. Worked solution: supports at 1 m and 4 m; ΣM_A = 0: 4 × (−1) + 10 × 1.5 + 6 × 4 − 3R_B = 0, so R_B = 35/3 = 11.67 kN; R_A = 20 − 11.67 = 8.33 kN.
 
 ## Accessibility notes
-Each moment arrow is labelled with its value and "CW" or "ACW" in text, and clockwise arrows are solid while anticlockwise arrows are dashed. Lever arms are dimension lines with values. The balance bar labels both sides in words. Loads, supports and the pivot can be selected with Tab and moved with arrow keys (0.1 m per press). Stage label: "Beam … metres long on supports at … and … metres with … loads. Reactions … and … kilonewtons. About the pivot at … metres, clockwise moments total … and anticlockwise … kilonewton metres."
+Every force's turning sense is written in words ("clockwise" or "anticlockwise") in the moment table as well as shown by a small turning arrow, and every moment and distance is a number in the table, so nothing depends on colour or arrow direction alone. The equilibrium statement is text. All inputs are sliders and selects reachable by keyboard (positions move 0.1 m per step). Stage label: "Beam … metres long on supports at … and … metres with … loads. Reactions … and … kilonewtons. About the pivot at … metres, clockwise moments total … and anticlockwise … kilonewton metres."
 
 ## Engine change requests
 - None for the keys: every param and output used here is in the statics engine's `meta` for `moments` on `origin/w1/engine-statics` (checked 25 November 2026): params `length`, `supportA`, `supportB`, `load1`, `load1At`, `load2`, `load2At`, `load3`, `load3At`, `momentSign`, `momentsAbout`, `pivotX`, `showReactions`; outputs `reactionA`, `reactionB`, `sumCw`, `sumAcw`, `loadMoment`, `netMoment`.
+- The stage description above follows the engine's view (`drawMoments` in `view.js`): turning arrows beside the load labels and in the table, not around the pivot, and no balance bar or lever-arm dimension lines.
+- Optional, for a later engine version: lever-arm dimension lines from the pivot to each force, and a bar comparing Σ clockwise with Σ anticlockwise.
 
 ## Acceptance
 Every number below comes from the formula and hand calculation shown here. Moments about A (clockwise +): a downward load P at x gives +P(x − x_A); the reaction R_B gives −R_B(x_B − x_A). Setting the sum to zero gives R_B; then R_A = ΣP − R_B. About any pivot, a downward load to the right of the pivot turns clockwise and to the left anticlockwise; an upward reaction does the opposite.

@@ -23,13 +23,13 @@ Syllabus fit: 2011 Civil Structures (bending, shear force and bending moment dia
 ## What the student sees
 Default view at 1920×1080, light projector theme, three panels stacked and sharing one x-axis (metres):
 
-1. **Beam:** a 6 m beam drawn to scale with a pin at A (left) and a roller at B (right), a 20 kN point-load arrow at 3 m, and any UDL drawn as a row of small arrows with its intensity ("10 kN/m"). Reactions are hollow arrows labelled with their values. A cantilever is drawn built into a hatched wall at the left, with the wall's moment shown as a curved arrow labelled with its value and sense. The section position x is a vertical dashed line through all three panels.
-2. **Shear force diagram (SFD):** V(x) in kN, filled above and below the axis with hatching (positive hatched one way, negative the other), with values at every jump and end.
-3. **Bending moment diagram (BMD):** M(x) in kN·m, sagging positive, drawn above the axis and labelled "sagging +", with the largest value marked by a dot and its value and position ("62.5 kN·m at 3.00 m").
+1. **Beam:** a 6 m beam drawn to scale with a pin at A (left) and a roller at B (right), a 20 kN point-load arrow at 3 m labelled with its size, and any UDL drawn as a shaded band of small arrows labelled "w = 10 kN/m". Reactions are green arrows labelled "R_A = 10.0 kN". A cantilever is drawn built into a wall at the left; the wall's moment is a curved green arrow showing its turning sense, labelled with its size ("M_A = 30.0 kN·m"). The section position x is a vertical dashed line through all three panels, labelled "x = 2.00 m".
+2. **Shear force diagram (SFD):** V(x) in kN, a blue line with the area to the axis filled in a light tint, axis ticks in kN, and a large "+" or "−" sign marking the largest positive and negative regions.
+3. **Bending moment diagram (BMD):** M(x) in kN·m, an orange line with a light fill, titled "M (kN·m), sagging +", the same "+" and "−" signs, and the largest value marked by a square with its value and position ("M_max = 62.5 kN·m at x = 3.00 m").
 
-A small inset at the right shows the rectangular cross-section b × d to scale with the neutral axis, and the stress distribution beside it (compression at the top for sagging, tension at the bottom, each labelled with "C" and "T").
+Where the section line crosses each diagram, V and M are labelled. A panel at the right shows the rectangular cross-section b × d at that section to scale, with the neutral axis dashed and the bending-stress distribution beside it, its top and bottom values labelled in MPa with "T" or "C".
 
-Static setup: play, step and reset are hidden. Dragging a load arrow along the beam or the section line updates everything at once.
+Static setup: play, step and reset are hidden. Every change is made with the controls (load sizes and positions, UDL, section, section position); the stage redraws at once.
 
 ## Parameters
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
@@ -83,6 +83,7 @@ For a simply supported beam `fixingMoment` shows "—"; for a cantilever `reacti
 - Loads act downward; supports are ideal (pin, roller or fully fixed)
 - Linear elastic, rectangular section: σ = My/I with I = bd³/12
 - Sagging bending moment positive; shear force positive when the left part is pushed up
+- Wall moment M_A (cantilever): reported as a size, positive when it turns the beam anticlockwise; its sense is drawn as a curved arrow
 
 ## Try this (3–5 predict, observe, explain prompts)
 1. Predict: for a central point load, where is the bending moment largest? Then move the load towards A. Where does the maximum go, and what happens to its size?
@@ -97,11 +98,12 @@ For a simply supported beam `fixingMoment` shows "—"; for a cantilever `reacti
 - Original HSC-style question idea: a 5 m simply supported timber beam (b = 75 mm, d = 250 mm) carries a 12 kN point load 2 m from A. Find both reactions, the maximum bending moment and the maximum bending stress. Worked solution: R_B = 12 × 2/5 = 4.8 kN, R_A = 7.2 kN; M_max = 7.2 × 2 = 14.4 kN·m; I = 75 × 250³/12 = 97.66 × 10⁶ mm⁴; σ = 14.4 × 10⁶ × 125/(97.66 × 10⁶) = 18.4 MPa.
 
 ## Accessibility notes
-The SFD and BMD use hatching that differs for positive and negative regions, plus "+" and "−" labels, so sign is never shown by colour alone. Every jump and maximum carries a text value. The stress inset labels the compressive and tensile faces "C" and "T". Load arrows and the section line can be moved with arrow keys after Tab-selecting them (0.1 m per press). Stage label: "Simply supported beam, span … metres, with … loads. Reactions … and … kilonewtons. Largest bending moment … kilonewton metres at … metres; largest bending stress … megapascals."
+Sign on the SFD and BMD is shown by position above or below the axis and by large "+" and "−" signs, not by colour alone; the two diagrams also differ in colour and title. The maximum moment and the values at the section carry text labels. The stress panel labels the tensile and compressive faces "T" and "C". All inputs are sliders and selects reachable by keyboard (load positions and the section move 0.1 m per step). Stage label: "Simply supported beam, span … metres, with … loads. Reactions … and … kilonewtons. Largest bending moment … kilonewton metres at … metres; largest bending stress … megapascals."
 
 ## Engine change requests
 - None for the keys: every param and output used here is in the statics engine's `meta` for `beam` on `origin/w1/engine-statics` (checked 25 November 2026): params `beamType`, `length`, `p1`, `p1At`, `p2`, `p2At`, `udl`, `udlExtent`, `udlFrom`, `udlTo`, `sectionB`, `sectionD`, `probeX`; outputs `reactionA`, `reactionB`, `fixingMoment`, `maxShear`, `maxMoment`, `maxMomentAt`, `secondMoment`, `maxStress`, `shearAtX`, `momentAtX`, `stressAtX`.
-- `fixingMoment` is the wall's moment on the beam, positive when anticlockwise (the engine model's `MA`); the stage labels its sense in words. `maxMoment` is signed (sagging +), so a cantilever with downward loads gives a negative value.
+- `fixingMoment` is the wall's moment on the beam, positive when anticlockwise (the engine model's `MA`), which is why the assumptions shown on stage say so: the site's default convention (§17) is clockwise positive. The stage shows its sense with a curved arrow. `maxMoment` is signed (sagging +), so a cantilever with downward loads gives a negative value.
+- Optional, for a later engine version: report `fixingMoment` clockwise-positive to match §17 (check 4 would then expect −30 kN·m), and hatch the positive and negative regions of the SFD and BMD as an extra cue.
 - Optional, for a later engine version (not used below): a yield-stress param and a factor-of-safety output, so the design check in the lesson flow appears as a readout.
 
 ## Acceptance
