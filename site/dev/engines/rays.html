@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rays engine · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!--
+    Engine demo page for `rays` (guide §9.1). The setup comes from the hash (#ray-box); the scene is a
+    control, so every scene (two media, rectangular block, semicircular block, optical fibre) runs here.
+    Presets show the Physics ray box and the Engineering fibre listing (preset eng-fibre).
+  -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+
+    const SETUPS = ['ray-box'];
+    const setup = SETUPS.includes(location.hash.slice(1)) ? location.hash.slice(1) : SETUPS[0];
+    addEventListener('hashchange', () => location.reload());
+
+    mountInteractive({
+      id: 'dev-rays',
+      title: `rays engine: ${setup}`,
+      engine: () => import('/assets/engines/rays/index.js'),
+      setup,
+      presets: {
+        default: {},
+        'critical-angle': { scene: 'semi', angle: 41.8, nBlock: 1.5, nOuter: 1 },
+        tir: { scene: 'semi', angle: 50, nBlock: 1.5, nOuter: 1 },
+        'two-media': { scene: 'boundary', angle: 30, n1: 1, n2: 1.5 },
+        'eng-fibre': { scene: 'fibre', angle: 20, nCore: 1.5, nClad: 1.4, nOuter: 1, showProtractor: false, showPartial: false },
+      },
+      presetLabels: {
+        default: 'Rectangular block',
+        'critical-angle': 'Semicircular block at the critical angle',
+        tir: 'Total internal reflection',
+        'two-media': 'Two media',
+        'eng-fibre': 'Optical fibre',
+      },
+      controls: ['scene', 'angle', 'n1', 'n2', 'nBlock', 'nCore', 'nClad', 'nOuter', 'showProtractor', 'showCritical', 'showPartial'],
+      readouts: ['incidence', 'refraction', 'critical', 'reflectance', 'tirCount', 'wallAngle', 'acceptance', 'guided'],
+      assumptions: [
+        'Geometric optics in 2D, one wavelength (no dispersion)',
+        'Angles measured from the normal',
+        'Partial reflection from the Fresnel equations, unpolarised light',
+        'Fibre drawn much wider and shorter than a real one; its coating absorbs light that leaves the core',
+      ],
+      prompts: [],
+    });
+  </script>
+</body>
+</html>
