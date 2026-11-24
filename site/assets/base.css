@@ -184,6 +184,7 @@ textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-
 }
 .select option { background: var(--c-surface); color: var(--c-text); }
 .msg { font-size: var(--t-14); }
+.control-help { margin-top: var(--sp-1); font-size: 13px; line-height: 1.4; color: var(--c-muted); }
 .msg--error { color: #FF8A8D; }
 .msg--ok { color: var(--c-ok); }
 

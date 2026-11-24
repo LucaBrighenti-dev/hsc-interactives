@@ -19,7 +19,7 @@ import { parseQuery, resolveParams, paramsFor, isVisible, createUrlSync, toQuery
 import { downloadCSV } from './csv.js';
 import { ensureFonts } from './engine-kit.js';
 import { renderMarkdown, stripFrontmatter } from './markdown.js';
-import { formatInteger } from './format.js';
+import { formatInteger, siPrefix, NNBSP } from './format.js';
 import { el, clear, icon, button, slider, toggle, segmented, select, textField, chip, readout, panel, drawer, modal, toast, qrModal } from './ui/index.js';
 
 /** Course-level NESA links for the tag strip when a tag has no `url` of its own. Links only; never copy syllabus text. */
@@ -281,7 +281,7 @@ export async function mountInteractive(config) {
     const spec = applicable.get(key);
     let control;
     if (spec.type === 'number') {
-      control = slider({ label: spec.label, unit: spec.unit, min: spec.min, max: spec.max, step: spec.step, integer: spec.integer, value: params[key], help: spec.help, onInput: (v) => setParam(key, v) });
+      control = slider({ label: spec.label, unit: spec.unit, min: spec.min, max: spec.max, step: spec.step, integer: spec.integer, value: params[key], onInput: (v) => setParam(key, v) });
     } else if (spec.type === 'boolean') {
       control = toggle({ label: spec.label, checked: params[key], onChange: (v) => setParam(key, v) });
     } else if (spec.type === 'enum') {
@@ -305,6 +305,12 @@ export async function mountInteractive(config) {
       control.setValue = ((orig) => (v) => orig((v || []).join(', ')))(control.setValue);
     }
     const wrap = el('div', { data: { key } }, control);
+    if (spec.help) {
+      const helpId = `help-${key}`;
+      wrap.append(el('p', { id: helpId, class: 'control-help', text: spec.help }));
+      const target = control.matches?.('[role="switch"]') ? control : control.querySelector('input[type="number"], select, [role="radiogroup"], input');
+      target?.setAttribute('aria-describedby', helpId);
+    }
     controls.set(key, control);
     controlWraps.set(key, wrap);
     controlsPanel.body.append(wrap);
@@ -329,7 +335,14 @@ export async function mountInteractive(config) {
   const readouts = new Map();
   for (const key of readoutKeys) {
     const out = meta.outputs[key];
-    const r = readout({ label: out.label, unit: out.unit, sigfigs: out.sigfigs ?? 3, format: out.integer ? formatInteger : undefined });
+    const sigfigs = out.sigfigs ?? 3;
+    const prefixed = (v) => {
+      // "4.80 mm" from 0.0048 m: split the number from the prefixed unit so the unit span updates too.
+      const s = siPrefix(v, out.unit, { sigfigs });
+      const i = s.lastIndexOf(NNBSP);
+      return i < 0 ? { number: s, unit: '' } : { number: s.slice(0, i), unit: s.slice(i + 1) };
+    };
+    const r = readout({ label: out.label, unit: out.unit, sigfigs, format: out.integer ? formatInteger : out.siPrefix ? prefixed : undefined });
     readouts.set(key, r);
     readoutsEl.append(r);
   }
@@ -377,6 +390,10 @@ export async function mountInteractive(config) {
   // Engine events.
   const onEvent = (type, payload) => {
     if (type === 'outputs') updateReadouts(payload);
+    else if (type === 'params') {
+      // The engine changed params itself (e.g. a dragged point): resync controls, URL and share link.
+      if (engine) afterParamsChange({ fromEngine: true });
+    }
     else if (type === 'complete') syncPlayButton();
     else if (type === 'error') {
       errors.push(payload);
