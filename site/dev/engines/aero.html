@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>aero engine demo · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!--
+    Engine demo page (guide §9.1): mounts the aero engine through the shell, one setup at a time.
+    Pick the setup with the hash: #flight-forces or #pitot-static. Not linked from the hub.
+  -->
+  <nav aria-label="Engine setups" class="mono" style="display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 24px; border-top: 1px solid var(--c-line); font-size: 14px;">
+    <span style="color: var(--c-muted);">aero setups:</span>
+    <a href="#flight-forces">#flight-forces</a>
+    <a href="#pitot-static">#pitot-static</a>
+  </nav>
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    const { meta } = await import('/assets/engines/aero/index.js');
+    const requested = location.hash.slice(1);
+    const setup = meta.setups.includes(requested) ? requested : meta.setups[0];
+    addEventListener('hashchange', () => location.reload());
+
+    const pages = {
+      'flight-forces': {
+        presets: {
+          default: { alphaMode: 'trim', airspeed: 40, gamma: 0, mass: 1000, wingArea: 16, altitude: 0, g: 10 },
+          climb: { alphaMode: 'trim', airspeed: 40, gamma: 5, mass: 1000, wingArea: 16, altitude: 0, g: 10 },
+          descent: { alphaMode: 'trim', airspeed: 45, gamma: -4, mass: 1000, wingArea: 16, altitude: 0, g: 10 },
+          'slow-flight': { alphaMode: 'trim', airspeed: 25, gamma: 0, mass: 1000, wingArea: 16, altitude: 0, g: 10 },
+          'stall-by-hand': { alphaMode: 'manual', alpha: 18, airspeed: 40, gamma: 0, mass: 1000, wingArea: 16, altitude: 0, g: 10 },
+        },
+        presetLabels: {
+          default: 'Level flight at 40 m/s',
+          climb: 'Climb at 5°',
+          descent: 'Descent at 4°',
+          'slow-flight': 'Slow flight near the stall',
+          'stall-by-hand': 'Stall: α set to 18°',
+        },
+        controls: ['alphaMode', 'alpha', 'airspeed', 'gamma', 'mass', 'wingArea', 'altitude', 'cl0', 'alphaStall', 'cd0', 'k', 'g', 'graph', 'showComponents', 'zoomThrustDrag'],
+        readouts: ['lift', 'drag', 'weight', 'thrust', 'alpha', 'cl', 'cd', 'liftToDrag', 'stallSpeed', 'maxLiftToDrag'],
+        assumptions: [
+          'Simplified lift model: CL = CL0 + 2πα up to the stall',
+          'Steady flight, thrust along the flight path',
+          'ISA air',
+          'g as set (10 m/s² for Engineering Studies)',
+        ],
+      },
+      'pitot-static': {
+        presets: {
+          default: { airspeed: 50, altitude: 1500, seaLevelPressure: 1013.25, altimeterSetting: 1013.25 },
+          'wrong-qnh': { airspeed: 50, altitude: 1500, seaLevelPressure: 1003.25, altimeterSetting: 1013.25 },
+        },
+        presetLabels: { default: 'Standard day', 'wrong-qnh': 'Flying into low pressure' },
+        controls: ['airspeed', 'altitude', 'seaLevelPressure', 'altimeterSetting'],
+        readouts: ['staticPressure', 'totalPressure', 'pressureDifference', 'density', 'trueAirspeed', 'indicatedAirspeed', 'indicatedAltitude'],
+        assumptions: ['Incompressible flow (Bernoulli)', 'ISA temperature profile', 'No instrument or position errors'],
+      },
+    };
+    const page = pages[setup];
+
+    mountInteractive({
+      id: 'dev-aero',
+      title: `aero · ${setup}`,
+      engine: () => import('/assets/engines/aero/index.js'),
+      setup,
+      presets: page.presets,
+      presetLabels: page.presetLabels,
+      controls: page.controls,
+      readouts: page.readouts,
+      assumptions: page.assumptions,
+      prompts: [],
+    });
+  </script>
+</body>
+</html>
