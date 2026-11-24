@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en-AU" data-theme="projector">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Argand explorer · HSC Interactives Hub</title>
+  <link rel="stylesheet" href="/assets/base.css">
+</head>
+<body>
+  <!-- Spec: specs/me2-argand-explorer.md (argand / operations). -->
+  <script type="module">
+    import { mountInteractive } from '/assets/shell.js';
+    mountInteractive({
+      id: 'me2-argand-explorer',
+      engine: () => import('/assets/engines/argand/index.js'),
+      setup: 'operations',
+      presets: {
+        // Every scenario starts from default; each one below changes only what it lists.
+        default: {
+          operation: 'mul',
+          z1Form: 'cartesian', z1Re: 2, z1Im: 1,
+          z2Form: 'cartesian', z2Re: 1, z2Im: 1,
+          similarTriangles: true, showArcs: true, angleUnit: 'rad', viewRange: 4,
+        },
+        'rotate-by-i': { operation: 'mul', z1Re: 2, z1Im: 1, z2Re: 0, z2Im: 1 },
+        divide: { operation: 'div', z1Re: 1, z1Im: 3, z2Re: 1, z2Im: 1 },
+        conjugate: { operation: 'conj', z1Re: 2, z1Im: 1 },
+        'power-spiral': { operation: 'power', z1Re: 1, z1Im: 0.5, powerN: 13, viewRange: 5 },
+        'de-moivre': { operation: 'power', z1Re: -1, z1Im: 1, powerN: 5, viewRange: 5 },
+        'roots-of-unity': { operation: 'roots', rootsOf: 'unity', rootN: 7, viewRange: 1.5 }, // zoomed in so the unit circle fills the plane
+        'roots-of-minus-four': { operation: 'roots', rootsOf: 'w', z1Re: -4, z1Im: 0, rootN: 4 },
+      },
+      presetLabels: {
+        default: 'Multiply: (2 + i)(1 + i)',
+        'rotate-by-i': 'Rotate by i',
+        divide: 'Divide: (1 + 3i) ÷ (1 + i)',
+        conjugate: 'Conjugate of 2 + i',
+        'power-spiral': 'Power spiral',
+        'de-moivre': 'de Moivre: (−1 + i)⁵',
+        'roots-of-unity': 'Roots of unity',
+        'roots-of-minus-four': 'Roots of z⁴ = −4',
+      },
+      controls: [
+        'operation',
+        'z1Form', 'z1Re', 'z1Im', 'z1Mod', 'z1Arg',
+        'z2Form', 'z2Re', 'z2Im', 'z2Mod', 'z2Arg',
+        'powerN', 'rootN', 'rootsOf',
+        'similarTriangles', 'showArcs', 'angleUnit', 'viewRange',
+      ],
+      readouts: ['resRe', 'resIm', 'resMod', 'resArg', 'z1Mod', 'z1Arg', 'z2Mod', 'z2Arg'],
+      assumptions: [
+        'Arguments are principal values, −π < arg z ≤ π',
+        'Angles measured anticlockwise from the positive real axis',
+        'Equal scales on both axes; dragged points snap to 0.1 (whole numbers when close)',
+        'zⁿ is found by repeated multiplication, not by assuming de Moivre’s theorem',
+      ],
+      prompts: [
+        { kind: 'predict', text: 'z₁ = 2 + i and z₂ = 1 + i. Before looking, estimate |z₁z₂| and arg(z₁z₂) from |z₁|, |z₂|, θ₁ and θ₂. Then check the readouts.' },
+        { kind: 'observe', text: 'Choose “Rotate by i” and drag z₁ anywhere. What does multiplying by i always do? Now set z₂ = 2i. What changes?' },
+        { kind: 'predict', text: 'In “Power spiral”, drag z₁ onto the unit circle (try 0.6 + 0.8i). What will the spiral turn into, and why?' },
+        { kind: 'observe', text: 'In “Roots of unity”, step n from 3 to 12. Where is one root always found, and how does the polygon change?' },
+        { kind: 'explain', text: 'z⁴ = −4 has four roots. Use the modulus and argument of −4 to explain why the roots are 1 + i, −1 + i, −1 − i and 1 − i, and why they form a square.' },
+      ],
+      notes: '/content/notes/me2-argand-explorer.md',
+    });
+  </script>
+</body>
+</html>
