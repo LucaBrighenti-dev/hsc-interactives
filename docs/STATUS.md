@@ -49,12 +49,12 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 ### Engines (`engine-builder`)
 
-- [ ] W1-E-particle2d | building (batch 1)
+- [ ] W1-E-particle2d | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/24 (all 12 setups) | review: in progress
 - [ ] W1-E-statics | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/18 | review: in progress
 - [x] W1-E-statsim | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/6 | review: PASS (all §9.1 numbers reproduced over 30 seeds) | merged
-- [ ] W1-E-argand | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/13 | review: in progress
-- [ ] W1-E-aero | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/10 | review: in progress
-- [ ] W1-E-wave | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/12 | review: in progress
+- [ ] W1-E-argand | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/13 | review: FAIL (large-number display, form switch, zero polynomial) → builder fixing
+- [ ] W1-E-aero | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/10 | review: FAIL (5 stage fixes) → builder fixing
+- [ ] W1-E-wave | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/12 | review: FAIL (grating spacing readout, legend, FM/PM spectrum folding) → builder fixing
 - [ ] W1-E-fnplot | parser PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/5 | review: FAIL (4 fixes; builder fixing) | part 2 building (owns the shared parser; field2d depends on it)
 - [ ] W1-E-field2d | queued: starts when the fnplot parser merges
 - [ ] W1-E-space3d | building
@@ -69,14 +69,14 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 ### Syllabus (`syllabus-tagger`)
 
-- [ ] W1-SYL Verify tags + outcome codes for every catalog entry | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/14 (125/126 tags verified; 36 gaps in syllabus-report.md) | review: in progress
+- [x] W1-SYL Verify tags + outcome codes for every catalog entry | PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/14 | review: FAIL (report only) → fixed, re-checked | merged (125/126 tags verified; 37 gaps in docs/gates/syllabus-report.md)
 
 ### Specs (`spec-writer`, P0 first)
 
-- [ ] W1-SPEC-me1 | P0+P1 PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/16 (review in progress) | P2: writing
-- [ ] W1-SPEC-me2 | P0+P1 PR: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/7 (review in progress) | P2: writing
+- [ ] W1-SPEC-me1 | P0+P1: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/16 (review in progress) | P2: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/22
+- [ ] W1-SPEC-me2 | P0+P1: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/7 (review FAIL: stiff drag ranges, loci −π rule → writer fixing) | P2: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/21
 - [ ] W1-SPEC-phy | A: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/17 (P0 + first P1; review in progress) | B: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/9 (P1 custom) + https://github.com/LucaBrighenti-dev/hsc-interactives/pull/20 (P2, stacked on #9); reviews queued | A part 2 writing
-- [ ] W1-SPEC-eng | writing
+- [ ] W1-SPEC-eng | P0+P1: https://github.com/LucaBrighenti-dev/hsc-interactives/pull/25 (review in progress) | P2: writing
 
 ## Wave 2: interactives (`interactive-builder`; start when the subject's Gate B is approved and the engine has merged)
 
@@ -177,3 +177,4 @@ Tracked on each PR (reviewer comment `VERDICT: PASS/FAIL`) and in `docs/gates/ga
 - 2026-11-25: Plan for speed without lowering review: spec writers run in parallel with the engines (page builders reconcile param keys with the merged engine meta); Wave 2 agents build the 3–5 pages that share an engine (master plan: 3–5 interactives each); fnplot lands its shared parser first so field2d can start early. Lead PR #4 merged (contract test allows a parser-only engine folder; `.claude/worktrees/` is git-ignored).
 - 2026-11-25 (overnight): lead PRs #8 (integer outputs, axis placement), #11 (readout labels keep their case, so α stays α), #15 (engine 'params' event, SI-prefixed readouts, control help) merged; #19 (stage role=group) merging. Reviews running for engines statsim, aero, wave, argand and statics, the syllabus PR #14, and specs me2 #7 and me1 #16. Parser #5 FAILED review (invalid KaTeX labels, a misleading label for 2(−3x), nested |..| bars, prototype lookups); its builder is fixing it before part 2. Subagent cap of 20 reached; W1-AUTH and field2d queued.
 - 2026-11-25 (overnight): statsim engine merged (#6, reviewer PASS). Lead #19 (stage role=group) merged. Physics B specs done (#9 P1 custom, #20 P2). W1-AUTH started; Physics A specs under review.
+- 2026-11-25 (overnight): syllabus tags merged (#14). Lead PRs merged: #23 (spec keys checked only once a page is in review), #26 (e2e smoke test of every engine demo page and setup); #27 (drawAxes titles outside the plot) merging. Reviews found real defects in aero, wave, argand, the parser and me2 specs; all are being fixed by their builders and will be re-reviewed. No engine merges without an independent PASS.
