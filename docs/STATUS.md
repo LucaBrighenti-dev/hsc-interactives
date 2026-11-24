@@ -55,7 +55,7 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 - [ ] W1-E-argand | building (batch 1) | PR: | review:
 - [ ] W1-E-aero | building (batch 1) | PR: | review:
 - [ ] W1-E-wave | building (batch 1) | PR: | review:
-- [ ] W1-E-fnplot | PR: | review: (owns the shared parser; field2d depends on it)
+- [ ] W1-E-fnplot | building (parser PR first) | PR: | review: (owns the shared parser; field2d depends on it)
 - [ ] W1-E-field2d | PR: | review:
 - [ ] W1-E-space3d | PR: | review:
 - [ ] W1-E-rays | PR: | review:
@@ -69,14 +69,14 @@ Single source of progress. Only the orchestrator (or the Wave 0 lead) edits this
 
 ### Syllabus (`syllabus-tagger`)
 
-- [ ] W1-SYL Verify tags + outcome codes for every catalog entry | PR: | review:
+- [ ] W1-SYL Verify tags + outcome codes for every catalog entry | building | PR: | review:
 
 ### Specs (`spec-writer`, P0 first)
 
-- [ ] W1-SPEC-me1 | PR:
-- [ ] W1-SPEC-me2 | PR:
-- [ ] W1-SPEC-phy | PR:
-- [ ] W1-SPEC-eng | PR:
+- [ ] W1-SPEC-me1 | building (P0+P1 PR, then P2 PR) | PR:
+- [ ] W1-SPEC-me2 | building (P0+P1 PR, then P2 PR) | PR:
+- [ ] W1-SPEC-phy | building in two parts: A (shared-engine pages), B (custom + P2) | PR:
+- [ ] W1-SPEC-eng | building (P0+P1 PR, then P2 PR) | PR:
 
 ## Wave 2: interactives (`interactive-builder`; start when the subject's Gate B is approved and the engine has merged)
 
