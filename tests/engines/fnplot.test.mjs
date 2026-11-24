@@ -573,6 +573,15 @@ test('toTex: a leading minus sits in front of the fraction; .5 prints as 0.5', (
   for (const src of ['(-x)/2', '2((-x)/3)', '((-x)/2)^2', '-((-x)/2)']) assert.doesNotThrow(() => renders(texOf(src)), src);
 });
 
+test('toTex keeps the case the teacher typed; evaluation uses the declared name', () => {
+  const opts = { variables: ['a', 'omega', 't'] };
+  assert.equal(toTex(parse('A cos(omega t)', opts)), 'A\\cos\\left(\\omega t\\right)');
+  assert.equal(toTex(parse('a cos(Omega t)', opts)), 'a\\cos\\left(\\omega t\\right)', 'Greek names keep their command');
+  assert.equal(val('A cos(omega t)', { a: 2, omega: Math.PI, t: 1 }, opts), -2);
+  assert.equal(toTex(parse('X^2 + x')), 'X^{2}+x', 'explore mode: one variable x, shown as typed');
+  assert.deepEqual(freeVariables(parse('X^2 + x')), ['x']);
+});
+
 test('EXPRESSION_PATTERN is valid with both the u and v regex flags and means the same', () => {
   const u = new RegExp(EXPRESSION_PATTERN, 'u');
   const v = new RegExp(EXPRESSION_PATTERN, 'v'); // what browsers use for <input pattern>
