@@ -111,6 +111,8 @@ for (const { name, dir } of engines) {
       assert.ok(typeof out.unit === 'string', `output "${key}": unit must be a string ('' if dimensionless)`);
       if (out.sigfigs !== undefined) assert.ok(Number.isInteger(out.sigfigs) && out.sigfigs >= 1 && out.sigfigs <= 8, `output "${key}": sigfigs 1–8`);
       if (out.integer !== undefined) assert.equal(typeof out.integer, 'boolean', `output "${key}": integer must be true or false`);
+      if (out.siPrefix !== undefined) assert.equal(typeof out.siPrefix, 'boolean', `output "${key}": siPrefix must be true or false`);
+      assert.ok(!(out.integer && out.siPrefix), `output "${key}": choose integer or siPrefix, not both`);
       for (const s of out.setups ?? []) assert.ok(meta.setups.includes(s), `output "${key}": unknown setup "${s}"`);
     }
   });

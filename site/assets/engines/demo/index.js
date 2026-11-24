@@ -20,7 +20,7 @@ export const meta = {
     duration: { type: 'number', label: 'Run time', unit: 's', min: 1, max: 30, step: 1, default: 10 },
     showPhasor: { type: 'boolean', label: 'Rotating phasor', default: true },
     phasorLabels: { type: 'boolean', label: 'Label the phasor', default: true, visibleWhen: { showPhasor: true } },
-    timeScale: { type: 'number', label: 'Playback speed', unit: '×', min: 0.25, max: 2, step: 0.25, default: 1 },
+    timeScale: { type: 'number', label: 'Playback speed', unit: '×', min: 0.25, max: 2, step: 0.25, default: 1, help: 'Slows down or speeds up the animation only; the physics is unchanged.' },
   },
   outputs: {
     period: { label: 'Period T', unit: 's', sigfigs: 3 },
