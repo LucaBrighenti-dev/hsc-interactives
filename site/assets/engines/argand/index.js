@@ -21,6 +21,7 @@ import {
   polyRoots,
   polyText,
   polynomialOutputs,
+  isZeroPolynomial,
   complexText,
   angleText,
 } from './model.js';
@@ -53,7 +54,7 @@ function pointParams(which, sub_, re, im, visible = {}) {
     [form]: { type: 'enum', label: `Enter ${name} as`, options: [['cartesian', 'a + bi'], ['polar', 'Modulus, argument']], default: 'cartesian', setups, visibleWhen: { ...visible } },
     [`${which}Re`]: num(`Re ${name}`, -10, 10, 0.1, re, { setups, visibleWhen: { ...visible, [form]: 'cartesian' } }),
     [`${which}Im`]: num(`Im ${name}`, -10, 10, 0.1, im, { setups, visibleWhen: { ...visible, [form]: 'cartesian' } }),
-    [`${which}Mod`]: num(`|${name}|`, 0, 10, 0.1, tidy(modulus(z)), { setups, visibleWhen: { ...visible, [form]: 'polar' } }),
+    [`${which}Mod`]: { ...num(`|${name}|`, 0, 15, 0.1, tidy(modulus(z)), { setups, visibleWhen: { ...visible, [form]: 'polar' } }), help: 'Points stay in the square −10 ≤ Re, Im ≤ 10, so a long modulus is shortened in some directions' },
     [`${which}Arg`]: { ...num(`arg ${name}`, -180, 180, 1, tidy(principalArg(z) / DEG), { setups, visibleWhen: { ...visible, [form]: 'polar' } }), unit: '°', help: 'Principal argument in degrees, −180° < arg ≤ 180°' },
   };
 }
@@ -148,7 +149,7 @@ export const meta = {
     probeDistA2: { label: '|z − a₂|', unit: '', sigfigs: 3, setups: [LOCI] },
     probeArgA2: { label: 'arg(z − a₂)', unit: 'rad', sigfigs: 3, setups: [LOCI] },
     probeDistB2: { label: '|z − b₂|', unit: '', sigfigs: 3, setups: [LOCI] },
-    probeInside: { label: 'z in the set (1 yes, 0 no)', unit: '', sigfigs: 1, setups: [LOCI] },
+    probeInside: { label: 'z in the set (1 yes, 0 no)', unit: '', integer: true, setups: [LOCI] },
 
     root1Re: { label: 'Re root 1', unit: '', sigfigs: 3, setups: [POLY] },
     root1Im: { label: 'Im root 1', unit: '', sigfigs: 3, setups: [POLY] },
@@ -162,7 +163,7 @@ export const meta = {
     rootSumIm: { label: 'Sum of roots (Im)', unit: '', sigfigs: 3, setups: [POLY] },
     rootProductRe: { label: 'Product of roots (Re)', unit: '', sigfigs: 3, setups: [POLY] },
     rootProductIm: { label: 'Product of roots (Im)', unit: '', sigfigs: 3, setups: [POLY] },
-    realRootCount: { label: 'Real roots (with multiplicity)', unit: '', sigfigs: 1, setups: [POLY] },
+    realRootCount: { label: 'Real roots (with multiplicity)', unit: '', integer: true, setups: [POLY] },
   },
 };
 
@@ -172,10 +173,13 @@ function normalise(setup, params, changed) {
   return syncPoint(syncPoint(params, 'z1', changed), 'z2', changed);
 }
 
+/**
+ * Outputs for the shell. The model uses NaN for "undefined here" (z₁/0, a fourth root of a cubic, distances
+ * for an unused second condition); the shell gets null for those, which its readouts show as —.
+ */
 function outputsFor(setup, params) {
-  if (setup === OPS) return operationOutputs(params);
-  if (setup === LOCI) return lociOutputs(params);
-  return polynomialOutputs(params);
+  const raw = setup === OPS ? operationOutputs(params) : setup === LOCI ? lociOutputs(params) : polynomialOutputs(params);
+  return Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, Number.isFinite(v) ? v : null]));
 }
 
 /**
@@ -194,8 +198,8 @@ export function create(stage, opts = {}) {
   const outputs = () => outputsFor(setup, params);
   const render = () => view.draw(params);
 
-  // Points dragged on the stage change params. The shell listens for 'outputs'; 'params' tells a shell
-  // that supports it to refresh its controls and the URL (see the PR's change request).
+  // Points dragged on the stage change params; the 'params' event (guide §5.10) makes the shell resync its
+  // controls, the URL and the share link, during the drag and again when it ends.
   const notifyParams = () => opts.onEvent?.('params', { ...params });
 
   function applyDrag(target, x, y) {
@@ -235,6 +239,7 @@ export function create(stage, opts = {}) {
     params = normalise(setup, { ...params, ...next }, new Set(Object.keys(next)));
     render();
     emit.outputs(outputs());
+    notifyParams();
   }
 
   const detachDrag = pointerDrag(view.canvas, {
@@ -359,6 +364,7 @@ function describe(setup, params) {
     return plain(`Argand diagram of the locus ${text}.${probe}`);
   }
   const coeffs = polyCoefficients(params);
+  if (isZeroPolynomial(coeffs)) return 'P(z) = 0, the zero polynomial: every complex number is a root.';
   const roots = polyRoots(coeffs);
   return plain(`Roots of P(z) = ${polyText(coeffs)} on an Argand diagram: ${roots.map((z) => complexText(z)).join(', ') || 'none'}.`);
 }

@@ -3,7 +3,7 @@
 //
 // Complex numbers are plain objects { re, im }. Arguments are principal values in (−π, π].
 // Params carry angles in degrees (sliders); everything here works in radians.
-import { formatNumber, formatPlain, MINUS, superscript } from '../../format.js';
+import { formatNumber, MINUS, NNBSP, superscript } from '../../format.js';
 
 export const DEG = Math.PI / 180;
 const PI = Math.PI;
@@ -142,30 +142,71 @@ function gcd(a, b) {
   return a;
 }
 
-/** A number as a teacher would write it: exact up to 3 decimal places ("2.25", "−1.5"), else 3 s.f. */
+/** Largest magnitude shown with every digit (an exact value below a billion, e.g. 3¹⁶ = 43 046 721). */
+const EXACT_MAX = 1e9;
+/** Approximate values from this magnitude up use scientific notation, so "208 000" never passes for exact. */
+const SCI_ABOVE = 1e3;
+
+/**
+ * The exact value of x if x has at most 3 decimal places (to within 1e-9, an absolute tolerance, so a
+ * large number only qualifies when it is a whole number to rounding error), otherwise null.
+ */
+function exactValue(x) {
+  const r = Math.round(x * 1000) / 1000;
+  if (r === 0 || Math.abs(r) >= EXACT_MAX || Math.abs(x - r) >= 1e-9) return null;
+  return r;
+}
+
+/** Every digit of an exact value: true minus, thousands grouped from 10 000 ("43 046 721", "−1.5"). */
+function exactText(r) {
+  const [int, frac] = String(Math.abs(r)).split('.');
+  const grouped = int.length > 4 ? int.replace(/\B(?=(\d{3})+(?!\d))/g, NNBSP) : int;
+  return `${r < 0 ? MINUS : ''}${grouped}${frac ? `.${frac}` : ''}`;
+}
+
+/** 3 s.f., in scientific notation from 1000 up (and below 0.001). */
+function approxText(x, sigfigs) {
+  return formatNumber(x, { sigfigs, sciAbove: SCI_ABOVE });
+}
+
+/**
+ * A number as a teacher would write it: every digit when it is exact to 3 decimal places ("2.25", "−1.5",
+ * "43 046 721"), otherwise 3 s.f. with scientific notation from 1000 up ("1.59", "−2.08 × 10⁵").
+ */
 export function numText(x, sigfigs = 3) {
   if (!Number.isFinite(x)) return formatNumber(x);
   if (Math.abs(x) < 1e-12) return '0';
-  const r = Math.round(x * 1000) / 1000;
-  if (Math.abs(x - r) < 1e-9 * Math.max(1, Math.abs(x))) return formatPlain(r);
-  return formatNumber(x, { sigfigs });
+  const r = exactValue(x);
+  return r === null ? approxText(x, sigfigs) : exactText(r);
 }
 
-/** "1 + 3i", "−i", "2.5", "undefined". */
+/** Would numText use scientific notation for x? */
+function isScientific(x) {
+  return Math.abs(x) >= 1e-12 && exactValue(x) === null && (Math.abs(x) >= SCI_ABOVE || Math.abs(x) < 1e-3);
+}
+
+/**
+ * "1 + 3i", "−i", "2.5", "undefined". If either part needs scientific notation, both parts are written
+ * that way (3 s.f.), so one number never mixes formats.
+ */
 export function complexText(z) {
   if (!isFiniteZ(z)) return 'undefined';
   const { re, im } = cleanZ(z);
-  if (im === 0) return numText(re);
-  const mag = numText(Math.abs(im));
+  const sci = isScientific(re) || isScientific(im);
+  const part = (v) => (sci && v !== 0 ? approxText(v, 3) : numText(v));
+  if (im === 0) return part(re);
+  const mag = part(Math.abs(im));
   const imPart = mag === '1' ? 'i' : `${mag}i`;
   if (re === 0) return im < 0 ? `${MINUS}${imPart}` : imPart;
-  return `${numText(re)} ${im < 0 ? MINUS : '+'} ${imPart}`;
+  return `${part(re)} ${im < 0 ? MINUS : '+'} ${imPart}`;
 }
 
 /**
  * An irrational modulus as an exact surd, "√5", "2√2", "√5/2", "7√5/10", when m² is a fraction with a
- * small denominator (q² for q ≤ 10). Rational and other values give null.
+ * small denominator (q² for q ≤ 10) and the simplified radicand is below SURD_MAX (so not "√218/10").
+ * Rational and other values give null.
  */
+const SURD_MAX = 100;
 export function surdText(m) {
   if (!Number.isFinite(m) || m <= 0) return null;
   const s = m * m;
@@ -182,7 +223,7 @@ export function surdText(m) {
         k *= p;
       }
     }
-    if (f === 1) return null; // rational: a decimal is exact
+    if (f === 1 || f >= SURD_MAX) return null; // rational (a decimal is exact), or an unhelpful radicand
     const g = gcd(k, q);
     const kk = k / g;
     const qq = q / g;
@@ -225,7 +266,13 @@ export const OPERATIONS = ['add', 'sub', 'mul', 'div', 'conj', 'power', 'roots']
 /** Operations that use z₂. */
 export const BINARY = ['add', 'sub', 'mul', 'div'];
 
-const RANGE = { Re: [-10, 10], Im: [-10, 10], Mod: [0, 10], Arg: [-180, 180] };
+/**
+ * Points live in the square −10 ≤ Re, Im ≤ 10. The modulus range (0 to 15) covers the whole square
+ * (|z| ≤ 10√2 ≈ 14.1), and polar entry is kept inside the square, so the two forms always describe the
+ * same point and switching between them never moves it.
+ */
+export const SQUARE = 10;
+const RANGE = { Re: [-SQUARE, SQUARE], Im: [-SQUARE, SQUARE], Mod: [0, 15], Arg: [-180, 180] };
 
 function tidy(x) {
   return Number(x.toFixed(10)) + 0; // + 0 turns −0 into 0
@@ -235,25 +282,52 @@ function clampTo(x, [lo, hi]) {
   return Math.min(hi, Math.max(lo, x));
 }
 
-/** z₁ or z₂ from its params: r cis θ (θ in degrees) in polar form, else a + bi. */
-export function pointFromParams(params, which) {
-  if (params[`${which}Form`] === 'polar') return fromPolar(params[`${which}Mod`], params[`${which}Arg`] * DEG);
-  return complex(params[`${which}Re`], params[`${which}Im`]);
+/** A value with at most 3 decimal places: typed or dragged, rather than derived from the other form. */
+function isShort(v) {
+  return Math.abs(v * 1000 - Math.round(v * 1000)) < 1e-6;
+}
+
+function pairs(params, which) {
+  const zc = complex(params[`${which}Re`], params[`${which}Im`]);
+  const zp = fromPolar(params[`${which}Mod`], params[`${which}Arg`] * DEG);
+  const consistent = modulus(sub(zc, zp)) <= 1e-9 * Math.max(1, modulus(zc));
+  return { zc, zp, consistent };
 }
 
 /**
- * Keep a point's Cartesian and polar params in step. The pair the user just changed is the source;
- * if neither (or both) changed, the point's form decides. Returns a new params object.
+ * z₁ or z₂ from its params: r cis θ (θ in degrees) in polar form, else a + bi. When the two pairs agree,
+ * the pair the user entered is used exactly (the other was derived from it and rounded to 10 decimal
+ * places), so 9 + 8i stays exactly 9 + 8i in polar form and 2 cis 30° stays exact in Cartesian form.
+ */
+export function pointFromParams(params, which) {
+  const { zc, zp, consistent } = pairs(params, which);
+  const cartShort = isShort(zc.re) && isShort(zc.im);
+  const polarShort = isShort(params[`${which}Mod`]) && isShort(params[`${which}Arg`]);
+  if (params[`${which}Form`] === 'polar') return consistent && cartShort && !polarShort ? zc : zp;
+  return consistent && polarShort && !cartShort ? zp : zc;
+}
+
+/**
+ * Keep a point's Cartesian and polar params in step. The pair the user just changed is the source. If
+ * neither changed (for example the entry form was switched) and the pairs already agree, nothing moves;
+ * otherwise the point's form decides. Polar entry outside the square is pulled in along its ray.
+ * Returns a new params object.
  * @param {Set<string>} changed keys present in the latest update
  */
 export function syncPoint(params, which, changed) {
   const key = (s) => `${which}${s}`;
   const cart = changed.has(key('Re')) || changed.has(key('Im'));
   const polar = changed.has(key('Mod')) || changed.has(key('Arg'));
+  if (!cart && !polar && pairs(params, which).consistent) return { ...params };
   const usePolar = polar && !cart ? true : cart && !polar ? false : params[key('Form')] === 'polar';
   const out = { ...params };
   if (usePolar) {
-    const z = fromPolar(params[key('Mod')], params[key('Arg')] * DEG);
+    let z = fromPolar(params[key('Mod')], params[key('Arg')] * DEG);
+    const reach = Math.max(Math.abs(z.re), Math.abs(z.im));
+    if (reach > SQUARE) {
+      out[key('Mod')] = tidy((params[key('Mod')] * SQUARE) / reach);
+      z = fromPolar(out[key('Mod')], params[key('Arg')] * DEG);
+    }
     out[key('Re')] = clampTo(tidy(z.re), RANGE.Re);
     out[key('Im')] = clampTo(tidy(z.im), RANGE.Im);
   } else {
@@ -515,7 +589,7 @@ export function conditionWords(c) {
     const nearer = c.rel === 'lt' || c.rel === 'le' ? complexText(c.a) : complexText(c.b);
     return `Points nearer ${nearer}${edge}`;
   }
-  if (c.rel === 'eq') return `Ray from ${complexText(c.a)}, which is not included`;
+  if (c.rel === 'eq') return `Ray from ${complexText(c.a)} (the point ${complexText(c.a)} itself is not included)`;
   return `Sector at ${complexText(c.a)} (vertex not included)${edge}`;
 }
 
@@ -1103,9 +1177,18 @@ export function polyText(coeffs) {
   return parts.map((t, i) => (i === 0 ? `${t.sign === MINUS ? MINUS : ''}${t.body}` : ` ${t.sign} ${t.body}`)).join('');
 }
 
-/** Roots (up to 4, NaN beyond the degree), their sum and product, and the number of real roots. */
+/** Every coefficient is 0: P is the zero polynomial, and every z is a root (polyRoots lists none). */
+export function isZeroPolynomial(coeffs) {
+  return coeffs.every((c) => c.re === 0 && c.im === 0);
+}
+
+/**
+ * Roots (up to 4, NaN beyond the degree), their sum and product, and the number of real roots.
+ * The zero polynomial has every z as a root, so all of these are NaN (shown as —).
+ */
 export function polynomialOutputs(params) {
-  const roots = polyRoots(polyCoefficients(params));
+  const coeffs = polyCoefficients(params);
+  const roots = polyRoots(coeffs);
   const out = {};
   for (let k = 0; k < 4; k++) {
     const z = roots[k];
@@ -1119,6 +1202,6 @@ export function polynomialOutputs(params) {
   out.rootSumIm = ok ? clean(sum.im) : NaN;
   out.rootProductRe = ok ? clean(prod.re) : NaN;
   out.rootProductIm = ok ? clean(prod.im) : NaN;
-  out.realRootCount = roots.filter((z) => z.im === 0).length;
+  out.realRootCount = isZeroPolynomial(coeffs) ? NaN : roots.filter((z) => z.im === 0).length;
   return out;
 }

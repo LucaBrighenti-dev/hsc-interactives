@@ -35,6 +35,7 @@ import {
   polyRoots,
   polyText,
   rootGroups,
+  isZeroPolynomial,
 } from './model.js';
 
 const TAU = 2 * Math.PI;
@@ -52,7 +53,7 @@ function imTick(v) {
 export function createView(stage, setup) {
   const surface = createSurface(stage);
   let pal = readPalette(stage);
-  let frame = { vp: null, handles: [], px: 18 };
+  let frame = { vp: null, handles: [], points: [], px: 18 };
   let maskCanvas = null;
   let regionCanvas = null;
 
@@ -97,6 +98,13 @@ export function createView(stage, setup) {
         const h = px * 1.3;
         const len = Math.hypot(dir[0], dir[1]) || 1;
         const base = Math.atan2(dir[1] / len, dir[0] / len);
+        // A label must sit nearer its own point than any other marked point, or it reads as the wrong one's.
+        const distTo = (r, px0, py0) => Math.hypot(Math.max(r.x - px0, 0, px0 - (r.x + r.w)), Math.max(r.y - py0, 0, py0 - (r.y + r.h)));
+        const others = frame.points.filter(([qx, qy]) => Math.hypot(qx - X, qy - Y) > 3);
+        const unambiguous = (r) => {
+          const own = distTo(r, X, Y);
+          return others.every(([qx, qy]) => distTo(r, qx, qy) > own + 2);
+        };
         let chosen = null;
         for (const turn of [0, 0.6, -0.6, 1.2, -1.2, 1.9, -1.9, Math.PI]) {
           const a = base + turn;
@@ -106,19 +114,31 @@ export function createView(stage, setup) {
           const x = ux > 0.3 ? X + gap : ux < -0.3 ? X - gap - w : X - w / 2;
           const y = uy > 0.3 ? Y + gap : uy < -0.3 ? Y - gap - h : Y - h / 2;
           const r = { x, y, w, h };
-          if (fits(r)) {
+          if (fits(r) && unambiguous(r)) {
             chosen = r;
             break;
           }
         }
+        let leader = false;
         if (!chosen) {
           if (optional) return false;
           const cx = Math.min(bounds.x + bounds.w - w / 2 - 2, Math.max(bounds.x + w / 2 + 2, X + (dir[0] >= 0 ? 1 : -1) * (gap + w / 2)));
           const cy = Math.min(bounds.y + bounds.h - h / 2 - 2, Math.max(bounds.y + h / 2 + 2, Y + (dir[1] >= 0 ? 1 : -1) * (gap + h / 2)));
           chosen = { x: cx - w / 2, y: cy - h / 2, w, h };
+          leader = true; // no clear spot: a short leader line ties the label to its point
         }
         boxes.push(chosen);
         ctx.save();
+        if (leader) {
+          const tx = Math.min(Math.max(X, chosen.x), chosen.x + chosen.w);
+          const ty = Math.min(Math.max(Y, chosen.y), chosen.y + chosen.h);
+          ctx.strokeStyle = pal.muted;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(X, Y);
+          ctx.lineTo(tx, ty);
+          ctx.stroke();
+        }
         ctx.fillStyle = pal.bg;
         ctx.fillRect(chosen.x, chosen.y, chosen.w, chosen.h);
         ctx.restore();
@@ -159,6 +179,7 @@ export function createView(stage, setup) {
     ctx.fill();
     ctx.stroke();
     ctx.restore();
+    frame.points.push([X, Y]); // labels keep nearer their own point than this one
   }
 
   /** A draggable point: a filled disc with a background ring, so it reads as a handle. */
@@ -176,6 +197,7 @@ export function createView(stage, setup) {
     ctx.stroke();
     ctx.restore();
     frame.handles.push({ id, X, Y });
+    frame.points.push([X, Y]);
     placer?.block(X - r, Y - r, 2 * r, 2 * r);
   }
 
@@ -210,6 +232,7 @@ export function createView(stage, setup) {
 
   /** Label an arc at its middle angle, just outside it. */
   function arcLabel(placer, cx, cy, R, a0, a1, text, px, opts = {}) {
+    if (!(Math.abs(a1 - a0) >= 1e-6) || !(R > 3)) return false; // no arc drawn (θ = 0 or undefined), so no label
     const mid = (a0 + a1) / 2;
     const ux = Math.cos(mid);
     const uy = -Math.sin(mid);
@@ -221,7 +244,8 @@ export function createView(stage, setup) {
     const [X, Y] = P(vp, z);
     const m = modulus(z);
     const dir = m > 1e-9 ? [z.re / m, -z.im / m] : [1, -1];
-    return placer.place(frame.compact ? text.split(' = ')[0] : text, X, Y, dir, opts);
+    if (frame.compact) return placer.place(text.split(' = ')[0], X, Y, dir, { ...opts, optional: true });
+    return placer.place(text, X, Y, dir, opts);
   }
 
   // -------------------------------------------------------------------------------------------
@@ -895,6 +919,7 @@ export function createView(stage, setup) {
       ctx.stroke();
       ctx.restore();
       frame.handles.push({ id: 'z', X: zx, Y: zy });
+      frame.points.push([zx, zy]);
       placer.block(zx - rr, zy - rr, rr * 2, rr * 2);
       placer.place(`z ${inside ? '(in)' : '(out)'}`, zx, zy, [1, -1], { kind: 'strong' });
     }
@@ -1016,7 +1041,12 @@ export function createView(stage, setup) {
     const eff = coeffs.slice(lead);
     lines.push(head('Polynomial'));
     lines.push(row(`P(z) = ${polyText(coeffs)}`, null, { strong: true }));
-    if (lead > 0) lines.push(note(eff.length > 1 ? `The leading coefficient is 0, so P has degree ${eff.length - 1}.` : 'P is constant, so it has no roots.'));
+    if (isZeroPolynomial(coeffs)) {
+      lines.push(note('Every coefficient is 0: P is the zero polynomial, so every complex number z is a root.'));
+      const strip = ['P(z) = 0 (the zero polynomial)', 'Every complex number is a root'];
+      return { lines, strip };
+    }
+    if (lead > 0) lines.push(note(eff.length > 1 ? `The leading coefficient is 0, so P has degree ${eff.length - 1}.` : 'P is a non-zero constant, so it has no roots.'));
     lines.push(gap());
     lines.push(head(`Roots (${roots.length})`));
     for (const g of groups) {
@@ -1050,7 +1080,7 @@ export function createView(stage, setup) {
     const { plot, info, strip } = layout(W, H, px);
     const R = params.viewRange;
     const vp = viewport({ x: [-R, R], y: [-R, R], rect: plot, equal: true });
-    frame = { vp, handles: [], px, compact: !info };
+    frame = { vp, handles: [], points: [], px, compact: !info };
 
     // Same tick step on both axes (equal scale), wide enough apart for the x labels (about 3.4 text heights).
     const span = vp.y[1] - vp.y[0];

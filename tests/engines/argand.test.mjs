@@ -44,6 +44,7 @@ import {
   polyCoefficients,
   polyText,
   polynomialOutputs,
+  isZeroPolynomial,
   rootGroups,
 } from '../../site/assets/engines/argand/model.js';
 
@@ -215,7 +216,30 @@ test('numbers and complex numbers read like a teacher would write them', () => {
   assert.equal(complexText(complex(NaN, NaN)), 'undefined');
 });
 
+test('large values: exact ones keep every digit, approximate ones use scientific notation in both parts', () => {
+  const G = ' '; // the narrow no-break space format.js groups thousands with
+  // 3¹³ = 1 594 323 and 3¹⁶ = 43 046 721 (whole numbers, computed exactly)
+  assert.equal(complexText(pow(complex(3, 0), 13)), `1${G}594${G}323`);
+  assert.equal(complexText(pow(complex(3, 0), 16)), `43${G}046${G}721`);
+  assert.equal(modulusText(modulus(pow(complex(3, 0), 16))), `43${G}046${G}721`);
+  // (2.3 − 1.9i)¹²: |z|² = 8.9, so |z¹²| = 8.9⁶; both parts are approximate and both in × 10ⁿ form.
+  const z12 = pow(complex(2.3, -1.9), 12);
+  close(modulus(z12), 8.9 ** 6, 1e-9 * 8.9 ** 6);
+  assert.equal(complexText(z12), '−2.08 × 10⁵ − 4.51 × 10⁵i');
+  // (10 + 10i)² = 200i, so (10 + 10i)¹⁶ = 200⁸ = 2.56 × 10¹⁸
+  assert.equal(complexText(pow(complex(10, 10), 16)), '2.56 × 10¹⁸');
+  // Approximate values never print as if exact.
+  assert.equal(numText(12345.6789), '1.23 × 10⁴');
+  assert.equal(numText(-207798.3186), '−2.08 × 10⁵');
+  assert.equal(numText(12345.5), `12${G}345.5`);
+  assert.equal(numText(3e-10), '3.00 × 10⁻¹⁰');
+  // A mixed number is written one way: 1234.5678 + 2i → both parts to 3 s.f.
+  assert.equal(complexText(complex(1234.5678, 2)), '1.23 × 10³ + 2.00i');
+});
+
 test('moduli as surds: √5, √2/2, 2√2, 7√5/10; rational moduli stay decimal', () => {
+  assert.equal(surdText(Math.sqrt(2.18)), null, 'no √218/10: radicands stay small');
+  assert.equal(surdText(Math.sqrt(8.9)), null, 'no √890/10');
   assert.equal(surdText(Math.sqrt(5)), '√5');
   assert.equal(surdText(modulus(complex(2, 2))), '2√2');
   assert.equal(surdText(modulus(complex(0.5, 0.5))), '√2/2');
@@ -273,6 +297,34 @@ test('points come from the chosen form, and the other form is kept in step', () 
   const c = syncPoint(opParams({ z2Form: 'polar', z2Mod: 2, z2Arg: 60, z2Re: 9, z2Im: 9 }), 'z2', new Set());
   close(c.z2Re, 1, 1e-9);
   close(c.z2Im, Math.sqrt(3), 1e-9);
+});
+
+test('switching the entry form never moves the point', () => {
+  // 9 + 8i has |z| = √145 ≈ 12.04, beyond the old modulus limit of 10.
+  let p = syncPoint(opParams({ z1Re: 9, z1Im: 8 }), 'z1', new Set(['z1Re', 'z1Im']));
+  close(p.z1Mod, Math.sqrt(145), 1e-9);
+  p = syncPoint({ ...p, z1Form: 'polar' }, 'z1', new Set(['z1Form']));
+  assert.deepEqual(pointFromParams(p, 'z1'), complex(9, 8), 'exactly 9 + 8i in polar form');
+  assert.equal(computeOperation(p).result.re, mul(complex(9, 8), complex(1, 1)).re);
+  p = syncPoint({ ...p, z1Form: 'cartesian' }, 'z1', new Set(['z1Form']));
+  assert.deepEqual(pointFromParams(p, 'z1'), complex(9, 8), 'and back again');
+  // Every corner of the square survives a round trip.
+  for (const [re, im] of [[10, 10], [-10, 10], [-10, -10], [10, -10], [-10, 0], [0.1, -9.9]]) {
+    let q = syncPoint(opParams({ z1Re: re, z1Im: im }), 'z1', new Set(['z1Re']));
+    q = syncPoint({ ...q, z1Form: 'polar' }, 'z1', new Set(['z1Form']));
+    assert.deepEqual(pointFromParams(q, 'z1'), complex(re, im), `${re} + ${im}i`);
+    assert.ok(q.z1Mod <= 15, 'modulus within its range');
+  }
+  // Polar entry 2 cis 30° stays exact after switching to Cartesian.
+  let r = syncPoint(opParams({ z1Form: 'polar', z1Mod: 2, z1Arg: 30 }), 'z1', new Set(['z1Mod', 'z1Arg']));
+  r = syncPoint({ ...r, z1Form: 'cartesian' }, 'z1', new Set(['z1Form']));
+  assert.deepEqual(pointFromParams(r, 'z1'), fromPolar(2, PI / 6));
+  // Polar entry beyond the square is pulled in along its ray: 15 cis 30° → Re = 10.
+  const s = syncPoint(opParams({ z1Form: 'polar', z1Mod: 15, z1Arg: 30 }), 'z1', new Set(['z1Mod']));
+  close(s.z1Mod, 10 / Math.cos(PI / 6), 1e-9);
+  assert.equal(s.z1Re, 10);
+  close(s.z1Im, 10 * Math.tan(PI / 6), 1e-9);
+  close(arg(pointFromParams(s, 'z1')), PI / 6, 1e-12);
 });
 
 test('operation results: sum, difference, product, quotient, conjugate', () => {
@@ -644,6 +696,19 @@ test('zero leading coefficient drops the degree; zero constant gives the root 0 
   const s = polyRoots(realPoly(1, 0, -1, 0));
   assert.ok(s.some((z) => z.re === 0 && z.im === 0), 'exact zero root');
   assert.deepEqual(polyRoots(realPoly(0, 0, 3)), []);
+});
+
+test('the zero polynomial: every z is a root, not "no roots"', () => {
+  const zero = { degree: 1, c4: 0, c3: 0, c2: 0, c1: 0, c0: 0, c0Im: 0 };
+  assert.ok(isZeroPolynomial(polyCoefficients(zero)));
+  assert.equal(polyText(polyCoefficients(zero)), '0');
+  const out = polynomialOutputs(zero);
+  assert.ok(Number.isNaN(out.realRootCount) && Number.isNaN(out.root1Re) && Number.isNaN(out.rootSumRe));
+  // A non-zero constant really has no roots.
+  const constant = { ...zero, c0: 3 };
+  assert.ok(!isZeroPolynomial(polyCoefficients(constant)));
+  assert.equal(polynomialOutputs(constant).realRootCount, 0);
+  assert.ok(!isZeroPolynomial(polyCoefficients({ ...zero, c0Im: 0.5 })), 'i/2 is not zero');
 });
 
 test('a non-real coefficient breaks the mirror symmetry', () => {
