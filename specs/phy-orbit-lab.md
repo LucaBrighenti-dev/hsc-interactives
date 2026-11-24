@@ -26,7 +26,7 @@ Default view at 1920×1080, projector theme (the `particle2d` engine's orbit vie
 - **Space view:** Earth to scale at the centre and a satellite launched from altitude h at the chosen speed and angle above the local horizontal. The orbit is traced; the view fits the predicted orbit (or the escape path) at launch, with a scale bar in km.
 - **Vectors (optional):** velocity (tangential at launch) and gravitational force (towards Earth's centre), each labelled.
 - **Kepler's second law (optional):** the area swept by the radius line is shaded in equal time slices, with the area swept per second shown.
-- **Status:** the run ends after one full revolution, a crash into Earth, or when the satellite leaves the view (escape). A clock shows elapsed time in minutes (time sped up).
+- **Status:** the run ends after one full revolution, a crash into Earth, or when the satellite passes 8 launch radii (it leaves the view). Whether the satellite escapes is decided by energy, not by leaving the view: it escapes only if its total energy is zero or positive (v ≥ v_esc). A clock shows elapsed time in minutes (time sped up).
 
 ## Parameters
 Keys and ranges are the `particle2d` engine's `meta.params` for `orbit` (branch `w1/engine-particle2d`).
@@ -62,7 +62,7 @@ Constants (the engine's, from IERS/WGS 84): Earth GM = 3.986004418 × 10¹⁴ m�
 | potentialEnergy | Gravitational potential energy | J | 3 |
 | totalEnergy | Total energy | J | 3 |
 
-Definitions (the engine's outputs): `circularSpeed` = √(GM/r₀) and `escapeSpeed` = √(2GM/r₀) at the launch radius r₀ = R + h; `period` (s) and `periodMinutes` from the current orbital elements, 2π√(a³/GM) with 1/a = 2/r − v²/GM (— if unbound); `semiMajorAxis`, `eccentricity`, `perigeeAltitude` and `apogeeAltitude` (m) likewise; `kineticEnergy` = ½mv², `potentialEnergy` = −GMm/r and `totalEnergy` at the current position; `keplerRatio` = T²/a³; `t` (s) and `tMinutes` elapsed; `altitudeKm`, `speed`, `arealVelocity`, `sweptArea` current values. One revolution is detected inside the step (the swept angle reaches 2π), so `tMinutes` at the end of a closed orbit is the measured period.
+Definitions (the engine's outputs): `circularSpeed` = √(GM/r₀) and `escapeSpeed` = √(2GM/r₀) at the launch radius r₀ = R + h; `period` (s) and `periodMinutes` from the current orbital elements, 2π√(a³/GM) with 1/a = 2/r − v²/GM (— if unbound); `semiMajorAxis`, `eccentricity`, `perigeeAltitude` and `apogeeAltitude` (m) likewise; `kineticEnergy` = ½mv², `potentialEnergy` = −GMm/r and `totalEnergy` at the current position; `keplerRatio` = T²/a³; `t` (s) and `tMinutes` elapsed; `altitudeKm`, `speed`, `arealVelocity`, `sweptArea` current values. One revolution is detected inside the step (the swept angle reaches 2π), so `tMinutes` at the end of a closed orbit is the measured period. Escape criterion: the orbit is unbound, and the satellite escapes, when `totalEnergy` ≥ 0 (equivalently v ≥ `escapeSpeed`, or `eccentricity` ≥ 1); a bound orbit whose far point is beyond 8 launch radii (from 400 km, launch speeds of about 10.23–10.85 km/s) also ends the run when it leaves the view, but it has not escaped: its total energy is still negative and its `period` is still defined.
 
 ## Assumptions shown on stage
 - Earth is a uniform sphere and does not move (m ≪ M)
@@ -74,7 +74,7 @@ Definitions (the engine's outputs): `circularSpeed` = √(GM/r₀) and `escapeSp
 1. Predict: the default satellite orbits at 400 km. If you launch it from 800 km instead, will it need a higher or lower speed for a circular orbit? Check the circular-speed readout, then set the speed to match.
 2. Observe: in the `ellipse` preset, turn on the equal areas. Where does the satellite move fastest, and what happens to the kinetic and potential energy as it climbs?
 3. Explain: why is the total energy negative for every closed orbit, and why does it not change as the satellite goes round the ellipse?
-4. Predict: at 400 km the escape speed is 10.85 km/s. Try 10.80 km/s and 11.00 km/s. What happens to the total energy readout as the path stops closing?
+4. Predict: at 400 km the escape speed is 10.85 km/s. Launch at 10.00 km/s, then at 11.00 km/s, and read the total energy each time. Which satellite comes back, and how does the sign of the total energy tell you before you watch?
 5. Explain: launch at 7.00 km/s from 400 km. Why does the satellite hit Earth even though it was moving sideways quickly?
 
 ## Teacher notes outline
@@ -83,12 +83,13 @@ Definitions (the engine's outputs): `circularSpeed` = √(GM/r₀) and `escapeSp
 - **Original HSC-style question idea:** A 500 kg satellite is in a circular orbit 2000 km above Earth's surface. (a) Calculate its orbital speed (6.91 × 10³ m/s) and period (2.11 h) using the data-sheet values. (b) Calculate its total mechanical energy (−1.20 × 10¹⁰ J). (c) Explain why the satellite's speed would increase if it were moved to a lower circular orbit, even though energy must be removed to do it. (Write the full question and worked solution in the notes file.)
 
 ## Accessibility notes
-- Vectors carry symbol and value labels; the equal-area slices alternate two shadings and the area swept per second is written as text; energies are numeric readouts with signs. The end of the run (one orbit, crash or escape) is stated in words.
+- Vectors carry symbol and value labels; the equal-area slices alternate two shadings and the area swept per second is written as text; energies are numeric readouts with signs. The end of the run (one orbit, crash, or leaving the view) is stated in words, and an escape is described by its positive total energy.
 - Keyboard: all parameters are sliders with number entry or toggles; Space, `.` and R run, step and reset.
-- Stage `aria-label`: the engine's `describe()` sentence with the launch altitude and speed and the orbit's period, or that the satellite escapes or crashes.
+- Stage `aria-label`: the engine's `describe()` sentence with the launch altitude and speed and the orbit's period, or that it crashes or leaves the view (and, for total energy ≥ 0, that it escapes).
 
 ## Engine change requests
-- None: every key used here exists in the `particle2d` engine's meta on `w1/engine-particle2d`.
+- Every key used here exists in the `particle2d` engine's meta on `w1/engine-particle2d`.
+- **Escape status (particle2d / orbit):** the engine currently ends a run at 8 launch radii and labels it "Escaped", so bound launches from 400 km at about 10.23–10.85 km/s (total energy down to −0.55 GJ) are called escapes. Decide "escaped" by specific energy ≥ 0, and label bound orbits that pass 8 r₀ "left the view". The orchestrator has requested this from the particle2d builder; Try this #4 uses 10.00 km/s (an orbit that returns, apogee 5.64 r₀) and 11.00 km/s (escapes), so it works either way.
 - Optional, for a later version: a central-body choice (Moon, Mars) for comparing orbits round other bodies.
 
 ## Acceptance

@@ -25,7 +25,7 @@ Default view at 1920×1080, projector theme (the `particle2d` engine's cart view
 
 - **Top strip:** a straight track with a ruler in metres and an origin mark, a cart with velocity and acceleration arrows labelled with their values, and a flag at the start position.
 - **Below: three stacked graphs** with a shared time axis from 0 to the run time: position x (m), velocity v (m/s) and acceleration a (m/s²) against t, each traced live, with a cursor line through all three at the current time.
-- **Drive mode:** the acceleration is set while the ← or → key (or the on-stage pedal) is held, up to ±2 m/s².
+- **Drive mode:** a throttle on the stage sets the acceleration: drag it, or press ← or → (with the stage focused) to change it by 0.5 m/s² per press, between −2 and +2 m/s². The setting stays until it is changed again.
 - **Match mode:** a dashed target position–time curve appears; the cart starts at 0 m at rest and the student drives it to follow the curve, with a live root-mean-square error.
 
 ## Parameters
@@ -60,7 +60,7 @@ Keys and ranges are the `particle2d` engine's `meta.params` for `cart` (branch `
 | matchError | Match error (RMS) | m | 3 |
 | targetX | Target position | m | 3 |
 
-Definitions (the engine's outputs): `x`, `v`, `a` and `t` are current values (a is the constant a, or the pedal's value in drive and match modes); `matchError` and `targetX` appear in match mode only (— otherwise). The match targets start from rest at 0 m and are piecewise uniform acceleration (turn-back: 0.75 m/s² for 2 s, steady for 2 s, −0.75 m/s² for 4 s, then steady). The run ends exactly at the run time.
+Definitions (the engine's outputs): `x`, `v`, `a` and `t` are current values (a is the constant a, or the throttle setting in drive and match modes); `matchError` and `targetX` appear in match mode only (— otherwise). The match targets start from rest at 0 m and are piecewise uniform acceleration (turn-back: 0.75 m/s² for 2 s, steady for 2 s, −0.75 m/s² for 4 s, then steady). The run ends exactly at the run time.
 
 ## Assumptions shown on stage
 - Motion in a straight line; + is to the right
@@ -73,7 +73,7 @@ Definitions (the engine's outputs): `x`, `v`, `a` and `t` are current values (a 
 2. Observe: at the moment the cart stops (t = 4 s), what are the velocity and the acceleration? Many people expect both to be zero.
 3. Explain: at the end of the default run the cart is back at −8 m. What is its displacement, how far has it travelled, and what is its average velocity? Use the areas above and below the axis of the v–t graph.
 4. Observe: pause at any time and estimate the gradient of the x–t graph at the cursor. Compare it with the v readout.
-5. Predict, then try: in match mode, use only the pedals to match the "Turn back" target. What must your v–t graph look like?
+5. Predict, then try: in match mode, use only the throttle to match the "Turn back" target. What must your v–t graph look like, and when must you change the throttle?
 
 ## Teacher notes outline
 - **Misconceptions to target:** an x–t graph is a picture of the path; negative acceleration always means slowing down; when v = 0, a = 0; distance and displacement are the same; a steeper v–t line means a faster object (it means larger acceleration).
@@ -82,7 +82,7 @@ Definitions (the engine's outputs): `x`, `v`, `a` and `t` are current values (a 
 
 ## Accessibility notes
 - The three graphs are labelled with their quantity and units, not identified by colour; the target curve is dashed. The cart's arrows carry text values.
-- Keyboard: all parameters are sliders with number entry, segmented controls or a select; in drive and match modes, with the stage focused, ← and → work the pedals (Space, `.` and R still run, step and reset). The pedals are also focusable buttons.
+- Keyboard: all parameters are sliders with number entry, segmented controls or a select; in drive and match modes, with the stage focused, ← and → change the throttle by 0.5 m/s² per press (Space, `.` and R still run, step and reset); the throttle can also be dragged with a pointer.
 - Stage `aria-label`: the engine's `describe()` sentence with the cart's time, position, velocity and acceleration.
 
 ## Engine change requests
@@ -97,7 +97,7 @@ Every number below comes from the formula and hand calculation shown here. With 
 - **Check 3, default after 1440 steps (t = 6 s).** x = −8 + 24 − 18 = **−2 m**; v = 4 − 6 = **−2 m/s** (the same place as at 2 s, moving the other way).
 - **Check 4, `from-rest`.** x₀ = 0, u = 0, a = 2, run 3 s: x = ½ × 2 × 9 = **9 m**; v = **6 m/s**.
 - **Check 5, `reversing`.** x₀ = −5, u = −2, a = 1.5, run 4 s: x = −5 − 8 + ½ × 1.5 × 16 = **−1 m**; v = −2 + 6 = **4 m/s**. (Turn at 4/3 s at −6.333 m, so the distance is 1.333 + 5.333 = 6.667 m.)
-- **Check 6, `match` target.** Turn-back target from rest at 0: 0–2 s at 0.75 m/s² gives x = 1.5 m, v = 1.5 m/s; 2–4 s steady gives x = 4.5 m. At t = 4 s (960 steps) the target is **4.5 m**. 4–8 s at −0.75 m/s²: Δx = 1.5 × 4 − ½ × 0.75 × 16 = 0, so x = 4.5 m with v = −1.5 m/s; then steady: at t = 10 s the target is 4.5 − 3 = **1.5 m**. With no pedal pressed the cart stays at **0 m**.
+- **Check 6, `match` target.** Turn-back target from rest at 0: 0–2 s at 0.75 m/s² gives x = 1.5 m, v = 1.5 m/s; 2–4 s steady gives x = 4.5 m. At t = 4 s (960 steps) the target is **4.5 m**. 4–8 s at −0.75 m/s²: Δx = 1.5 × 4 − ½ × 0.75 × 16 = 0, so x = 4.5 m with v = −1.5 m/s; then steady: at t = 10 s the target is 4.5 − 3 = **1.5 m**. With the throttle left at 0 the cart stays at **0 m**.
 
 ```acceptance
 [
