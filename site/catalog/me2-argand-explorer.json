@@ -2,12 +2,12 @@
   "id": "me2-argand-explorer",
   "kind": "page",
   "title": "Argand explorer",
-  "summary": "Multiplication as rotate-and-scale, de Moivre power spirals, nth roots of unity.",
+  "summary": "Multiplication as rotate-and-scale, division, conjugates, de Moivre power spirals, and the nth roots of any complex number as a regular polygon.",
   "subject": "me2",
   "engine": "argand",
   "setup": "operations",
   "priority": "P0",
-  "status": "planned",
+  "status": "review",
   "path": "/interactives/maths-ext2/argand-explorer.html",
   "syllabus": [
     {
@@ -23,5 +23,6 @@
       "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-2-11-12-2024/content/year-12/fa0be3067b",
       "verified": true
     }
-  ]
+  ],
+  "thumbnail": "/assets/thumbs/me2-argand-explorer.png"
 }
