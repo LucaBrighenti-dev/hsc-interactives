@@ -430,7 +430,7 @@ test('toTex: every label from the toTex tests and a seeded random sample renders
   };
   const pick = (arr) => arr[Math.floor(rand() * arr.length)];
   const atoms = ['x', 'y', 't', 'A', 'omega', 'theta', 'k', 'pi', 'e', '2', '3.5', '0.25', 'π', 'θ'];
-  const fns = ['sin', 'cos', 'tan', 'asin', 'atan', 'sec', 'cosec', 'cot', 'exp', 'ln', 'log', 'sqrt', 'abs', 'sign', 'floor', 'sin^2', 'cos^-1'];
+  const fns = ['sin', 'cos', 'tan', 'asin', 'atan', 'sec', 'cosec', 'cot', 'exp', 'ln', 'log', 'sqrt', 'abs', 'sign', 'floor', 'sin^2', 'cos^-1', 'asin^2', 'arctan^3', 'atan^(2)', 'acos^2'];
   const gen = (d) => {
     if (d <= 0) return pick(atoms);
     switch (Math.floor(rand() * 9)) {
@@ -453,6 +453,7 @@ test('toTex: every label from the toTex tests and a seeded random sample renders
     tried += 1;
     const t = toTex(r.ast);
     assert.doesNotThrow(() => renders(t), `${src} → ${t}`);
+    assert.ok(!/[0-9.]\\frac/.test(t), `no mixed-number reading: ${src} → ${t}`);
   }
   assert.ok(tried > 2000, `most random cases should parse (${tried})`);
 });
@@ -511,4 +512,69 @@ test('very deep nesting is a calm error, not a stack overflow', () => {
   assert.match(r.error.message, /nested too deeply/);
   const fine = `${'('.repeat(40)}x${')'.repeat(40)}`;
   assert.equal(val(fine, { x: 3 }, { variables: ['x'] }), 3);
+});
+
+// ---------------------------------------------------------------------------------------------
+// Second review of PR #5: inverse-trig powers, mixed numbers, the v-flag pattern
+// ---------------------------------------------------------------------------------------------
+
+test('toTex: powers of inverse trig functions are bracketed, never a double superscript', () => {
+  const cases = {
+    'asin^2 x': '\\left(\\sin^{-1} x\\right)^{2}',
+    'arcsin^2 x': '\\left(\\sin^{-1} x\\right)^{2}',
+    'arctan^2 x': '\\left(\\tan^{-1} x\\right)^{2}',
+    'atan^(2) x': '\\left(\\tan^{-1} x\\right)^{2}',
+    'acos^3(x)': '\\left(\\cos^{-1} x\\right)^{3}',
+    'sin^2 x': '\\sin^{2} x',
+  };
+  for (const [src, want] of Object.entries(cases)) {
+    assert.equal(texOf(src), want, src);
+    assert.doesNotThrow(() => renders(texOf(src)), src);
+  }
+  // The value is unchanged: (sin⁻¹ 0.5)² = (π/6)²
+  close(val('asin^2 x', { x: 0.5 }, { variables: ['x'] }), (Math.PI / 6) ** 2, 1e-15);
+});
+
+test('toTex: every function and alias with a power renders in KaTeX', () => {
+  const names = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sec', 'csc', 'cot', 'exp', 'ln', 'log', 'sqrt', 'abs', 'sign', 'floor', 'cosec', 'arcsin', 'arccos', 'arctan', 'sgn'];
+  for (const name of names) {
+    for (const power of ['2', '3', '(2)', '(1/2)', '-1']) {
+      for (const arg of [' x', '(x)', '(x+1)', ' 2x', '(-x)']) {
+        for (const around of [(s) => s, (s) => `2${s}`, (s) => `${s} y`, (s) => `(${s})^2`, (s) => `-${s}`]) {
+          const src = around(`${name}^${power}${arg}`);
+          const r = tryCompile(src, { variables: TEX_VARS });
+          if (!r.ok) continue; // e.g. ln^-1 is an error by design
+          const t = toTex(r.ast);
+          assert.doesNotThrow(() => renders(t), `${src} → ${t}`);
+        }
+      }
+    }
+  }
+});
+
+test('toTex: a number before a bracketed fraction is never read as a mixed number', () => {
+  assert.equal(texOf('2(1/3)'), '2\\times \\frac{1}{3}'); // 2 × ⅓, not 2⅓
+  assert.equal(texOf('4*(1/2)'), '4\\times \\frac{1}{2}');
+  assert.equal(texOf('2(1/2)x^2'), '2\\times \\frac{1}{2}x^{2}');
+  assert.equal(texOf('x(1/2)'), 'x\\frac{1}{2}', 'a letter before a fraction is fine');
+  close(val('2(1/3)'), 2 / 3, 1e-15);
+});
+
+test('toTex: a leading minus sits in front of the fraction; .5 prints as 0.5', () => {
+  assert.equal(texOf('(-x)/2'), '-\\frac{x}{2}');
+  assert.equal(texOf('2((-x)/3)'), '2\\left(-\\frac{x}{3}\\right)');
+  assert.equal(texOf('x + (-x)/3'), 'x+\\left(-\\frac{x}{3}\\right)');
+  assert.equal(texOf('.5x'), '0.5x');
+  assert.equal(texOf('3. + x'), '3+x');
+  for (const src of ['(-x)/2', '2((-x)/3)', '((-x)/2)^2', '-((-x)/2)']) assert.doesNotThrow(() => renders(texOf(src)), src);
+});
+
+test('EXPRESSION_PATTERN is valid with both the u and v regex flags and means the same', () => {
+  const u = new RegExp(EXPRESSION_PATTERN, 'u');
+  const v = new RegExp(EXPRESSION_PATTERN, 'v'); // what browsers use for <input pattern>
+  for (const s of ['2x^2-3x+1', '|x−1| + 2π', 'sin(pi/6)', 'x + 1', 'x – 1', 'x²³', '3×x ÷ 2', '<b>', 'x;y', 'x{1}', 'x&y', 'a[1]']) {
+    assert.equal(v.test(s), u.test(s), s);
+  }
+  assert.ok(v.test('(x+1)/(x-1)|x|^2*3.5'));
+  assert.ok(!v.test('x[1]'));
 });

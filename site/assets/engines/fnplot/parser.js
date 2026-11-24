@@ -93,7 +93,9 @@ export const CONSTANT_NAMES = Object.freeze(Object.keys(CONSTANTS));
  * `pattern` for string params holding an expression: letters, digits, spaces, operators, brackets,
  * bars and the Unicode maths symbols the parser accepts. Markup and quote characters never pass.
  */
-export const EXPRESSION_PATTERN = '^[0-9A-Za-z\\s.+\\-*/^()|πθαβλμωφ−–×·⋅÷√⁰¹²³⁴⁵⁶⁷⁸⁹]*$';
+// Every punctuation mark is escaped, so the pattern is valid with the `u` flag (state.js) and the
+// stricter `v` flag that browsers use for an HTML input's `pattern` attribute.
+export const EXPRESSION_PATTERN = '^[0-9A-Za-z\\s\\.\\+\\-\\*\\/\\^\\(\\)\\|πθαβλμωφ−–×·⋅÷√⁰¹²³⁴⁵⁶⁷⁸⁹]*$';
 
 // Binding powers (Pratt).
 const BP = table({ '+': 10, '-': 10, '*': 20, '/': 20, '^': 30 });
@@ -593,7 +595,8 @@ export function freeVariables(ast) {
 const PREC = { add: 1, mul: 2, neg: 2, pow: 4, atom: 5 };
 
 function numText(node) {
-  if (node.text) return node.text;
+  // As typed, but ".5" reads as "0.5" and "3." as "3".
+  if (node.text) return node.text.replace(/^\./, '0.').replace(/\.$/, '');
   const v = node.value;
   if (!Number.isFinite(v)) return v > 0 ? '\\infty' : v < 0 ? '-\\infty' : '\\text{undefined}';
   return String(Number(v.toPrecision(12)));
@@ -627,7 +630,9 @@ function callTex(node, { bracket = false, powerTex = '' } = {}) {
 /** First character of a LaTeX string that will be printed (to decide between juxtaposition and ×). */
 const startsWithDigit = (s) => /^[0-9.]/.test(s);
 /** Joining "\pi" and "x" needs a space, or LaTeX reads one command "\pix". */
-const joinTex = (l, r) => (startsWithDigit(r) ? `${l}\\times ${r}` : /\\[A-Za-z]+$/.test(l) && /^[A-Za-z]/.test(r) ? `${l} ${r}` : `${l}${r}`);
+/** A number straight before a fraction would read as a mixed number (2\frac{1}{3} looks like 2⅓). */
+const mixedNumber = (l, r) => /[0-9.]$/.test(l) && r.startsWith('\\frac');
+const joinTex = (l, r) => (startsWithDigit(r) || mixedNumber(l, r) ? `${l}\\times ${r}` : /\\[A-Za-z]+$/.test(l) && /^[A-Za-z]/.test(r) ? `${l} ${r}` : `${l}${r}`);
 
 /**
  * LaTeX for an AST, for KaTeX labels.
@@ -654,10 +659,14 @@ function tex(node, { trailing = false } = {}) {
       return callTex(node, { bracket: trailing });
     case 'bin': {
       const { op, left, right } = node;
-      if (op === '/') return `\\frac{${tex(left)}}{${tex(right)}}`;
+      // A leading minus goes in front of the fraction: (-x)/2 → -\frac{x}{2}.
+      if (op === '/') return left.type === 'neg' ? `-\\frac{${tex(left.arg)}}{${tex(right)}}` : `\\frac{${tex(left)}}{${tex(right)}}`;
       if (op === '^') {
         // sin^2 x style, only for functions written as a command (not sqrt, |x| or floor).
-        if (node.fnPower && left.type === 'call' && FUNCTIONS[left.name][1]) return callTex(left, { bracket: trailing, powerTex: `^{${tex(right)}}` });
+        // Commands that already carry a superscript (\sin^{-1}) take the bracketed form instead,
+        // because \sin^{-1}^{2} is a double superscript: (\sin^{-1} x)^{2}.
+        const cmd = left.type === 'call' ? FUNCTIONS[left.name][1] : null;
+        if (node.fnPower && cmd && !cmd.includes('^')) return callTex(left, { bracket: trailing, powerTex: `^{${tex(right)}}` });
         let base = tex(left);
         if (precOf(left) < PREC.atom || left.type === 'call' && !['abs', 'floor'].includes(left.name)) base = paren(left.type === 'call' ? callTex(left) : base);
         else if (left.type === 'bin' && left.op === '/') base = paren(base);
