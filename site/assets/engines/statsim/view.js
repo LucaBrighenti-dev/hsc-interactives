@@ -22,8 +22,8 @@ const p4 = formatProbability;
 
 /**
  * Label for a boundary of the normal interval: its x value and z-score, e.g. "x = 15.5, z = 1.30". z has 3
- * significant figures, like the z readout. Below 0.0005 it shows as 0: np = 30 × 0.4 is 12.000000000000002 in
- * floating point, so a boundary at the mean would otherwise read "z = −6.62 × 10⁻¹⁶".
+ * significant figures, like the z readout. Below 0.0005 it shows as 0: np = 50 × 0.14 is 7.000000000000001 in
+ * floating point, so a boundary at the mean would otherwise read "z = −3.62 × 10⁻¹⁶".
  */
 export function boundaryLabel(x, mean, sd, { withX = true } = {}) {
   const z = zScore(x, mean, sd);

@@ -466,8 +466,10 @@ test('boundary label: "x = 15.5, z = 1.30", with z to 3 significant figures like
   assert.equal(boundaryLabel(15, 12, sd), 'x = 15, z = 1.12');
   assert.equal(boundaryLabel(9.5, 12, sd), 'x = 9.5, z = −0.932'); // true minus sign
   assert.equal(boundaryLabel(55.5, 50, 5), 'x = 55.5, z = 1.10');
-  // np = 30 × 0.4 is 12.000000000000002 in floating point: the boundary at the mean is z = 0, not "−6.62 × 10⁻¹⁶".
-  assert.equal(boundaryLabel(12, 30 * 0.4, sd), 'x = 12, z = 0.00');
+  // np = 50 × 0.14 is 7.000000000000001 in floating point: the boundary at the mean is z = 0, not "−3.62 × 10⁻¹⁶".
+  assert.equal(50 * 0.14, 7.000000000000001);
+  assert.equal(boundaryLabel(7, 50 * 0.14, Math.sqrt(50 * 0.14 * 0.86)), 'x = 7, z = 0.00');
+  assert.equal(boundaryLabel(12, 12, sd), 'x = 12, z = 0.00');
   // P(X = 15) in B(50, 0.3) with the correction: limits 15 ± 0.5, z = ±0.5/√10.5 = ±0.154.
   assert.equal(boundaryLabel(14.5, 15, Math.sqrt(10.5)), 'x = 14.5, z = −0.154');
   assert.equal(boundaryLabel(15.5, 15, Math.sqrt(10.5)), 'x = 15.5, z = 0.154');
