@@ -423,6 +423,7 @@ Wave 0 made these additions and clarifications while building §5.1–§5.9. Eac
 - A check may set `"preset": "<name>"` to load that preset first. Every param in `params` must be accepted unchanged by the engine (a clamp fails the check), and `"run": "complete"` must actually complete.
 - Spec frontmatter from `npm run generate` also lists `page` and the `listings` whose presets the page must define.
 - `specs/_demo.md` is the reference spec for `_template.html`; the runner always includes it.
+- Specs may be written before their engine merges and list "keys to reconcile". `npm test` checks a spec's param and output keys against the engine only once its page is in `review` or `live`. The Wave 2 page task reconciles its own spec's keys (params, presets, acceptance JSON) with the merged engine and says so in its PR; the numbers must not change without a hand calculation.
 
 **Auth (§5.6, §5.7)**
 - `LOCAL_ACCESS_CODES` is `[{ code, kind }]`, mirroring the `access_codes` table. There is **one shared access code, `TTT2026`**, for teachers and their classes (Luca, 25 Nov). It also gives the Founding Educator badge. The `kind` column stays so more codes could be added later without a schema change.
@@ -703,7 +704,7 @@ Run `npm run create-issues -- --apply` once (after Gate B) so every page has a G
 | `site/index.html`, `site/assets/hub/**` | W1-HUB |
 | `syllabus` arrays in fragments, `scripts/scrape-syllabus.mjs`, `docs/syllabus-reference/**`, `docs/gates/syllabus-report.md` | W1-SYL |
 | `specs/<prefix>-*.md`, `docs/gates/gate-b-<subject>.md` | W1-SPEC-<subject> |
-| A page's HTML, fragment (except `syllabus`), notes, custom engine, its tests, its thumbnail | That page's Wave 2 task |
+| A page's HTML, fragment (except `syllabus`), notes, custom engine, its tests, its thumbnail, and reconciling its own spec's keys with the merged engine (§5.10) | That page's Wave 2 task |
 
 ### 13.4 Branches and merging
 
