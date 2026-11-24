@@ -11,3 +11,7 @@ PRs that passed independent review (`VERDICT: PASS`) with CI green. The orchestr
 | [#16](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/16) | W1-SPEC-me1 | Maths Ext 1 P0+P1 specs (11) | FAIL 2 → fixed, re-checked | 2026-11-25 |
 | [#5](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/5) | W1-E-fnplot (1) | shared expression parser | FAIL 4 → FAIL 2 → fixed, re-checked | 2026-11-25 |
 | [#7](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/7) | W1-SPEC-me2 | Maths Ext 2 P0+P1 specs (5) | FAIL 2 → PASS | 2026-11-25 |
+| [#12](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/12) | W1-E-wave | wave engine (interference, modulation, wave machine, Doppler) | FAIL 3 → PASS | 2026-11-25 |
+| [#13](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/13) | W1-E-argand | argand engine (operations, loci, roots) | FAIL 3 → PASS | 2026-11-25 |
+| [#30](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/30) | statsim CR | statsim polish | PASS | 2026-11-25 |
+| [#18](https://github.com/LucaBrighenti-dev/hsc-interactives/pull/18) | W1-E-statics | statics engine (truss, beam, concurrent, moments, incline) | FAIL 5 → PASS | 2026-11-25 |
