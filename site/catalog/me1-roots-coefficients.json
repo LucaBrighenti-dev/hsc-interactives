@@ -15,9 +15,13 @@
       "version": "2024",
       "area": "Functions",
       "focusArea": "Polynomials",
+      "subtopic": "Sums and products of zeroes of polynomials",
       "year": 11,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ME1-11-02"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-1-11-12-2024/content/year-11/fa858a6f68",
+      "verified": true
     }
   ]
 }

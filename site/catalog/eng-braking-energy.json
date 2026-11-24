@@ -13,17 +13,26 @@
     {
       "course": "Engineering Studies",
       "version": "2011",
-      "area": "Braking Systems",
-      "outcomes": [],
-      "verified": false
+      "area": "Braking systems",
+      "subtopic": "Engineering mechanics and hydraulics",
+      "year": 11,
+      "outcomes": [
+        "P3.1"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/tas/engineering-studies-stage-6-2011",
+      "verified": true
     },
     {
       "course": "Engineering Studies",
       "version": "2026",
       "focusArea": "Transport engineering and automation",
+      "subtopic": "Mechanics systems (work, energy and power)",
       "year": 12,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ES-12-04"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/tas/engineering-studies-11-12-2026/content/year-12/fab1f95ed9",
+      "verified": true
     }
   ]
 }

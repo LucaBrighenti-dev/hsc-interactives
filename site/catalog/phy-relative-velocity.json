@@ -14,16 +14,25 @@
       "course": "Physics",
       "version": "2017",
       "area": "Module 1: Kinematics",
-      "outcomes": [],
-      "verified": false
+      "subtopic": "Motion on a Plane",
+      "year": 11,
+      "outcomes": [
+        "PH11-8"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/science/physics-stage-6-2017",
+      "verified": true
     },
     {
       "course": "Physics",
       "version": "2025",
       "focusArea": "Fundamentals of mechanics",
+      "subtopic": "Motion relationships",
       "year": 11,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "PY-11-01"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/science/physics-11-12-2025/content/year-11/fa874ba975",
+      "verified": true
     }
   ]
 }

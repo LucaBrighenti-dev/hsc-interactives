@@ -14,8 +14,13 @@
       "course": "Physics",
       "version": "2017",
       "area": "Module 3: Waves and Thermodynamics",
-      "outcomes": [],
-      "verified": false
+      "subtopic": "Thermodynamics",
+      "year": 11,
+      "outcomes": [
+        "PH11-10"
+      ],
+      "url": "https://www.nsw.gov.au/education-and-training/nesa/curriculum/science/physics-stage-6-2017",
+      "verified": true
     }
   ]
 }

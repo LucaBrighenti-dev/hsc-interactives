@@ -15,9 +15,26 @@
       "version": "2024",
       "area": "Trigonometric functions",
       "focusArea": "Inverse trigonometric functions",
+      "subtopic": "Definitions of inverse trigonometric functions",
       "year": 12,
-      "outcomes": [],
-      "verified": false
+      "outcomes": [
+        "ME1-12-03"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-1-11-12-2024/content/year-12/fab9c2c5a7",
+      "verified": true
+    },
+    {
+      "course": "Mathematics Extension 1",
+      "version": "2024",
+      "area": "Calculus",
+      "focusArea": "Further calculus skills",
+      "subtopic": "Further derivatives of functions",
+      "year": 12,
+      "outcomes": [
+        "ME1-12-04"
+      ],
+      "url": "https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-1-11-12-2024/content/year-12/fa8f1cef28",
+      "verified": true
     }
   ]
 }
