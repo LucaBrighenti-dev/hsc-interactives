@@ -16,14 +16,20 @@ const ENGINES = path.join(ROOT, 'site', 'assets', 'engines');
 const PARAM_TYPES = ['number', 'boolean', 'enum', 'string', 'list'];
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
+// A folder is an engine once it has any of model.js, view.js or index.js (then it must have all three).
+// A folder with only shared helpers (e.g. fnplot/parser.js before the engine lands) is not checked here.
+const ENGINE_FILES = ['model.js', 'view.js', 'index.js'];
 function engineDirs() {
   const dirs = [];
+  const add = (name, dir) => {
+    if (ENGINE_FILES.some((f) => fs.existsSync(path.join(dir, f)))) dirs.push({ name, dir });
+  };
   for (const name of fs.readdirSync(ENGINES)) {
     const full = path.join(ENGINES, name);
     if (!fs.statSync(full).isDirectory()) continue;
     if (name === 'custom') {
-      for (const id of fs.readdirSync(full)) if (fs.statSync(path.join(full, id)).isDirectory()) dirs.push({ name: id, dir: path.join(full, id) });
-    } else dirs.push({ name, dir: full });
+      for (const id of fs.readdirSync(full)) if (fs.statSync(path.join(full, id)).isDirectory()) add(id, path.join(full, id));
+    } else add(name, full);
   }
   return dirs;
 }
