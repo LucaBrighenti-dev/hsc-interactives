@@ -16,7 +16,7 @@ syllabus:            # copied from the catalog fragment; verified by W1-SYL
 > Backlog summary: True length and true shape by auxiliary views; transition-piece developments.
 
 ## Learning goal
-Students find the true length of an oblique line and the true shape of an inclined face using an auxiliary view: a view projected onto a plane parallel to the line (or face), built from the principal views by transferring distances across fold lines. They see that a line is foreshortened in any view not parallel to it, and that its true angle to the horizontal plane appears only in the auxiliary view. This is the drawing skill behind developing sheet-metal parts such as aircraft ducts and transition pieces.
+Students find the true length of an oblique line and the true shape of an inclined face using an auxiliary view: a view projected onto a plane parallel to the line (or face), built from the principal views by transferring distances across fold lines. They see that a line is foreshortened in any view not parallel to it, and that its true angle to the horizontal plane appears only in the auxiliary view, unless the line happens to be parallel to the frontal plane (then the front view shows it). This is the drawing skill behind developing sheet-metal parts such as aircraft ducts and transition pieces.
 
 Syllabus fit: 2011 Aeronautical Engineering (descriptive geometry: true length, true shape, auxiliary views, developments); 2026 Aeronautical and aerospace engineering, Year 12, descriptive geometry. Pitched at Stage 6: first auxiliary views from third-angle principal views; developments introduced through true lengths.
 
@@ -58,8 +58,8 @@ g is not used on this page.
 | Output | Label | Unit | Sig figs |
 | --- | --- | --- | --- |
 | trueLength | True length (auxiliary view) | mm | 4 |
-| planLength | Length in the top view | mm | 4 |
-| frontLength | Length in the front view | mm | 4 |
+| planLength | Length in the top view (face: the chamfer's run, its slope seen from above) | mm | 4 |
+| frontLength | Length in the front view (face: the face seen edge-on, which is its true width) | mm | 4 |
 | angleHP | True angle to the horizontal plane | ° | 4 |
 | angleVP | True angle to the frontal plane | ° | 4 |
 | trueArea | True area of the face | mm² | 4 |
@@ -89,7 +89,8 @@ The true-length line and true shape are drawn thicker than the construction and 
 
 ## Engine change requests
 - Confirm at merge: every param and output used here is in the space3d engine's in-progress `meta` for `descriptive` (read from the engine builder's working copy on 25 November 2026; not yet pushed): params `feature`, `pointA`, `pointB`, `chamferRun`, `chamferDrop`, `showProjectors`, `showLabels`, `camera`, `viewFrom`; outputs `trueLength`, `planLength`, `frontLength`, `angleHP`, `angleVP`, `trueArea`, `planArea`.
-- Optional, for a later engine version (the backlog mentions transition-piece developments): a square-to-round transition piece developed by triangulation. Worked numbers for a 100 mm square base, Ø60 top and 80 mm height with 12 divisions of the circle: corner triangulation lines 96.437 mm (to the circle points in line with the square's sides) and 90.564 mm (to the points 30° from them); seam line √(20² + 80²) = 82.462 mm; each developed top segment is a chord 2 × 30 × sin 15° = 15.529 mm, so the 12 chords total 186.35 mm against the true circumference π × 60 = 188.50 mm (1.14% short, which is why more divisions give a better pattern).
+- **Summary change (the card must not promise what the page lacks):** the backlog and catalog summary says "True length and true shape by auxiliary views; transition-piece developments", but this page does not build developments yet. Until it does, the summary should read "True length and true shape by auxiliary views." The page task owns the catalog fragment's summary and should make that change; `docs/backlog.json` needs the same edit from the lead or orchestrator, so `npm run generate -- --check` stays in step.
+- Optional, for a later engine version (to restore the summary's promise): a square-to-round transition piece developed by triangulation. Worked numbers for a 100 mm square base, Ø60 top and 80 mm height with 12 divisions of the circle: corner triangulation lines 96.437 mm (to the circle points in line with the square's sides) and 90.564 mm (to the points 30° from them); seam line √(20² + 80²) = 82.462 mm; each developed top segment is a chord 2 × 30 × sin 15° = 15.529 mm, so the 12 chords total 186.35 mm against the true circumference π × 60 = 188.50 mm (1.14% short, which is why more divisions give a better pattern).
 
 ## Acceptance
 Every number below comes from the formula and hand calculation shown here. For a line with Δ = B − A = (Δx, Δy, Δz): top view length √(Δx² + Δy²); front view length √(Δx² + Δz²); true length √(Δx² + Δy² + Δz²); true angle to the horizontal plane sin⁻¹(|Δz|/TL); to the frontal plane sin⁻¹(|Δy|/TL). For the chamfer on a block 30 mm deep, with run r and drop d: the face is a rectangle 30 mm by √(r² + d²), so its true area is 30√(r² + d²), its top-view area is 30r, and its slope is tan⁻¹(d/r).

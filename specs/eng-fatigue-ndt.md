@@ -23,8 +23,8 @@ Syllabus fit: 2011 Aeronautical Engineering (fatigue, crack propagation, non-des
 ## What the student sees
 Default view at 1920×1080, light projector theme, three panels chosen with **View** (all three fit side by side on wide screens):
 
-- **Crack growth:** a plate with a hole (a rivet hole as the stress raiser) under a cyclic load drawn as a small oscillating arrow pair. Pressing play runs a time-lapse of the component's life: a crack grows from the edge of the hole, slowly at first and then rapidly, until the plate fractures with a "FRACTURE" tag. Beside it, a graph of crack length (as a fraction of the critical length) against life used (%) draws live, with stage labels "initiation", "growth" and "fracture", and a dashed line at the smallest crack the chosen NDT method could find.
-- **S–N curves:** stress amplitude ÷ UTS against cycles to failure on a logarithmic axis from 10³ to 10⁹. The steel curve levels off at its endurance limit (labelled); the aluminium curve keeps falling (labelled "no endurance limit"). A movable marker reads the curve at a chosen number of cycles. Both curves are labelled "schematic".
+- **Crack growth:** a plate with a hole (a rivet hole as the stress raiser) under a cyclic load drawn as a small oscillating arrow pair. Pressing play runs a time-lapse of the component's life: a crack grows from the edge of the hole, slowly at first and then rapidly, until the plate fractures with a "FRACTURE" tag. Beside it, a graph of crack length (as a fraction of the critical length) against life used (%) draws live, with stage labels "initiation", "growth" and "fracture" (schematic: the model starts from a crack already a₀ long, so "initiation" marks the early slow growth, not crack formation).
+- **S–N curves:** stress amplitude ÷ UTS against cycles to failure on a logarithmic axis from 10³ to 10⁹. The steel curve levels off at its endurance limit (labelled "endurance limit: polished specimen in air"); the aluminium curve keeps falling (labelled "no endurance limit"). A movable marker reads the curve at a chosen number of cycles. Both curves are labelled "schematic".
 - **NDT methods:** a matrix of the five methods against four flaw types (surface crack, crack just below the surface, internal void, delamination) for the chosen material (steel, aluminium alloy, carbon fibre composite). Each cell shows "Yes", "Partly" or "No" in words with a symbol (✓, ~, ✕) and a one-line reason; the selected method and flaw are ringed, and a short card explains how the method works and its limits.
 - **Footer:** assumptions, including "schematic curves, not data for a specific alloy".
 
@@ -65,13 +65,14 @@ No preset uses g.
 | crackLength | Crack length | mm | 3 |
 | t | Time-lapse time | s | 3 |
 | snRatio | Stress amplitude ÷ UTS at the marker | | 3 |
-| ndtLevel | Can the method find the flaw? (2 yes, 1 partly, 0 no) | | 1 |
+| ndtLevel | Can the method find the flaw? (2 yes, 1 partly, 0 no) | | integer |
 
 ## Assumptions shown on stage
 - Schematic curves for teaching, not data for a specific alloy
-- Crack growth follows the Paris law with exponent 3 under constant-amplitude loading
-- Steel S–N: 0.9 × UTS at 10³ cycles falling to an endurance limit of 0.5 × UTS at 10⁶ (a common rule of thumb)
-- NDT capabilities simplified from general practice
+- Crack growth follows the Paris law da/dN = C(ΔK)^m with m = 3 under constant-amplitude loading (Paris and Erdogan, 1963; m ≈ 3 is typical of steels, for example Barsom and Rolfe, *Fracture and Fatigue Control in Structures*)
+- Steel S–N: 0.9 × UTS at 10³ cycles falling to an endurance limit of 0.5 × UTS at 10⁶ (the estimate in Budynas and Nisbett, *Shigley's Mechanical Engineering Design*); the limit applies to a polished specimen in air at constant amplitude, real parts are lower, and corrosion removes it
+- Steels have an endurance limit and aluminium alloys do not (Callister and Rethwisch, *Materials Science and Engineering: An Introduction*); the aluminium curve is an illustrative shape
+- NDT capabilities simplified from FAA Advisory Circular AC 43.13-1B, chapter 5 (non-destructive inspection), and ASM Handbook Vol. 17 (Nondestructive Evaluation and Quality Control)
 
 ## Try this (3–5 predict, observe, explain prompts)
 1. Predict: when half the component's life has passed, how long will the crack be compared with the critical length? Observe at 50%.
@@ -82,8 +83,8 @@ No preset uses g.
 
 ## Teacher notes outline
 - Misconceptions to target: fatigue cracks grow at a steady rate (they accelerate); a part that has passed an inspection is safe forever (the next inspection must come before the crack can grow to critical); stress below the yield strength cannot cause failure (cyclic stress well below yield can); one NDT method finds everything (each has blind spots: material, depth, orientation).
-- 10-minute lesson flow: (1) run the crack time-lapse and pause at 50% and 90% of life; (2) why inspections must find small cracks; (3) S–N curves: steel against aluminium; (4) the NDT matrix: pick a method for a landing-gear leg (steel), a wing skin (aluminium) and a composite tail; (5) link to the damage-tolerant design idea in aircraft (inspect at least twice between the detectable and the critical crack size).
-- Original HSC-style question idea: an aluminium wing skin and a steel landing-gear leg must be inspected for fatigue cracks. Recommend an NDT method for each, justify the choice, and explain why the wing has a finite fatigue life while the gear leg could be designed for an unlimited one. Worked answer outline: wing skin: eddy-current or dye penetrant for surface cracks at rivet holes, ultrasonic for hidden cracks (magnetic particle cannot work on aluminium); gear leg: magnetic particle for surface and near-surface cracks; aluminium alloys have no endurance limit, but steel below its endurance limit (about half its UTS) can survive indefinitely.
+- 10-minute lesson flow: (1) run the crack time-lapse and pause at 50% and 90% of life; (2) why inspections must find small cracks; (3) S–N curves: steel against aluminium; (4) the NDT matrix: pick a method for a landing-gear leg (steel), a wing skin (aluminium) and a composite tail; (5) link to the damage-tolerant design idea in aircraft: inspections are scheduled so that a crack is found before it can grow from the smallest size an inspection reliably detects to the critical size (the approach of FAA AC 25.571, Damage tolerance and fatigue evaluation of structure).
+- Original HSC-style question idea: an aluminium wing skin and a steel landing-gear leg must be inspected for fatigue cracks. Recommend an NDT method for each, justify the choice, and explain how the two parts' fatigue lives are managed. Worked answer outline: wing skin: eddy-current or dye penetrant for surface cracks at rivet holes, ultrasonic for hidden cracks (magnetic particle cannot work on aluminium); gear leg: magnetic particle for surface and near-surface cracks. Aluminium alloys have no endurance limit, so the wing has a finite fatigue life and is inspected on a damage-tolerance schedule. Steel does have an endurance limit, but a gear leg stressed below it would be far too heavy, so real gear legs are designed safe-life: they are retired after a set number of landings.
 
 ## Accessibility notes
 NDT cells use words ("Yes", "Partly", "No") and symbols (✓, ~, ✕) as well as shading, plus a reason in text. The crack is drawn as a dark line with its length labelled; stage names are text labels on the graph. S–N curves are labelled at their ends and differ by line style (steel solid, aluminium dashed). All controls are keyboard operable; Space plays and pauses. Stage label: "Fatigue crack growing from a hole: … percent of life used, crack … millimetres of a critical … millimetres."
@@ -91,6 +92,9 @@ NDT cells use words ("Yes", "Partly", "No") and symbols (✓, ~, ✕) as well as
 ## Engine change requests
 - Keys to reconcile with the materials engine's `meta` (not yet published): params `view`, `initialCrack`, `criticalCrack`, `runTime`, `snMaterial`, `snLogCycles`, `ndtMethod`, `ndtFlaw`, `ndtMaterial`, `timeScale`; outputs `lifeUsed`, `crackRatio`, `crackLength`, `t`, `snRatio`, `ndtLevel`. The engine's `createFatigueRun({ runTime, a0, ac })` already reports `t`, `lifeUsed` and `crackRatio`; `crackLength` (= crackRatio × a_c), `snRatio` (from `snSchematic`) and `ndtLevel` (2, 1, 0 from `ndtResult`'s yes, partial, no) are new outputs.
 - The NDT method list in the engine has the five methods of this page; eddy-current testing could be added later (it is the usual check for cracks at aluminium rivet holes).
+- No "smallest detectable crack" line is drawn: per-method detectable sizes depend on the procedure and would need probability-of-detection data (for example MIL-HDBK-1823A), so the page keeps the idea qualitative.
+- Sanity check of the illustrative aluminium curve: at 5 × 10⁸ cycles it gives 0.75 × 10^(−0.07 × 5.699) = 0.299 × UTS, close to 2024-T3's fatigue strength of 138 MPa at 5 × 10⁸ cycles, 0.286 × its 483 MPa UTS (ASM Aerospace Specification Metals data sheet, via MatWeb).
+- `ndtLevel` should be `integer: true`. The steel curve is Basquin's S = aN^b with b = log₁₀(0.5/0.9)/3 = −0.0851 between 10³ and 10⁶ cycles.
 
 ## Acceptance
 Every number below comes from the formula and hand calculation shown here. The engine steps the time-lapse by 1/120 s, so a 10 s run has 1200 steps and life used = steps/1200.

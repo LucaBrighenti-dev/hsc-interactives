@@ -45,8 +45,8 @@ Static custom page: play, step and reset are hidden.
 | runHours | Hours a day at this wind speed | h | 0 | 24 | 0.5 | 8 | wind |
 | storage | Storage | | | | | none | enum: `none`, `battery`, `pumped-hydro` |
 | storageShare | Share of energy that goes through storage | % | 0 | 100 | 5 | 50 | |
-| batteryEfficiency | Battery round-trip efficiency | % | 60 | 100 | 1 | 90 | battery |
-| pumpedEfficiency | Pumped-hydro round-trip efficiency | % | 50 | 95 | 1 | 80 | pumped hydro |
+| batteryEfficiency | Battery round-trip efficiency | % | 60 | 100 | 1 | 90 | battery; 90% is typical of lithium-ion storage (of the order AEMO's Integrated System Plan inputs and assumptions use) |
+| pumpedEfficiency | Pumped-hydro round-trip efficiency | % | 50 | 95 | 1 | 80 | pumped hydro; 80% is typical (of the order AEMO's Integrated System Plan inputs and assumptions use) |
 | reservoirVolume | Upper reservoir volume | m³ | 100 | 100000 | 100 | 10000 | pumped hydro |
 | head | Height between reservoirs h | m | 10 | 500 | 5 | 100 | pumped hydro |
 | g | Gravitational field g | m/s² | 9.8 | 10 | 0.2 | 10 | pumped hydro |
@@ -59,8 +59,9 @@ Pure functions in `model.js`; powers in kW, energies in kWh:
 - Energy generated per day E_gen = P_e × hours (sunHours or runHours).
 - Storage with round-trip efficiency η_s and share s: energy delivered E_del = E_gen × [(1 − s) + s × η_s]; storage loss = E_gen − E_del; with no storage E_del = E_gen.
 - Overall chain efficiency = E_del/(P_in × hours) × 100%.
-- Pumped-hydro capacity (shown when chosen): E = ρ_water × V × g × h/3.6 × 10⁶ kWh, with ρ_water = 1000 kg/m³.
-- A wind speed of 0 or an irradiance of 0 gives zero power and an efficiency readout of "—", never NaN.
+- Pumped-hydro capacity (shown when chosen): E = ρ_water × V × g × h/(3.6 × 10⁶) kWh, with ρ_water = 1000 kg/m³. When the energy sent to storage in a day (s × E_gen) is more than this capacity, the stage notes "More than the reservoir can hold" (the delivered-energy readout is unchanged; the note is a prompt to resize).
+- A wind speed of 0, an irradiance of 0 or 0 hours gives zero energy and an efficiency readout of "—" (0/0), never NaN.
+- On the Sankey diagram the wind rotor's loss band is labelled with the Betz limit ("at most 59.3% of the wind's power can be captured").
 
 ## Presets
 | Name | Values | Why |
@@ -98,7 +99,7 @@ Every preset uses g = 10 m/s² (shown on stage).
 5. Observe: in **wind-hydro**, how high would the reservoir need to be to store twice the energy with the same water?
 
 ## Teacher notes outline
-- Misconceptions to target: a 20% efficient panel wastes 80% "of the electricity" (it is 80% of the sunlight that never became electricity); doubling the wind speed doubles the power (it is eight times); storage creates energy or is lossless; a higher efficiency stage late in the chain matters as much as an early one (all stages multiply, so each matters equally in proportion).
+- Misconceptions to target: a 20% efficient panel wastes 80% "of the electricity" (it is 80% of the sunlight that never became electricity); doubling the wind speed doubles the power (it is eight times); storage creates energy or is lossless; improving the first stage matters more than improving a later one (every stage multiplies, so a 10% relative gain in any stage gives 10% more output).
 - 10-minute lesson flow: (1) solar chain by hand: 20 kW of sunlight × 0.20 × 0.96 = 3.84 kW; (2) the Sankey diagram; (3) add a battery and multiply the efficiencies; (4) wind: v³ and the Betz limit; (5) pumped hydro: E = mgh in kWh.
 - Original HSC-style question idea: a farm installs 12 panels of 1.8 m² each with 21% efficiency and a 97% inverter. On a day with 950 W/m² for 5.5 hours, find the electrical power, the daily energy, and the energy delivered if 40% of it passes through a battery with 90% round-trip efficiency. Worked solution: P_in = 12 × 1.8 × 0.95 = 20.52 kW; P_e = 20.52 × 0.21 × 0.97 = 4.180 kW; E = 22.99 kWh; delivered = 22.99 × (0.6 + 0.4 × 0.9) = 22.07 kWh.
 
@@ -115,7 +116,7 @@ Every number below comes from the formula and hand calculation shown here.
 - **Check 2, solar with a battery.** Half through a 90% battery: E_del = 19.2 × (0.5 + 0.5 × 0.9) = 19.2 × 0.95 = **18.24 kWh**; loss = **0.96 kWh**; efficiency = 18.24/100 = **18.24%**.
 - **Check 3, wind.** A = π × 20² = 1256.64 m². P_in = ½ × 1.225 × 1256.64 × 10³/1000 = **769.69 kW**. P_e = 769.69 × 0.4 × 0.9 = **277.09 kW**. E_gen = 277.09 × 8 = **2216.7 kWh**; efficiency = 0.4 × 0.9 = **36%**.
 - **Check 4, half the wind speed.** v = 5 m/s: P_in = 769.69/8 = **96.211 kW** (the cube law).
-- **Check 5, wind with pumped hydro.** Half through an 80% round trip: E_del = 2216.7 × (0.5 + 0.5 × 0.8) = 2216.7 × 0.9 = **1995.0 kWh**; loss **221.67 kWh**; efficiency = 36 × 0.9 = **32.4%**. Capacity of 10 000 m³ at 100 m: E = 1000 × 10 000 × 10 × 100 = 10¹⁰ J = 10¹⁰/3.6 × 10⁶ = **2777.8 kWh**.
+- **Check 5, wind with pumped hydro.** Half through an 80% round trip: E_del = 2216.7 × (0.5 + 0.5 × 0.8) = 2216.7 × 0.9 = **1995.0 kWh**; loss **221.67 kWh**; efficiency = 36 × 0.9 = **32.4%**. Capacity of 10 000 m³ at 100 m: E = 1000 × 10 000 × 10 × 100 = 10¹⁰ J = 10¹⁰/(3.6 × 10⁶) = **2777.8 kWh**.
 - **Check 6, question idea.** P_in = 12 × 1.8 × 950/1000 = 20.52 kW; P_e = 20.52 × 0.21 × 0.97 = **4.17992 kW**; E_gen = 4.17992 × 5.5 = **22.990 kWh**; with 40% through a 90% battery, E_del = 22.990 × 0.96 = **22.070 kWh**.
 
 ```acceptance
