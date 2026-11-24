@@ -82,8 +82,9 @@ Not shown as readouts but used by the acceptance checks and the verdict banner: 
 
 Definitions:
 - angle = cos⁻¹(|u·v| / (|u||v|)), the acute angle between the lines, in degrees.
-- Parallel when |u × v| ≤ 1e-9 |u||v|. Then distance = |(a₂ − a₁) × u| / |u|; coincident when that distance is ≤ 1e-9.
-- Otherwise distance = |(a₂ − a₁)·(u × v)| / |u × v|; intersecting when that is ≤ 1e-9 (then ix, iy, iz, lambdaI, muI are set), skew otherwise. Intersection outputs are NaN unless the lines intersect.
+- Let s = 1 + |a₂ − a₁| be a length scale. Parallel when |u × v| ≤ 1e-9 |u||v| (u is a multiple of v). Then distance = |(a₂ − a₁) × u| / |u|; coincident when that distance is ≤ 1e-9 s.
+- Otherwise distance = |(a₂ − a₁)·(u × v)| / |u × v|; intersecting when that is ≤ 1e-9 s (then ix, iy, iz, lambdaI, muI are set), skew otherwise. Intersection outputs are NaN unless the lines intersect. (The cross product is the engine's working only: the Ext 2 course tests parallel lines by u = kv and finds an intersection by solving for λ and μ, and the stage explains it that way.)
+- The shortest distance between skew lines is an extension readout, shown with **Show closest approach**. In the notes it is found with the dot product alone: the closest points P = a₁ + λu and Q = a₂ + μv satisfy PQ·u = 0 and PQ·v = 0, two linear equations in λ and μ.
 - Sphere: substituting r = a₁ + λu into |r − c|² = R² gives Aλ² + Bλ + C = 0 with A = |u|², B = 2u·(a₁ − c), C = |a₁ − c|² − R², and Δ = B² − 4AC. hits = 2, 1 or 0 as Δ > 0, Δ = 0 or Δ < 0, where |Δ| ≤ 1e-9 (B² + |4AC|) counts as 0. lambda1 ≤ lambda2 are the roots (equal when tangent, NaN for a miss); chord = |u|(lambda2 − lambda1) (0 when tangent, NaN for a miss); centreDistance = |(a₁ − c) × u| / |u|. Sphere outputs are NaN in lines mode, and line-pair outputs are NaN in sphere mode.
 
 ## Assumptions shown on stage
@@ -100,7 +101,7 @@ Definitions:
 
 ## Teacher notes outline
 - Misconceptions to target: two lines that are not parallel must intersect (true in the plane, false in space); the direction vector depends on which point is chosen; lines with directions u and −2u are different lines; "no solution for λ" means the line misses the sphere even when the algebra was set up with the wrong point; a 2D picture (top view) of skew lines shows a real intersection.
-- 10-minute lesson flow: (1) default skew pair from the top view: "do they meet?" (2 min); (2) rotate and set up the three equations for λ and μ; solve two, test the third (3 min); (3) parallel and coincident presets: the role of u × v or of u = kv (2 min); (4) line and sphere: substitute, form the quadratic, read Δ; slide λ to see the roots as crossing points (3 min).
+- 10-minute lesson flow: (1) default skew pair from the top view: "do they meet?" (2 min); (2) rotate and set up the three equations for λ and μ; solve two, test the third (3 min); (3) parallel and coincident presets: parallel means u = kv for some k, and coincident means a point of one line also lies on the other (2 min); (4) line and sphere: substitute, form the quadratic, read Δ; slide λ to see the roots as crossing points (3 min).
 - Original HSC-style question idea: the line ℓ passes through A(3, −1, 2) in the direction 2i + j + 2k, and m is the line r = i + μ(i + j − k). (a) Show that ℓ and m are skew. (b) Show that ℓ meets the sphere |r − (i + 2j + k)| = √14 at A and at exactly one other point, and find that point. (Answer: substituting gives 9λ² + 6λ = 0, so λ = 0 or −2/3; the other point is (5/3, −5/3, 2/3).) Write the full question and worked solution in the notes file.
 
 ## Accessibility notes
@@ -112,14 +113,14 @@ Definitions:
 No `space3d` engine meta had been pushed when this spec was written (origin had no `w1/engine-space3d` branch on 25 Nov). **Keys to reconcile with engine meta:**
 - Params for setup `lines-spheres`: `mode`, `point1`, `dir1`, `point2`, `dir2`, `centre`, `radius`, `lambda`, `showClosest`, `viewFrom`. The points and directions are `list` params of exactly three numbers; if the engine prefers scalar params (for example `a1x`, `a1y`, `a1z`), the page builder reconciles them and the acceptance block is updated to match.
 - Outputs: `relation`, `angle`, `distance`, `ix`, `iy`, `iz`, `lambdaI`, `muI`, `px`, `py`, `pz`, `discriminant`, `hits`, `lambda1`, `lambda2`, `chord`, `centreDistance`, `pCentreDistance`.
-- Behaviour needed: the relative tolerances above for "parallel", "intersecting" and "tangent", so exact cases from integer inputs classify correctly; clamp the cosine to [−1, 1] before cos⁻¹ (√6 × √24 rounds so that |u·v|/(|u||v|) can come out as 1.0000000000000002); `describe()` for the aria-label.
+- Behaviour needed: the scaled tolerances above for "parallel", "coincident", "intersecting" and "tangent", so exact cases from integer inputs classify correctly; clamp the cosine to [−1, 1] before cos⁻¹ (√6 × √24 rounds so that |u·v|/(|u||v|) can come out as 1.0000000000000002); `describe()` for the aria-label.
 
 ## Acceptance
 Every number below comes from the formula and hand calculation shown here. All checks are static.
 
 Line 1 is r = (1, 2, 3) + λ(1, −1, 2) in every lines-mode check, so u = (1, −1, 2) and |u| = √6.
 
-- **Check 1, skew (default).** v = (1, 1, 1), a₂ − a₁ = (1, −2, −2). u is not a multiple of v. Equating components: 1 + λ = 2 + μ, 2 − λ = μ, 3 + 2λ = 1 + μ. The first two give 1 + λ = 4 − λ, so λ = 3/2 and μ = 1/2; the third then reads 6 = 3/2, which is false, so the lines are **skew (relation 3)**. u × v = ((−1)(1) − (2)(1), (2)(1) − (1)(1), (1)(1) − (−1)(1)) = (−3, 1, 2), |u × v| = √14. (a₂ − a₁)·(u × v) = −3 − 2 − 4 = −9, so distance = 9/√14 = **2.40535117721**. u·v = 1 − 1 + 2 = 2 and |v| = √3, so cos θ = 2/√18, θ = **61.8744942979°**.
+- **Check 1, skew (default).** v = (1, 1, 1), a₂ − a₁ = (1, −2, −2). u is not a multiple of v. Equating components: 1 + λ = 2 + μ, 2 − λ = μ, 3 + 2λ = 1 + μ. The first two give 1 + λ = 4 − λ, so λ = 3/2 and μ = 1/2; the third then reads 6 = 3/2, which is false, so the lines are **skew (relation 3)**. u × v = ((−1)(1) − (2)(1), (2)(1) − (1)(1), (1)(1) − (−1)(1)) = (−3, 1, 2), |u × v| = √14. (a₂ − a₁)·(u × v) = −3 − 2 − 4 = −9, so distance = 9/√14 = **2.40535117721**. (By dot products only: with P = a₁ + λu and Q = a₂ + μv, PQ = (1 + μ − λ, −2 + μ + λ, −2 + μ − 2λ); PQ·u = 0 and PQ·v = 0 give −1 + 2μ − 6λ = 0 and −3 + 3μ − 2λ = 0, so λ = 3/14 and μ = 8/7, and |PQ|² = (27/14)² + (−9/14)² + (−18/14)² = 1134/196 = 81/14, so |PQ| = 9/√14.) u·v = 1 − 1 + 2 = 2 and |v| = √3, so cos θ = 2/√18, θ = **61.8744942979°**.
 - **Check 2, intersecting.** a₂ = (0, −1, 3): 1 + λ = μ, 2 − λ = −1 + μ, 3 + 2λ = 3 + μ. The first and third give 2λ = 1 + λ, so **λ = 1, μ = 2**, and the second checks: 2 − 1 = 1 = −1 + 2. The point is (1 + 1, 2 − 1, 3 + 2) = **(2, 1, 5)**, distance **0**, **relation 0**.
 - **Check 3, parallel and distinct.** a₂ = (0, 0, 0), v = (−2, 2, −4) = −2u, so u × v = 0 and θ = **0°**. a₂ − a₁ = (−1, −2, −3); (a₂ − a₁) × u = ((−2)(2) − (−3)(−1), (−3)(1) − (−1)(2), (−1)(−1) − (−2)(1)) = (−7, −1, 3), with length √59. Distance = √59/√6 = √(59/6) = **3.13581462037**, **relation 1**.
 - **Check 4, coincident.** a₂ = (3, 0, 7), v = (−1, 1, −2) = −u. a₂ − a₁ = (2, −2, 4) = 2u, so a₂ lies on line 1: distance **0**, **relation 2**.

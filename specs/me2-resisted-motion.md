@@ -24,24 +24,28 @@ The stage at 1920×1080 is split into two panels.
 - **Right, the graph:** the selected graph (v–t by default) drawn live in orange as the motion runs, with labelled axes and units. With the comparison on, the no-resistance graph is a dashed grey line. For vertical motion with resistance, a dotted horizontal line marks the terminal velocity −v_T, labelled "−v_T = −19.6 m/s".
 - **Above the graph:** the equation of motion with numbers substituted, for example "m dv/dt = −mg − kv → 1 × dv/dt = −9.8 − 0.5v". For vertical kv² motion two equations are shown, "rising: m dv/dt = −mg − kv²" and "falling: m dv/dt = −mg + kv²", and the one in use is highlighted.
 
-Sign convention: for vertical motion, upward is positive and x is the height above the start. For horizontal motion, the initial direction of motion is positive. The run ends at the chosen run time (there is no ground).
+Sign convention: for vertical motion, upward is positive and x is the height above the start. For horizontal motion, positive is to the right (v₀ > 0 starts the particle moving right). The run ends at the chosen run time (there is no ground).
 
 ## Parameters
 | Key | Label | Unit | Min | Max | Step | Default | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | direction | Motion | | | | | vertical | enum: `horizontal`, `vertical` |
 | drag | Resistance | | | | | linear | enum: `none`, `linear` (R = kv), `quadratic` (R = kv²); same values as the projectile setup |
-| mass | Mass m | kg | 0.1 | 10 | 0.1 | 1 | |
-| k | Resistance constant k | kg/s (kv) or kg/m (kv²) | 0 | 2 | 0.01 | 0.5 | visible when drag is not none; R = k\|v\| or kv², always opposing the velocity |
-| v0 | Initial velocity | m/s | −30 | 60 | 0.5 | 0 | vertical: upward positive |
-| g | g | m/s² | 1 | 20 | 0.1 | 9.8 | visible when direction is vertical |
-| duration | Run time | s | 1 | 60 | 1 | 10 | the run completes at this time |
-| graph | Graph | | | | | vt | enum, segmented: `vt` (v–t), `xt` (x–t), `at` (a–t), `vx` (v against x) |
+| mass | Mass m | kg | 0.1 | 10 | 0.1 | 1 | shared with the other particle2d setups |
+| k | Resistance constant k | kg/s (kv) or kg/m (kv²) | 0 | 2 | 0.005 | 0.02 | shared with the projectile setup (one range covers both); visible when drag is not none; R = k\|v\| or kv², always opposing the velocity |
+| v0 | Initial velocity v₀ | m/s | −30 | 60 | 0.1 | 0 | shared with the shm setup; vertical: upward positive; horizontal: positive to the right |
+| g | g | m/s² | 1 | 25 | 0.1 | 9.8 | shared with the projectile setup; visible when direction is vertical |
+| duration | Run time | s | 1 | 60 | 1 | 20 | shared with the other time-based particle2d setups; the run completes at this time |
+| graph | Graph | | | | | xt | enum, select, shared with the shm setup: `xt` (x–t), `vt` (v–t), `at` (a–t), `vx` (v against x, the phase plot), `v2x` (v² against x); this page's presets choose `vt` |
 | showNoDrag | Compare with no resistance | | | | | on | boolean |
 | showForces | Force arrows | | | | | on | boolean |
 | timeScale | Playback speed | × | 0.25 | 2 | 0.25 | 1 | |
 
 Changing any parameter except `graph`, `showNoDrag`, `showForces` and `timeScale` resets the run to t = 0.
+
+**Shared keys.** `particle2d` has one flat `meta.params` for all its setups, so a key used by two setups needs one label, range and default. The ranges above are the union of what this page, the SHM page (`v0`, `duration`, `graph`) and the projectile page (`mass`, `k`, `g`, `drag`) need; each page sets its own starting values through its presets. The acceleration output is `acc` on both mechanics pages.
+
+**Stiff corners.** The ranges allow (k/m)|v| up to (2/0.1) × 60 = 1200 s⁻¹. A plain RK4 step of 1/240 s is unstable once (k/m)|v| passes about 330 (it returns NaN within a few steps) and is already about 1% wrong at 240 (m = 0.5, k = 2, v₀ = 60). The ranges are kept, because narrowing them enough would make k tiny for light particles; instead the engine must sub-step (see Definitions). Checks 8 and 9 test two such corners.
 
 ## Presets
 | Name | Values | Why |
@@ -51,6 +55,7 @@ Changing any parameter except `graph`, `showNoDrag`, `showForces` and `timeScale
 | up-kv | vertical, linear, m = 1, k = 0.5, v0 = 20, run 6 s | rises to 12.4 m (not 20.4 m) in 1.41 s, then falls towards −19.6 m/s |
 | up-kv2 | vertical, quadratic, m = 1, k = 0.1, v0 = 20, run 5 s | rises to 8.13 m in 1.12 s; the equation of motion switches at the top |
 | up-and-back | vertical, quadratic, m = 0.2, k = 0.02, v0 = 14, run 3 s, graph v against x | matches the notes question: height 5 ln 3 m, returns with speed 14/√3 ≈ 8.08 m/s |
+| thrown-down | vertical, quadratic, m = 1, k = 0.1, v₀ = −30, run 5 s | thrown down faster than terminal speed, it slows down to v_T ≈ 9.90 m/s: resistance exceeds weight |
 | coast-kv | horizontal, linear, m = 2, k = 0.5, v0 = 10, run 20 s, graph x–t | never stops, but x approaches mv₀/k = 40 m |
 | coast-kv2 | horizontal, quadratic, m = 1, k = 0.1, v0 = 20, run 20 s, graph x–t | x = 10 ln(1 + 2t) grows without bound |
 | no-resistance | vertical, none, v0 = 19.6, run 4 s | the baseline: height v₀²/(2g) = 19.6 m at t = 2 s |
@@ -61,7 +66,7 @@ Changing any parameter except `graph`, `showNoDrag`, `showForces` and `timeScale
 | t | Time t | s | 3 |
 | x | Displacement x | m | 3 |
 | v | Velocity v | m/s | 3 |
-| a | Acceleration a | m/s² | 3 |
+| acc | Acceleration a | m/s² | 3 |
 | terminalSpeed | Terminal speed v_T | m/s | 3 |
 | maxHeight | Greatest height so far | m | 3 |
 | timeToTop | Time to greatest height | s | 3 |
@@ -69,11 +74,12 @@ Changing any parameter except `graph`, `showNoDrag`, `showForces` and `timeScale
 
 Definitions:
 - t = n·dt after n fixed steps of dt = 1/240 s; the run completes after round(duration/dt) steps.
+- Integration: RK4 with n_sub = max(1, ceil(10·dt·λ)) equal sub-steps inside each fixed step, where λ = k/m for kv and λ = 2(k/m)|v| for kv² (v at the start of the step), so that each sub-step has h·λ ≤ 0.1. Time stays n·dt. The closed-form solutions may be used instead where they exist. Either way every value stays finite and within 1e-4 (relative) of the exact solution across the full parameter ranges. For the default and the other classroom presets λ·dt < 0.1, so n_sub = 1.
 - terminalSpeed is analytic: mg/k (linear) or √(mg/k) (quadratic) for vertical motion with k > 0; NaN for horizontal motion, no resistance or k = 0.
 - maxHeight (vertical only) is the greatest x reached so far in the run; it is 0 for a particle released from rest or thrown downwards.
 - timeToTop (vertical only) is the time when v first changes from positive to zero or negative, found by linear interpolation between steps; NaN until that happens, and NaN when v0 ≤ 0.
 - limitDistance is analytic, mv₀/k, for horizontal kv motion with k > 0; NaN otherwise.
-- a is the acceleration at the current state, from the equation of motion.
+- acc is the acceleration at the current state, from the equation of motion.
 
 ## Assumptions shown on stage
 - Point particle moving in a straight line; g = 9.8 m/s² (as set), uniform
@@ -99,40 +105,47 @@ Definitions:
 
 ## Engine change requests
 No `particle2d` engine meta had been pushed when this spec was written (origin had no `w1/engine-particle2d` branch on 25 Nov). **Keys to reconcile with engine meta:**
-- Params for setup `resisted-1d`: `direction`, `drag`, `mass`, `k`, `v0`, `g`, `duration`, `graph`, `showNoDrag`, `showForces`, `timeScale`. `drag` and `k` use the same values and meaning as the projectile setup (§5.2 example: `drag: 'quadratic', k: 0.02`), with k a force coefficient so that R = kv or kv² newtons.
-- Outputs: `t`, `x`, `v`, `a`, `terminalSpeed`, `maxHeight`, `timeToTop`, `limitDistance`.
-- A v-against-x graph (`graph: 'vx'`), beyond the s–t, v–t and a–t graphs in guide §9.1, because Ext 2 resisted motion is often solved with v dv/dx.
+- Params for setup `resisted-1d`: `direction`, `drag`, `mass`, `k`, `v0`, `g`, `duration`, `graph`, `showNoDrag`, `showForces`, `timeScale`. `drag` and `k` use the same values and meaning as the projectile setup (§5.2 example: `drag: 'quadratic', k: 0.02`), with k a force coefficient so that R = kv or kv² newtons. Shared keys need one definition across setups: `k` 0 to 2 (step 0.005), `g` 1 to 25, `mass` 0.1 to 10, `v0` −30 to 60 (step 0.1), `duration` 1 to 60 (default 20), and `graph` with the options `xt`, `vt`, `at`, `vx`, `v2x` (as in the SHM spec).
+- Outputs: `t`, `x`, `v`, `acc` (the same key as in the SHM spec), `terminalSpeed`, `maxHeight` (the same meaning as the projectile's), `timeToTop`, `limitDistance`.
+- **Robust integration (required):** sub-step RK4 as in Definitions (n_sub = max(1, ceil(10·dt·λ)), λ = k/m or 2(k/m)|v|), or use the closed forms, so stiff corners stay finite and accurate. This applies to every particle2d setup with drag, including the projectile. Checks 8 and 9 below fail with a plain RK4 step of 1/240 s (NaN within five steps).
+- v against x and v² against x graphs (`graph: 'vx'` and `'v2x'`), beyond the s–t, v–t and a–t graphs in guide §9.1, because Ext 2 resisted motion is often solved with v dv/dx.
 - Behaviour needed: time is n·dt with dt = 1/240 s and the run completes after round(duration/dt) steps (as in the demo engine), and a parameter change resets the run to t = 0, so the step counts below land on exact times.
 
 ## Acceptance
-Every number below comes from the formula and hand calculation shown here. Each step is 1/240 s, so 240 steps is 1 s. Expected values for the motion come from the closed-form solutions; the engine integrates numerically (RK4), so those checks use a relative tolerance of 1e-4 (1e-3 for the sampled greatest height and its time). Analytic outputs use 1e-9. An independent RK4 run at dt = 1/240 s agrees with every value below to better than 2e-6 relative.
+Every number below comes from the formula and hand calculation shown here. Each step is 1/240 s, so 240 steps is 1 s. Expected values for the motion come from the closed-form solutions; the engine integrates numerically (RK4), so those checks use a relative tolerance of 1e-4, including the sampled greatest height and its interpolated time (their sampling error is about 2e-6; at 1e-4, g = 9.81 instead of 9.8 fails check 4). Analytic outputs use 1e-9. An independent RK4 run at dt = 1/240 s with the sub-step rule above agrees with every value below to better than 2e-6 relative (checks 1 to 7 need no sub-steps; checks 8 and 9 take up to 100 and 50).
 
-- **Check 1, falling with kv (default scenario), 2400 steps = 10 s.** m = 1, k = 0.5, g = 9.8, v₀ = 0. Taking downwards as positive for the derivation, dv/dt = g − (k/m)v gives a speed of v_T(1 − e^(−kt/m)) with v_T = mg/k = 9.8/0.5 = **19.6 m/s**. With kt/m = 5, e^(−5) = 0.006737947, so the speed is 19.6 × 0.993262053 = 19.4679362, and with upward positive **v = −19.4679362 m/s**. Distance fallen = v_T t − (m v_T/k)(1 − e^(−kt/m)) = 196 − 39.2 × 0.993262053 = 196 − 38.9358725 = 157.0641275, so **x = −157.064128 m**. a = −g e^(−kt/m) = −9.8 × 0.006737947 = **−0.0660318806 m/s²**. **t = 10 s**.
-- **Check 2, falling with kv², 1200 steps = 5 s.** m = 1, k = 0.1, g = 9.8, v₀ = 0. v_T = √(mg/k) = √98 = **9.89949494 m/s**. Downwards dv/dt = g − (k/m)v² gives a speed of v_T tanh(gt/v_T); gt/v_T = 49/9.89949494 = 4.94974747 and tanh(4.94974747) = 0.999899605, so **v = −9.89850108 m/s**. Distance fallen = (v_T²/g) ln cosh(gt/v_T) = (m/k) ln cosh(4.94974747) = 10 × ln(70.5732012) = 10 × 4.25665049 = 42.5665049, so **x = −42.5665049 m**.
-- **Check 3, thrown up with kv², 1200 steps = 5 s.** m = 1, k = 0.1, g = 9.8, v₀ = 20. Rising, dv/dt = −g − (k/m)v². Time to the top: t = (v_T/g) tan⁻¹(v₀/v_T) = 1.01015254 × tan⁻¹(2.02030509) = 1.01015254 × 1.11117700 = **1.12245827 s**. Using v dv/dx = −g − (k/m)v², the greatest height is H = (m/(2k)) ln(1 + kv₀²/(mg)) = 5 ln(1 + 40/9.8) = 5 ln 5.08163265 = 5 × 1.62563260 = **8.12816299 m** (without resistance, v₀²/(2g) = 20.4 m). terminalSpeed = **9.89949494 m/s**.
+- **Check 1, falling with kv (default scenario), 2400 steps = 10 s.** m = 1, k = 0.5, g = 9.8, v₀ = 0. Taking downwards as positive for the derivation, dv/dt = g − (k/m)v gives a speed of v_T(1 − e^(−kt/m)) with v_T = mg/k = 9.8/0.5 = **19.6 m/s**. With kt/m = 5, e^(−5) = 0.006737947, so the speed is 19.6 × 0.993262053 = 19.4679362, and with upward positive **v = −19.4679362 m/s**. Distance fallen = v_T t − (m v_T/k)(1 − e^(−kt/m)) = 196 − 39.2 × 0.993262053 = 196 − 38.9358725 = 157.0641275, so **x = −157.064128 m**. acc = −g e^(−kt/m) = −9.8 × 0.006737947 = **−0.0660318806 m/s²**. **t = 10 s**.
+- **Check 2, falling with kv², 1200 steps = 5 s.** m = 1, k = 0.1, g = 9.8, v₀ = 0. v_T = √(mg/k) = √98 = **9.89949493661 m/s**. Downwards dv/dt = g − (k/m)v² gives a speed of v_T tanh(gt/v_T); gt/v_T = 49/9.89949494 = 4.94974747 and tanh(4.94974747) = 0.999899605, so **v = −9.89850108 m/s**. Distance fallen = (v_T²/g) ln cosh(gt/v_T) = (m/k) ln cosh(4.94974747) = 10 × ln(70.5732012) = 10 × 4.25665049 = 42.5665049, so **x = −42.5665049 m**.
+- **Check 3, thrown up with kv², 1200 steps = 5 s.** m = 1, k = 0.1, g = 9.8, v₀ = 20. Rising, dv/dt = −g − (k/m)v². Time to the top: t = (v_T/g) tan⁻¹(v₀/v_T) = 1.01015254 × tan⁻¹(2.02030509) = 1.01015254 × 1.11117700 = **1.12245827 s**. Using v dv/dx = −g − (k/m)v², the greatest height is H = (m/(2k)) ln(1 + kv₀²/(mg)) = 5 ln(1 + 40/9.8) = 5 ln 5.08163265 = 5 × 1.62563260 = **8.12816299 m** (without resistance, v₀²/(2g) = 20.4 m). terminalSpeed = **9.89949493661 m/s**.
 - **Check 4, thrown up with kv, 1200 steps = 5 s.** m = 1, k = 0.5, g = 9.8, v₀ = 20, v_T = 19.6. Rising, dv/dt = −g − (k/m)v, so t = (m/k) ln(1 + v₀/v_T) = 2 ln(2.02040816) = 2 × 0.703299552 = **1.40659910 s**, and H = (m/k)(v₀ − v_T ln(1 + v₀/v_T)) = 2(20 − 19.6 × 0.703299552) = 2(20 − 13.7846712) = **12.4306576 m**.
 - **Check 5, coasting with kv, run to completion at 4 s.** Horizontal, m = 2, k = 0.5, v₀ = 10, run time 4 s (960 steps). dv/dt = −(k/m)v gives v = v₀e^(−kt/m) and x = (mv₀/k)(1 − e^(−kt/m)). kt/m = 1, e^(−1) = 0.367879441, so **v = 3.67879441 m/s**, **x = 40 × 0.632120559 = 25.2848224 m**, **t = 4 s**. limitDistance = mv₀/k = 20/0.5 = **40 m**.
-- **Check 6, coasting with kv², 480 steps = 2 s.** Horizontal, m = 1, k = 0.1, v₀ = 20. dv/dt = −(k/m)v² gives 1/v = 1/v₀ + kt/m, so v = 20/(1 + 2t) = **4 m/s** at t = 2, and x = (m/k) ln(1 + kv₀t/m) = 10 ln 5 = **16.0943791 m**. a = −(k/m)v² = −0.1 × 16 = **−1.6 m/s²**. terminalSpeed and limitDistance are NaN here and are not checked.
+- **Check 6, coasting with kv², 480 steps = 2 s.** Horizontal, m = 1, k = 0.1, v₀ = 20. dv/dt = −(k/m)v² gives 1/v = 1/v₀ + kt/m, so v = 20/(1 + 2t) = **4 m/s** at t = 2, and x = (m/k) ln(1 + kv₀t/m) = 10 ln 5 = **16.0943791 m**. acc = −(k/m)v² = −0.1 × 16 = **−1.6 m/s²**. terminalSpeed and limitDistance are NaN here and are not checked.
 - **Check 7, no resistance (preset), 960 steps = 4 s.** v₀ = 19.6, g = 9.8: time to top v₀/g = **2 s**, greatest height v₀²/(2g) = 384.16/19.6 = **19.6 m**.
+- **Check 8, stiff corner: light particle coasting with kv², 240 steps = 1 s.** Horizontal, m = 0.1, k = 2, v₀ = 60, so k/m = 20 and (k/m)v₀ = 1200 s⁻¹. As in check 6, v = v₀/(1 + (k/m)v₀t) = 60/1201 = **0.0499583680 m/s** and x = (m/k) ln(1 + (k/m)v₀t) = 0.05 ln 1201 = 0.05 × 7.09090982 = **0.354545491 m**.
+- **Check 9, stiff corner: thrown down faster than terminal speed, 240 steps = 1 s.** Vertical, m = 0.1, k = 2, g = 9.8, v₀ = −30 (30 m/s downwards). v_T = √(mg/k) = √0.49 = 0.7 m/s. Taking downwards as positive, the speed s obeys ds/dt = g − (k/m)s² with s(0) = 30 > v_T, so s = v_T coth(gt/v_T + C) with coth C = 30/0.7, that is C = tanh⁻¹(0.7/30) = 0.0233375693, and g/v_T = 14. At t = 1: s = 0.7 coth(14.0233376) = 0.7 to 12 digits, so **v = −0.7 m/s**. Distance fallen = (v_T²/g) ln(sinh(gt/v_T + C)/sinh C) = 0.05 × ln(sinh(14.0233376)/0.0233396878) = 0.05 × 17.0877904 = 0.854389521, so **x = −0.854389521 m**. terminalSpeed = **0.7 m/s**.
 
 ```acceptance
 [
   { "name": "falling with kv: 10 s after release", "params": { "direction": "vertical", "drag": "linear", "mass": 1, "k": 0.5, "g": 9.8, "v0": 0, "duration": 20 }, "run": { "steps": 2400 },
     "expect": { "t": { "value": 10, "absTol": 1e-9 }, "v": { "value": -19.4679362, "relTol": 1e-4 }, "x": { "value": -157.064128, "relTol": 1e-4 },
-                "a": { "value": -0.0660318806, "relTol": 1e-3 }, "terminalSpeed": { "value": 19.6, "relTol": 1e-9 } } },
+                "acc": { "value": -0.0660318806, "relTol": 1e-3 }, "terminalSpeed": { "value": 19.6, "relTol": 1e-9 } } },
   { "name": "falling with kv^2: 5 s after release", "params": { "direction": "vertical", "drag": "quadratic", "mass": 1, "k": 0.1, "g": 9.8, "v0": 0, "duration": 20 }, "run": { "steps": 1200 },
     "expect": { "t": { "value": 5, "absTol": 1e-9 }, "v": { "value": -9.89850108, "relTol": 1e-4 }, "x": { "value": -42.5665049, "relTol": 1e-4 },
-                "terminalSpeed": { "value": 9.89949494, "relTol": 1e-9 } } },
+                "terminalSpeed": { "value": 9.89949493661, "relTol": 1e-9 } } },
   { "name": "thrown up with kv^2: greatest height and time to top", "params": { "direction": "vertical", "drag": "quadratic", "mass": 1, "k": 0.1, "g": 9.8, "v0": 20, "duration": 20 }, "run": { "steps": 1200 },
-    "expect": { "maxHeight": { "value": 8.12816299, "relTol": 1e-3 }, "timeToTop": { "value": 1.12245827, "relTol": 1e-3 }, "terminalSpeed": { "value": 9.89949494, "relTol": 1e-9 } } },
+    "expect": { "maxHeight": { "value": 8.12816299, "relTol": 1e-4 }, "timeToTop": { "value": 1.12245827, "relTol": 1e-4 }, "terminalSpeed": { "value": 9.89949493661, "relTol": 1e-9 } } },
   { "name": "thrown up with kv: greatest height and time to top", "params": { "direction": "vertical", "drag": "linear", "mass": 1, "k": 0.5, "g": 9.8, "v0": 20, "duration": 20 }, "run": { "steps": 1200 },
-    "expect": { "maxHeight": { "value": 12.4306576, "relTol": 1e-3 }, "timeToTop": { "value": 1.4065991, "relTol": 1e-3 } } },
+    "expect": { "maxHeight": { "value": 12.4306576, "relTol": 1e-4 }, "timeToTop": { "value": 1.4065991, "relTol": 1e-4 } } },
   { "name": "coasting with kv: run completes at 4 s", "params": { "direction": "horizontal", "drag": "linear", "mass": 2, "k": 0.5, "v0": 10, "duration": 4 }, "run": "complete",
     "expect": { "t": { "value": 4, "absTol": 1e-9 }, "v": { "value": 3.67879441, "relTol": 1e-4 }, "x": { "value": 25.2848224, "relTol": 1e-4 },
                 "limitDistance": { "value": 40, "relTol": 1e-9 } } },
   { "name": "coasting with kv^2: 2 s", "params": { "direction": "horizontal", "drag": "quadratic", "mass": 1, "k": 0.1, "v0": 20, "duration": 20 }, "run": { "steps": 480 },
-    "expect": { "t": { "value": 2, "absTol": 1e-9 }, "v": { "value": 4, "relTol": 1e-4 }, "x": { "value": 16.0943791, "relTol": 1e-4 }, "a": { "value": -1.6, "relTol": 1e-4 } } },
+    "expect": { "t": { "value": 2, "absTol": 1e-9 }, "v": { "value": 4, "relTol": 1e-4 }, "x": { "value": 16.0943791, "relTol": 1e-4 }, "acc": { "value": -1.6, "relTol": 1e-4 } } },
   { "name": "no resistance baseline (preset)", "preset": "no-resistance", "params": {}, "run": { "steps": 960 },
-    "expect": { "timeToTop": { "value": 2, "relTol": 1e-3 }, "maxHeight": { "value": 19.6, "relTol": 1e-3 } } }
+    "expect": { "timeToTop": { "value": 2, "relTol": 1e-4 }, "maxHeight": { "value": 19.6, "relTol": 1e-4 } } },
+  { "name": "stiff corner: horizontal kv^2, m = 0.1, k = 2, v0 = 60, 1 s", "params": { "direction": "horizontal", "drag": "quadratic", "mass": 0.1, "k": 2, "v0": 60, "duration": 20 }, "run": { "steps": 240 },
+    "expect": { "t": { "value": 1, "absTol": 1e-9 }, "x": { "value": 0.354545491, "relTol": 1e-4 }, "v": { "value": 0.049958368, "relTol": 1e-4 } } },
+  { "name": "stiff corner: thrown down at 30 m/s, kv^2, m = 0.1, k = 2, 1 s", "params": { "direction": "vertical", "drag": "quadratic", "mass": 0.1, "k": 2, "g": 9.8, "v0": -30, "duration": 20 }, "run": { "steps": 240 },
+    "expect": { "t": { "value": 1, "absTol": 1e-9 }, "x": { "value": -0.854389521, "relTol": 1e-4 }, "v": { "value": -0.7, "relTol": 1e-4 }, "terminalSpeed": { "value": 0.7, "relTol": 1e-9 } } }
 ]
 ```

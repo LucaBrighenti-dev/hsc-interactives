@@ -32,14 +32,16 @@ The x scale fits c ± a with a margin. The run ends at the chosen run time.
 | n | n | rad/s | 0.5 | 5 | 0.1 | 2 | ẍ = −n²(x − c); period 2π/n |
 | centre | Centre of motion c | m | −3 | 3 | 0.1 | 0 | |
 | x0 | Initial position x₀ | m | −5 | 5 | 0.1 | 3 | |
-| v0 | Initial velocity v₀ | m/s | −10 | 10 | 0.1 | 8 | |
-| duration | Run time | s | 1 | 60 | 1 | 20 | the run completes at this time |
-| graph | Graph | | | | | xt | enum, select widget: `xt` (x–t), `vt` (v–t), `at` (ẍ–t), `v2x` (v² against x), `phase` (v against x) |
+| v0 | Initial velocity v₀ | m/s | −30 | 60 | 0.1 | 0 | shared with the resisted-1d setup (one range covers both); this page's default preset sets 8 |
+| duration | Run time | s | 1 | 60 | 1 | 20 | shared with the other time-based particle2d setups; the run completes at this time |
+| graph | Graph | | | | | xt | enum, select, shared with the resisted-1d setup: `xt` (x–t), `vt` (v–t), `at` (ẍ–t), `vx` (v against x, the phase plot), `v2x` (v² against x) |
 | showCircle | Reference circle | | | | | on | boolean |
 | showArrows | Velocity and acceleration arrows | | | | | on | boolean |
 | timeScale | Playback speed | × | 0.25 | 2 | 0.25 | 1 | |
 
 Changing `n`, `centre`, `x0`, `v0` or `duration` resets the run to t = 0. The amplitude and phase are derived from the initial conditions, not set directly: that is the Ext 2 skill being practised.
+
+**Shared keys.** `particle2d` has one flat `meta.params` for all its setups, so `v0`, `duration`, `graph` and `timeScale` have the same definitions here as in the resisted-motion spec (the v₀ range −30 to 60 m/s is the union of both pages' needs), and the acceleration output is `acc` on both pages. With |v₀| up to 60 and n down to 0.5 the amplitude can reach about 120 m; the x scale fits c ± a, so the picture still fits the stage.
 
 ## Presets
 | Name | Values | Why |
@@ -92,7 +94,7 @@ Definitions: amplitude a = √((x₀ − c)² + (v₀/n)²); period = 2π/n; α 
 No `particle2d` engine meta had been pushed when this spec was written (origin had no `w1/engine-particle2d` branch on 25 Nov). **Keys to reconcile with engine meta:**
 - Params for setup `shm`: `n`, `centre`, `x0`, `v0`, `duration`, `graph`, `showCircle`, `showArrows`, `timeScale`. Ext 2 states SHM kinematically as ẍ = −n²(x − c); if the engine's `shm` setup is a mass on a spring (m, k), the page needs `n` and `centre` as params (with n² = k/m internally), or the page builder sets m = 1 and k = n² and the acceptance block is updated to match.
 - Outputs: `t`, `x`, `v`, `acc`, `amplitude`, `period`, `alpha`, `maxSpeed`, `maxAcc`.
-- Graphs v² against x (`v2x`) and v against x (`phase`), beyond the s–t, v–t and a–t graphs in guide §9.1; and the reference circle drawn in step with the particle.
+- Graphs v² against x (`v2x`) and v against x (`vx`, the phase plot), beyond the s–t, v–t and a–t graphs in guide §9.1; and the reference circle drawn in step with the particle.
 - Behaviour needed: time is n·dt with dt = 1/240 s and completion after round(duration/dt) steps (as in the demo engine); a parameter change resets the run to t = 0.
 
 ## Acceptance

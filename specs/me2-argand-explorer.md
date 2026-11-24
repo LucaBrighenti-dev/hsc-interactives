@@ -62,7 +62,7 @@ Keys are from the `argand` engine meta on `origin/w1/engine-argand` (commit 8caa
 | rotate-by-i | operation mul, z₁ = 2 + i, z₂ = i (z2Re 0, z2Im 1) | multiplying by i is a quarter turn: 2 + i becomes −1 + 2i, same modulus |
 | divide | operation div, z₁ = 1 + 3i, z₂ = 1 + i | undoes the default product: (1 + 3i)/(1 + i) = 2 + i |
 | conjugate | operation conj, z₁ = 2 + i | the mirror image in the real axis: argument −θ |
-| power-spiral | operation power, z₁ = 0.95 + 0.55i, powerN 12 | \|z₁\| ≈ 1.10 and arg z₁ ≈ 30°, so twelve powers make one outward turn to \|z₁¹²\| ≈ 3.06 |
+| power-spiral | operation power, z₁ = 1 + 0.5i, powerN 13, view 5 | on the 0.1 grid: \|z₁\| = √1.25 ≈ 1.12 and arg z₁ ≈ 26.6°, so thirteen powers make almost one outward turn (345°) to \|z₁¹³\| ≈ 4.26 |
 | de-moivre | operation power, z₁ = −1 + i, powerN 5, view 5 | (√2 cis 3π/4)⁵ = 4√2 cis(−π/4) = 4 − 4i; the argument wraps back into (−π, π] |
 | roots-of-unity | operation roots, rootsOf unity, rootN 7 | the seven 7th roots of unity form a regular heptagon |
 | roots-of-minus-four | operation roots, rootsOf w, z₁ = −4, rootN 4 | z⁴ = −4 has roots ±1 ± i: a square of side 2 |
@@ -79,7 +79,7 @@ Keys are from the `argand` engine meta on `origin/w1/engine-argand` (commit 8caa
 | z2Mod | \|z₂\| | | 3 |
 | z2Arg | arg z₂ | rad | 3 |
 
-Definitions (from the engine): the result is z₁ + z₂, z₁ − z₂, z₁z₂, z₁/z₂, z̄₁, z₁ⁿ (by repeated multiplication), or, for roots, the principal root |w|^(1/n) cis(arg w / n) of zⁿ = w with w = 1 or z₁. Every argument output is the principal argument in (−π, π], in radians: an argument of −π is reported as π, and components below 1e-12 of the larger one are cleaned to 0 first. The argument of 0 is NaN. The engine also outputs `z1Re`, `z1Im`, `z2Re` and `z2Im`.
+Definitions (from the engine): the result is z₁ + z₂, z₁ − z₂, z₁z₂, z₁/z₂, z̄₁, z₁ⁿ (by repeated multiplication), or, for roots, the principal root |w|^(1/n) cis(arg w / n) of zⁿ = w with w = 1 or z₁. Every argument output is the principal argument in (−π, π], in radians: an argument of −π is reported as π, and components below 1e-12 of the larger one are cleaned to 0 first. The argument of 0 is NaN. Zero cases: z₁ = 0 with `power` gives result 0 (0ⁿ = 0 for n ≥ 1) with argument NaN, shown as "—"; z₁ = 0 with `roots` and "zⁿ = z₁" gives n roots all equal to 0, result 0 and argument NaN, and the stage says "every root is 0"; z₂ = 0 with `div` gives "undefined" and NaN outputs. The engine also outputs `z1Re`, `z1Im`, `z2Re` and `z2Im`.
 
 ## Assumptions shown on stage
 - Arguments are principal values, −π < arg z ≤ π
